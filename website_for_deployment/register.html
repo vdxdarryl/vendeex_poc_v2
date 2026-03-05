@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Vendee Avatar - VendeeX</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/demo-banner.css">
+    <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
+    <style>
+        /* ============================================================
+           Avatar Creation Flow Styles
+           ============================================================ */
+        .register-page {
+            min-height: 60vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 1rem 1rem 3rem;
+        }
+
+        .avatar-form-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 680px;
+            margin: 1.5rem auto;
+        }
+
+        .avatar-form-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-form-header h1 {
+            margin: 0 0 0.5rem;
+            font-size: 1.5rem;
+            color: #111827;
+        }
+
+        .avatar-form-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        /* Credential Notice */
+        .credential-notice {
+            border: 2px solid #215274;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            background: rgba(33, 82, 116, 0.03);
+        }
+
+        .credential-notice p {
+            margin: 0;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            color: #374151;
+        }
+
+        /* Step Content */
+        .avatar-step-content {
+            display: none;
+        }
+
+        .avatar-step-content--active {
+            display: block;
+        }
+
+        .step-heading {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 0.25rem;
+        }
+
+        .step-subheading {
+            font-size: 0.8125rem;
+            color: #6b7280;
+            margin: 0 0 1.25rem;
+            line-height: 1.4;
+        }
+
+        /* Form Elements */
+        .avatar-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .avatar-form .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .avatar-form label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.375rem;
+        }
+
+        .avatar-form label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .avatar-form input,
+        .avatar-form select,
+        .avatar-form textarea {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: #111827;
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .avatar-form input:focus,
+        .avatar-form select:focus,
+        .avatar-form textarea:focus {
+            outline: none;
+            border-color: #215274;
+            box-shadow: 0 0 0 3px rgba(33, 82, 116, 0.1);
+        }
+
+        .avatar-form input::placeholder,
+        .avatar-form textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Section dividers */
+        .form-section-label {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #215274;
+            margin: 1.25rem 0 0.75rem;
+            padding-bottom: 0.375rem;
+            border-bottom: 1px solid rgba(33, 82, 116, 0.1);
+        }
+
+        .form-section-label:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Account Classification Cards */
+        .account-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .account-card {
+            padding: 1rem 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .account-card:hover {
+            border-color: #215274;
+            background: rgba(33, 82, 116, 0.02);
+        }
+
+        .account-card.selected {
+            border-color: #215274;
+            background: rgba(33, 82, 116, 0.06);
+        }
+
+        .account-card__icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.375rem;
+            display: block;
+        }
+
+        .account-card__label {
+            font-weight: 700;
+            font-size: 0.8125rem;
+            color: #111827;
+            display: block;
+            margin-bottom: 0.125rem;
+        }
+
+        .account-card__desc {
+            font-size: 0.6875rem;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+
+        /* Buy Local Toggle */
+        .buy-local-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(43, 182, 115, 0.06);
+            border: 1px solid rgba(43, 182, 115, 0.15);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .buy-local-toggle label {
+            margin: 0;
+            font-weight: 500;
+            color: #111827;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .buy-local-toggle .toggle-desc {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .radius-selector {
+            display: none;
+            margin-bottom: 1rem;
+        }
+
+        .radius-selector.visible {
+            display: block;
+        }
+
+        .radius-selector > label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.375rem;
+        }
+
+        .radius-options {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .radius-option {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            background: white;
+            color: #374151;
+            transition: all 0.2s;
+        }
+
+        .radius-option:hover {
+            border-color: #215274;
+        }
+
+        .radius-option.selected {
+            background: #215274;
+            color: white;
+            border-color: #215274;
+        }
+
+        /* Jurisdiction note */
+        .jurisdiction-note {
+            display: none;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(33, 82, 116, 0.04);
+            border-radius: 6px;
+            line-height: 1.4;
+        }
+
+        .jurisdiction-note.visible {
+            display: block;
+        }
+
+        /* Preference Category Accordions */
+        .pref-category {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            margin-bottom: 0.625rem;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+
+        .pref-category:hover {
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .pref-category__header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            background: #fafbfc;
+            transition: background 0.15s;
+            user-select: none;
+        }
+
+        .pref-category__header:hover {
+            background: #f3f4f6;
+        }
+
+        .pref-category__icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            width: 28px;
+            text-align: center;
+        }
+
+        .pref-category__title-wrap {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pref-category__title {
+            font-weight: 600;
+            font-size: 0.8125rem;
+            color: #111827;
+            display: block;
+        }
+
+        .pref-category__summary {
+            font-size: 0.6875rem;
+            color: #9ca3af;
+            display: block;
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pref-category__chevron {
+            margin-left: auto;
+            font-size: 0.625rem;
+            color: #9ca3af;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .pref-category__body {
+            display: none;
+            padding: 0.75rem 1rem 1rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .pref-category--open .pref-category__body {
+            display: block;
+        }
+
+        .pref-category--open .pref-category__chevron {
+            transform: rotate(180deg);
+        }
+
+        .pref-category--open .pref-category__header {
+            background: #f0f4f8;
+        }
+
+        /* Sub-section labels inside accordions */
+        .pref-sub-label {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin: 0.75rem 0 0.5rem;
+        }
+
+        .pref-sub-label:first-child {
+            margin-top: 0;
+        }
+
+        /* Preference row inside accordion */
+        .pref-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+
+        .pref-row + .pref-row {
+            border-top: 1px solid #f9fafb;
+        }
+
+        .pref-row__label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #374151;
+            flex: 1;
+        }
+
+        .pref-row__desc {
+            font-size: 0.625rem;
+            color: #9ca3af;
+            display: block;
+            margin-top: 1px;
+        }
+
+        /* Multi-checkbox grid */
+        .checkbox-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.375rem;
+        }
+
+        .checkbox-grid label {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            color: #374151;
+            cursor: pointer;
+            padding: 0.375rem 0.625rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .checkbox-grid label:hover {
+            border-color: #215274;
+        }
+
+        .checkbox-grid input[type="checkbox"] {
+            accent-color: #215274;
+            width: 14px;
+            height: 14px;
+        }
+
+        .checkbox-grid input[type="checkbox"]:checked + span {
+            color: #215274;
+            font-weight: 600;
+        }
+
+        /* Tag input for brand exclusions */
+        .tag-input-wrap {
+            margin-top: 0.375rem;
+        }
+
+        .tag-input-row {
+            display: flex;
+            gap: 0.375rem;
+        }
+
+        .tag-input-row input {
+            flex: 1;
+            padding: 0.375rem 0.625rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+
+        .tag-input-row button {
+            padding: 0.375rem 0.75rem;
+            background: #215274;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .tag-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            margin-top: 0.375rem;
+        }
+
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: #f3f4f6;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            color: #374151;
+        }
+
+        .tag-chip__remove {
+            cursor: pointer;
+            color: #9ca3af;
+            font-weight: 700;
+            font-size: 0.75rem;
+            line-height: 1;
+        }
+
+        .tag-chip__remove:hover {
+            color: #ef4444;
+        }
+
+        /* Dropdown inside accordion */
+        .pref-dropdown {
+            padding: 0.375rem 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #374151;
+            background: white;
+            min-width: 120px;
+        }
+
+        /* Read-only value display */
+        .pref-readonly {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 600;
+            padding: 0.375rem 0.625rem;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        @media (max-width: 540px) {
+            .pref-category__header {
+                padding: 0.625rem 0.75rem;
+            }
+            .pref-category__body {
+                padding: 0.5rem 0.75rem 0.75rem;
+            }
+            .pref-row {
+                flex-wrap: wrap;
+            }
+            .pill-selector {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Preference Controls */
+        .pref-control {
+            padding: 0.875rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .pref-control:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .pref-control__row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .pref-control__text {
+            flex: 1;
+        }
+
+        .pref-control__label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #111827;
+            display: block;
+        }
+
+        .pref-control__desc {
+            font-size: 0.6875rem;
+            color: #9ca3af;
+            display: block;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #d1d5db;
+            border-radius: 24px;
+            transition: background 0.2s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: #2BB673;
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        /* Pill selector (delivery speed) */
+        .pill-selector {
+            display: flex;
+            gap: 0;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 3px;
+            flex-shrink: 0;
+        }
+
+        .pill-option {
+            padding: 0.375rem 0.875rem;
+            border: none;
+            background: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .pill-option:hover {
+            color: #374151;
+        }
+
+        .pill-option.selected {
+            background: white;
+            color: #215274;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Pill selector - small variant for inside accordions */
+        .pill-selector--sm .pill-option {
+            padding: 0.25rem 0.625rem;
+            font-size: 0.6875rem;
+        }
+
+        /* Standing Instructions */
+        .standing-instructions {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .avatar-submit-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: #2BB673;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .avatar-submit-btn:hover {
+            background: #249d62;
+        }
+
+        .avatar-submit-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .avatar-submit-btn--outline {
+            background: white;
+            color: #215274;
+            border: 2px solid #215274;
+        }
+
+        .avatar-submit-btn--outline:hover {
+            background: rgba(33, 82, 116, 0.06);
+        }
+
+        .step-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .step-buttons .avatar-submit-btn {
+            margin-top: 0;
+        }
+
+        .step-buttons .avatar-submit-btn--outline {
+            width: auto;
+            flex-shrink: 0;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        /* Privacy link */
+        .privacy-link {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .privacy-link a {
+            color: #215274;
+            text-decoration: underline;
+        }
+
+        /* Error state */
+        .form-error {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .form-error.visible {
+            display: block;
+        }
+
+        /* Success state */
+        .avatar-success {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .avatar-success.visible {
+            display: block;
+        }
+
+        .avatar-success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-success h2 {
+            color: #111827;
+            margin: 0 0 0.5rem;
+        }
+
+        .avatar-success p {
+            color: #6b7280;
+            margin: 0 0 1.5rem;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .avatar-form .form-row {
+                grid-template-columns: 1fr;
+            }
+            .account-cards {
+                grid-template-columns: 1fr;
+            }
+            .avatar-form-card {
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }
+            .pill-selector {
+                flex-wrap: wrap;
+            }
+            .priority-item__handle {
+                display: none;
+            }
+            .priority-item__arrows {
+                display: flex;
+            }
+            .priority-item {
+                cursor: default;
+            }
+        }
+
+        /* Show arrows on touch devices too */
+        @media (hover: none) and (pointer: coarse) {
+            .priority-item__handle {
+                display: none;
+            }
+            .priority-item__arrows {
+                display: flex;
+            }
+            .priority-item {
+                cursor: default;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Persistent Demo Banner -->
+    <div class="demo-platform-banner">
+        <div class="demo-platform-banner__inner">
+            <span class="demo-platform-banner__icon">&#x1F50D;</span>
+            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__separator">|</span>
+            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                <span class="logo-version">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="pages/demo.html" class="nav-link">Try Demo</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Info Banner -->
+    <div class="page-info-banner">
+        <div class="page-info-banner__inner">
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What is happening</span>
+                <p>You are creating your Vendee Avatar &mdash; a persistent digital identity that shapes how your autonomous agent shops for you.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">Why it matters</span>
+                <p>Your avatar tells your agent who you are, what you value, and how you like to shop. It enforces your preferences automatically.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What you can do</span>
+                <p>Complete two short steps: identify yourself, then set your values and preferences. Takes under a minute.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Creation Flow -->
+    <main class="register-page">
+        <div class="avatar-form-card">
+            <!-- Header -->
+            <div class="avatar-form-header">
+                <h1>Create Your Vendee Avatar</h1>
+            </div>
+
+            <!-- Form -->
+            <div id="avatarFormSection">
+                <form id="avatarForm" class="avatar-form" novalidate>
+
+                    <!-- ======================== STEP 1: IDENTITY ======================== -->
+                    <div id="avatarStep1" class="avatar-step-content avatar-step-content--active">
+                        <!-- Credential Notice -->
+                        <div class="credential-notice">
+                            <p>VendeeX never stores your personal documents or payment methods. Your Avatar carries a W3C Verifiable Credential, signed with Ed25519, that proves who you are without needing to keep copies of any personally identifying documents or payment credentials.</p>
+                        </div>
+                        <h2 class="step-heading">Who is your Avatar representing?</h2>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fullName">Full Name <span class="required">*</span></label>
+                                <input type="text" id="fullName" name="fullName" placeholder="Your full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                                <div class="form-error" id="emailError">Please enter a valid email address</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section-label">Account Classification</div>
+
+                        <div class="account-cards" id="accountCards">
+                            <div class="account-card selected" data-type="personal">
+                                <span class="account-card__icon">&#x1F464;</span>
+                                <span class="account-card__label">Personal Shopper</span>
+                                <span class="account-card__desc">Your agent shops for you personally</span>
+                            </div>
+                            <div class="account-card" data-type="business">
+                                <span class="account-card__icon">&#x1F4BC;</span>
+                                <span class="account-card__label">Business Entity</span>
+                                <span class="account-card__desc">Your agent acts on behalf of your organisation</span>
+                            </div>
+                            <div class="account-card" data-type="government">
+                                <span class="account-card__icon">&#x1F3DB;</span>
+                                <span class="account-card__label">Government Agency</span>
+                                <span class="account-card__desc">Your agent operates within public procurement rules</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="orgNameGroup" style="display: none;">
+                            <label for="orgName">Organisation Name <span class="required">*</span></label>
+                            <input type="text" id="orgName" name="orgName" placeholder="Your organisation name">
+                        </div>
+
+                        <div class="form-section-label">Jurisdiction</div>
+
+                        <div class="form-group">
+                            <label for="jurisdiction">Where are you based? <span class="required">*</span></label>
+                            <select id="jurisdiction" name="jurisdiction" required>
+                                <option value="">Select jurisdiction...</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="JE">Jersey, Channel Islands</option>
+                                <option value="GG">Guernsey, Channel Islands</option>
+                                <option value="US-CA">United States &mdash; California</option>
+                                <option value="US-NY">United States &mdash; New York</option>
+                                <option value="US-TX">United States &mdash; Texas</option>
+                                <option value="AU">Australia</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                                <option value="SG">Singapore</option>
+                                <option value="JP">Japan</option>
+                            </select>
+                            <div class="jurisdiction-note" id="jurisdictionNote">
+                                Your agent uses this to calculate taxes, verify merchant compliance, and enforce local consumer protection rules.
+                            </div>
+                        </div>
+
+                        <!-- Buy Local -->
+                        <div class="form-section-label">Shop Local Preference</div>
+
+                        <div class="buy-local-toggle">
+                            <label for="buyLocal">
+                                Prioritise local sellers
+                                <span class="toggle-desc">Your agent will favour sellers near your location</span>
+                            </label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="buyLocal" name="buyLocal">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+
+                        <div class="radius-selector" id="radiusSelector">
+                            <label>Search radius</label>
+                            <div class="radius-options">
+                                <span class="radius-option" data-value="5">5 km</span>
+                                <span class="radius-option" data-value="10">10 km</span>
+                                <span class="radius-option selected" data-value="25">25 km</span>
+                                <span class="radius-option" data-value="50">50 km</span>
+                                <span class="radius-option" data-value="100">100 km</span>
+                            </div>
+                        </div>
+
+                        <button type="button" id="step1Next" class="avatar-submit-btn">Continue to Preferences</button>
+                    </div>
+
+                    <!-- ======================== STEP 2: VALUES & PREFERENCES ======================== -->
+                    <div id="avatarStep2" class="avatar-step-content">
+                        <p class="step-description">Your Avatar is your persistent digital identity. It tells your agent what values need to be applied to every purchase decision. You set these global preferences on setup only. Although you can tweak them at any time. Once set they are applied against all your product searches.</p>
+                        <h2 class="step-heading">Set your preferences</h2>
+                        <p class="step-subheading" style="margin-top:0; margin-bottom:1rem;">Configure how your agent evaluates products, handles transactions, and communicates. Click any category to customise &mdash; smart defaults are pre-set.</p>
+
+                        <!-- Category 1: Values and Ethics -->
+                        <div class="pref-category" data-category="valuesEthics">
+                            <div class="pref-category__header" onclick="togglePrefCategory(this)">
+                                <span class="pref-category__icon">&#x1F33F;</span>
+                                <div class="pref-category__title-wrap">
+                                    <span class="pref-category__title">Values and Ethics</span>
+                                    <span class="pref-category__summary" id="summaryValuesEthics">Default settings</span>
+                                </div>
+                                <span class="pref-category__chevron">&#x25BC;</span>
+                            </div>
+                            <div class="pref-category__body">
+                                <div class="pref-sub-label">Environmental Stance</div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Carbon sensitivity</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="carbonSensitivity">
+                                        <button type="button" class="pill-option" data-value="low">Low</button>
+                                        <button type="button" class="pill-option selected" data-value="medium">Medium</button>
+                                        <button type="button" class="pill-option" data-value="high">High</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Circular economy preference</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefCircularEconomy"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Packaging requirements</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="packagingPref">
+                                        <button type="button" class="pill-option selected" data-value="any">Any</button>
+                                        <button type="button" class="pill-option" data-value="minimal">Minimal</button>
+                                        <button type="button" class="pill-option" data-value="plastic-free">Plastic-free</button>
+                                    </div>
+                                </div>
+
+                                <div class="pref-sub-label">Social and Ethical Position</div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Fair trade requirement</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefFairTrade"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Labour standards threshold</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="labourStandards">
+                                        <button type="button" class="pill-option" data-value="low">Low</button>
+                                        <button type="button" class="pill-option selected" data-value="medium">Medium</button>
+                                        <button type="button" class="pill-option" data-value="high">High</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Local economy weighting</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="localEconomy">
+                                        <button type="button" class="pill-option" data-value="low">Low</button>
+                                        <button type="button" class="pill-option selected" data-value="medium">Medium</button>
+                                        <button type="button" class="pill-option" data-value="high">High</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">B-Corp preference</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefBCorp"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Supplier diversity stance</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefSupplierDiversity"><span class="toggle-slider"></span></label>
+                                </div>
+
+                                <div class="pref-sub-label">Animal Welfare Position</div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Animal welfare position</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="animalWelfare">
+                                        <button type="button" class="pill-option selected" data-value="none">No preference</button>
+                                        <button type="button" class="pill-option" data-value="cruelty-free">Cruelty-free</button>
+                                        <button type="button" class="pill-option" data-value="vegan">Vegan</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category 2: Trust and Risk Tolerance -->
+                        <div class="pref-category" data-category="trustRisk">
+                            <div class="pref-category__header" onclick="togglePrefCategory(this)">
+                                <span class="pref-category__icon">&#x1F6E1;</span>
+                                <div class="pref-category__title-wrap">
+                                    <span class="pref-category__title">Trust and Risk Tolerance</span>
+                                    <span class="pref-category__summary" id="summaryTrustRisk">Default settings</span>
+                                </div>
+                                <span class="pref-category__chevron">&#x25BC;</span>
+                            </div>
+                            <div class="pref-category__body">
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Minimum seller reputation<span class="pref-row__desc">Trust Score floor</span></span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="minSellerRating">
+                                        <button type="button" class="pill-option" data-value="any">Any</button>
+                                        <button type="button" class="pill-option" data-value="3">3+</button>
+                                        <button type="button" class="pill-option selected" data-value="4">4+</button>
+                                        <button type="button" class="pill-option" data-value="4.5">4.5+</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Minimum warranty period</span>
+                                    <select class="pref-dropdown" id="prefMinWarranty">
+                                        <option value="0" selected>No minimum</option>
+                                        <option value="3">3 months</option>
+                                        <option value="6">6 months</option>
+                                        <option value="12">1 year</option>
+                                        <option value="24">2 years</option>
+                                    </select>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Dispute resolution preference</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="disputeResolution">
+                                        <button type="button" class="pill-option selected" data-value="platform">Platform</button>
+                                        <button type="button" class="pill-option" data-value="seller">Seller</button>
+                                        <button type="button" class="pill-option" data-value="either">Either</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Minimum return window</span>
+                                    <select class="pref-dropdown" id="prefMinReturnWindow">
+                                        <option value="0">No minimum</option>
+                                        <option value="14" selected>14 days</option>
+                                        <option value="30">30 days</option>
+                                        <option value="60">60 days</option>
+                                        <option value="90">90 days</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category 3: Data and Privacy Boundaries -->
+                        <div class="pref-category" data-category="dataPrivacy">
+                            <div class="pref-category__header" onclick="togglePrefCategory(this)">
+                                <span class="pref-category__icon">&#x1F512;</span>
+                                <div class="pref-category__title-wrap">
+                                    <span class="pref-category__title">Data and Privacy Boundaries</span>
+                                    <span class="pref-category__summary" id="summaryDataPrivacy">Default settings</span>
+                                </div>
+                                <span class="pref-category__chevron">&#x25BC;</span>
+                            </div>
+                            <div class="pref-category__body">
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Share name with sellers during negotiation</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefShareName" checked><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Share email with sellers</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefShareEmail"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Share location with sellers</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefShareLocation"><span class="toggle-slider"></span></label>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Consent to data sharing beyond the transaction</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefConsentBeyond"><span class="toggle-slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category 4: Communication -->
+                        <div class="pref-category" data-category="communication">
+                            <div class="pref-category__header" onclick="togglePrefCategory(this)">
+                                <span class="pref-category__icon">&#x1F4AC;</span>
+                                <div class="pref-category__title-wrap">
+                                    <span class="pref-category__title">Communication</span>
+                                    <span class="pref-category__summary" id="summaryCommunication">Default settings</span>
+                                </div>
+                                <span class="pref-category__chevron">&#x25BC;</span>
+                            </div>
+                            <div class="pref-category__body">
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Preferred contact channel</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="preferredChannel">
+                                        <button type="button" class="pill-option selected" data-value="email">Email</button>
+                                        <button type="button" class="pill-option" data-value="sms">SMS</button>
+                                        <button type="button" class="pill-option" data-value="app">App</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Permitted contact window</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="contactWindow">
+                                        <button type="button" class="pill-option" data-value="anytime">Anytime</button>
+                                        <button type="button" class="pill-option selected" data-value="business">Business hours</button>
+                                        <button type="button" class="pill-option" data-value="emergencies">Emergencies only</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Language preference</span>
+                                    <select class="pref-dropdown" id="prefLanguage">
+                                        <option value="en" selected>English</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="es">Spanish</option>
+                                        <option value="ja">Japanese</option>
+                                    </select>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Notification preferences</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="notifications">
+                                        <button type="button" class="pill-option" data-value="all">All</button>
+                                        <button type="button" class="pill-option selected" data-value="important">Important</button>
+                                        <button type="button" class="pill-option" data-value="minimal">Minimal</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category 5: Payment Defaults -->
+                        <div class="pref-category" data-category="paymentDefaults">
+                            <div class="pref-category__header" onclick="togglePrefCategory(this)">
+                                <span class="pref-category__icon">&#x1F4B3;</span>
+                                <div class="pref-category__title-wrap">
+                                    <span class="pref-category__title">Payment Defaults</span>
+                                    <span class="pref-category__summary" id="summaryPaymentDefaults">Default settings</span>
+                                </div>
+                                <span class="pref-category__chevron">&#x25BC;</span>
+                            </div>
+                            <div class="pref-category__body">
+                                <div class="pref-sub-label">Preferred payment method types</div>
+                                <div class="checkbox-grid">
+                                    <label><input type="checkbox" id="payCard" checked><span>Card (Visa/MC)</span></label>
+                                    <label><input type="checkbox" id="payPayPal"><span>PayPal</span></label>
+                                    <label><input type="checkbox" id="payApplePay"><span>Apple Pay</span></label>
+                                    <label><input type="checkbox" id="payBankTransfer"><span>Bank Transfer</span></label>
+                                </div>
+                                <div class="pref-row" style="margin-top:0.75rem;">
+                                    <span class="pref-row__label">Currency preference</span>
+                                    <select id="prefCurrencySelect" class="pref-select" style="width:auto;min-width:160px;padding:0.35rem 0.5rem;font-size:0.92rem;border-radius:6px;border:1px solid #d0d5dd;">
+                                        <option value="GBP">GBP - British Pound</option>
+                                        <option value="EUR">EUR - Euro</option>
+                                        <option value="USD">USD - US Dollar</option>
+                                        <option value="AUD">AUD - Australian Dollar</option>
+                                        <option value="SGD">SGD - Singapore Dollar</option>
+                                        <option value="JPY">JPY - Japanese Yen</option>
+                                        <option value="NZD">NZD - New Zealand Dollar</option>
+                                    </select>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Appetite for instalment or deferred payments</span>
+                                    <label class="toggle-switch"><input type="checkbox" id="prefInstalments"><span class="toggle-slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category 6: Delivery and Logistics Defaults -->
+                        <div class="pref-category" data-category="deliveryLogistics">
+                            <div class="pref-category__header" onclick="togglePrefCategory(this)">
+                                <span class="pref-category__icon">&#x1F69A;</span>
+                                <div class="pref-category__title-wrap">
+                                    <span class="pref-category__title">Delivery and Logistics Defaults</span>
+                                    <span class="pref-category__summary" id="summaryDeliveryLogistics">Default settings</span>
+                                </div>
+                                <span class="pref-category__chevron">&#x25BC;</span>
+                            </div>
+                            <div class="pref-category__body">
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Default delivery method</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="deliveryMethod">
+                                        <button type="button" class="pill-option selected" data-value="delivery">Delivery</button>
+                                        <button type="button" class="pill-option" data-value="collection">Collection</button>
+                                        <button type="button" class="pill-option" data-value="locker">Locker</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Delivery speed preference</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="speedPreference">
+                                        <button type="button" class="pill-option" data-value="fastest">Fastest</button>
+                                        <button type="button" class="pill-option selected" data-value="balanced">Balanced</button>
+                                        <button type="button" class="pill-option" data-value="cheapest">Cheapest</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Packaging preferences</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="deliveryPackaging">
+                                        <button type="button" class="pill-option" data-value="standard">Standard</button>
+                                        <button type="button" class="pill-option selected" data-value="minimal">Minimal</button>
+                                        <button type="button" class="pill-option" data-value="plastic-free">Plastic-free</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category 7: Quality Defaults -->
+                        <div class="pref-category" data-category="qualityDefaults">
+                            <div class="pref-category__header" onclick="togglePrefCategory(this)">
+                                <span class="pref-category__icon">&#x2B50;</span>
+                                <div class="pref-category__title-wrap">
+                                    <span class="pref-category__title">Quality Defaults</span>
+                                    <span class="pref-category__summary" id="summaryQualityDefaults">Default settings</span>
+                                </div>
+                                <span class="pref-category__chevron">&#x25BC;</span>
+                            </div>
+                            <div class="pref-category__body">
+                                <div class="pref-row">
+                                    <span class="pref-row__label">Condition tolerance</span>
+                                    <div class="pill-selector pill-selector--sm" data-pref="conditionTolerance">
+                                        <button type="button" class="pill-option selected" data-value="new">New only</button>
+                                        <button type="button" class="pill-option" data-value="refurbished">Refurbished OK</button>
+                                        <button type="button" class="pill-option" data-value="pre-owned">Pre-owned OK</button>
+                                    </div>
+                                </div>
+                                <div class="pref-row" style="flex-direction:column; align-items:stretch;">
+                                    <span class="pref-row__label">Brand exclusions<span class="pref-row__desc">Brands your agent should never recommend</span></span>
+                                    <div class="tag-input-wrap">
+                                        <div class="tag-input-row">
+                                            <input type="text" id="brandExclusionInput" placeholder="Type brand name...">
+                                            <button type="button" onclick="addBrandExclusion()">Add</button>
+                                        </div>
+                                        <div class="tag-chips" id="brandExclusionChips"></div>
+                                    </div>
+                                </div>
+                                <div class="pref-row" style="flex-direction:column; align-items:stretch;">
+                                    <span class="pref-row__label">Country-of-origin preferences<span class="pref-row__desc">Preferred or excluded countries of origin</span></span>
+                                    <div class="tag-input-wrap">
+                                        <div class="tag-input-row">
+                                            <input type="text" id="countryPrefInput" placeholder="Type country name...">
+                                            <button type="button" onclick="addCountryPreference()">Add</button>
+                                        </div>
+                                        <div class="tag-chips" id="countryPrefChips"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Standing Instructions -->
+                        <div class="form-section-label" style="margin-top:1rem;">Standing Instructions</div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="standingInstructions">Anything else your agent should know about how you like to shop?</label>
+                            <textarea id="standingInstructions" class="standing-instructions" rows="3" placeholder="e.g. 'I prefer established brands over newcomers' or 'Always check for student discounts' or 'I avoid products with excessive packaging'"></textarea>
+                        </div>
+
+                        <div class="step-buttons">
+                            <button type="button" id="step2Back" class="avatar-submit-btn avatar-submit-btn--outline">Back</button>
+                            <button type="submit" id="submitBtn" class="avatar-submit-btn">Create My Avatar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Success State -->
+            <div id="avatarSuccess" class="avatar-success">
+                <div class="avatar-success-icon">&#x2705;</div>
+                <h2>Avatar Created</h2>
+                <p id="successMessage">Your agent now knows your preferences and will apply them to every search.</p>
+                <a href="pages/demo.html" class="avatar-submit-btn" style="display:inline-block;text-decoration:none;text-align:center;">Start Searching</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Vendee Labs Limited. All rights reserved.
+                    <span class="footer-jurisdiction">Registered in the States of Jersey</span>
+                </p>
+                <div class="footer-links">
+                    <a href="pages/privacy.html">Privacy Notice</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================================
+        // Avatar Creation Logic
+        // ============================================================
+
+        var JURISDICTION_CURRENCY = {
+            'UK': 'GBP', 'JE': 'GBP', 'GG': 'GBP',
+            'US-CA': 'USD', 'US-NY': 'USD', 'US-TX': 'USD',
+            'AU': 'AUD', 'DE': 'EUR', 'FR': 'EUR',
+            'SG': 'SGD', 'JP': 'JPY'
+        };
+
+        var form = document.getElementById('avatarForm');
+        var formSection = document.getElementById('avatarFormSection');
+        var successSection = document.getElementById('avatarSuccess');
+        var step1 = document.getElementById('avatarStep1');
+        var step2 = document.getElementById('avatarStep2');
+        var buyLocalToggle = document.getElementById('buyLocal');
+        var radiusSelector = document.getElementById('radiusSelector');
+        var selectedRadius = '25';
+        var currentStep = 1;
+        var selectedAccountType = 'personal';
+
+        // ---- Step Navigation ----
+        function goToStep(step) {
+            currentStep = step;
+            step1.classList.toggle('avatar-step-content--active', step === 1);
+            step2.classList.toggle('avatar-step-content--active', step === 2);
+
+            // Scroll to top of card
+            document.querySelector('.avatar-form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        document.getElementById('step1Next').addEventListener('click', function() {
+            // Validate step 1
+            var fullName = document.getElementById('fullName').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var jurisdiction = document.getElementById('jurisdiction').value;
+
+            if (!fullName || !email || !jurisdiction) {
+                // Highlight empty required fields
+                if (!fullName) document.getElementById('fullName').style.borderColor = '#ef4444';
+                if (!email) document.getElementById('email').style.borderColor = '#ef4444';
+                if (!jurisdiction) document.getElementById('jurisdiction').style.borderColor = '#ef4444';
+                return;
+            }
+
+            // Email validation
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                document.getElementById('emailError').classList.add('visible');
+                return;
+            }
+            document.getElementById('emailError').classList.remove('visible');
+
+            // Org name required for business/government
+            if ((selectedAccountType === 'business' || selectedAccountType === 'government') && !document.getElementById('orgName').value.trim()) {
+                document.getElementById('orgName').style.borderColor = '#ef4444';
+                return;
+            }
+
+            // Clear error styles
+            ['fullName', 'email', 'jurisdiction', 'orgName'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.borderColor = '';
+            });
+
+            goToStep(2);
+            updateCurrencyDisplay();
+        });
+
+        document.getElementById('step2Back').addEventListener('click', function() {
+            goToStep(1);
+        });
+
+        // ---- Account Classification Cards ----
+        document.querySelectorAll('.account-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.account-card').forEach(function(c) { c.classList.remove('selected'); });
+                this.classList.add('selected');
+                selectedAccountType = this.getAttribute('data-type');
+                var orgGroup = document.getElementById('orgNameGroup');
+                orgGroup.style.display = (selectedAccountType === 'business' || selectedAccountType === 'government') ? 'block' : 'none';
+            });
+        });
+
+        // ---- Jurisdiction Note ----
+        document.getElementById('jurisdiction').addEventListener('change', function() {
+            var note = document.getElementById('jurisdictionNote');
+            note.classList.toggle('visible', this.value !== '');
+        });
+
+        // ---- Buy Local Toggle ----
+        buyLocalToggle.addEventListener('change', function() {
+            radiusSelector.classList.toggle('visible', this.checked);
+        });
+
+        // ---- Radius Option Selection ----
+        document.querySelectorAll('.radius-option').forEach(function(option) {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.radius-option').forEach(function(o) { o.classList.remove('selected'); });
+                this.classList.add('selected');
+                selectedRadius = this.getAttribute('data-value');
+            });
+        });
+
+        // ---- Preference Category Accordions ----
+        function togglePrefCategory(headerEl) {
+            var category = headerEl.closest('.pref-category');
+            category.classList.toggle('pref-category--open');
+        }
+
+        // ---- Generic Pill Selector Handler (for all pill groups) ----
+        document.querySelectorAll('.pill-selector').forEach(function(selector) {
+            selector.querySelectorAll('.pill-option').forEach(function(pill) {
+                pill.addEventListener('click', function() {
+                    selector.querySelectorAll('.pill-option').forEach(function(p) { p.classList.remove('selected'); });
+                    this.classList.add('selected');
+                });
+            });
+        });
+
+        // ---- Brand Exclusion Tag Input ----
+        var brandExclusions = [];
+        function addBrandExclusion() {
+            var input = document.getElementById('brandExclusionInput');
+            var val = input.value.trim();
+            if (val && brandExclusions.indexOf(val) === -1) {
+                brandExclusions.push(val);
+                renderBrandChips();
+            }
+            input.value = '';
+            input.focus();
+        }
+        function removeBrandExclusion(index) {
+            brandExclusions.splice(index, 1);
+            renderBrandChips();
+        }
+        function renderBrandChips() {
+            var container = document.getElementById('brandExclusionChips');
+            container.innerHTML = brandExclusions.map(function(b, i) {
+                return '<span class="tag-chip">' + b + ' <span class="tag-chip__remove" onclick="removeBrandExclusion(' + i + ')">&times;</span></span>';
+            }).join('');
+        }
+        document.getElementById('brandExclusionInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); addBrandExclusion(); }
+        });
+
+        // ---- Country Preference Tag Input ----
+        var countryPreferences = [];
+        function addCountryPreference() {
+            var input = document.getElementById('countryPrefInput');
+            var val = input.value.trim();
+            if (val && countryPreferences.indexOf(val) === -1) {
+                countryPreferences.push(val);
+                renderCountryChips();
+            }
+            input.value = '';
+            input.focus();
+        }
+        function removeCountryPreference(index) {
+            countryPreferences.splice(index, 1);
+            renderCountryChips();
+        }
+        function renderCountryChips() {
+            var container = document.getElementById('countryPrefChips');
+            container.innerHTML = countryPreferences.map(function(c, i) {
+                return '<span class="tag-chip">' + c + ' <span class="tag-chip__remove" onclick="removeCountryPreference(' + i + ')">&times;</span></span>';
+            }).join('');
+        }
+        document.getElementById('countryPrefInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); addCountryPreference(); }
+        });
+
+        // ---- Set currency dropdown default from jurisdiction ----
+        function updateCurrencyDisplay() {
+            var jurisdiction = document.getElementById('jurisdiction').value;
+            var currency = JURISDICTION_CURRENCY[jurisdiction] || 'USD';
+            var select = document.getElementById('prefCurrencySelect');
+            if (select) select.value = currency;
+        }
+        document.getElementById('jurisdiction').addEventListener('change', updateCurrencyDisplay);
+
+        // ---- Helper: get selected pill value ----
+        function getPillValue(prefAttr) {
+            var sel = document.querySelector('.pill-selector[data-pref="' + prefAttr + '"] .pill-option.selected');
+            return sel ? sel.getAttribute('data-value') : null;
+        }
+
+        // ---- Collect All 7-Category Preferences ----
+        function collectAllPreferences() {
+            return {
+                valuesEthics: {
+                    carbonSensitivity: getPillValue('carbonSensitivity') || 'medium',
+                    circularEconomy: document.getElementById('prefCircularEconomy').checked,
+                    packagingPreference: getPillValue('packagingPref') || 'any',
+                    fairTrade: document.getElementById('prefFairTrade').checked,
+                    labourStandards: getPillValue('labourStandards') || 'medium',
+                    localEconomy: getPillValue('localEconomy') || 'medium',
+                    bCorpPreference: document.getElementById('prefBCorp').checked,
+                    supplierDiversity: document.getElementById('prefSupplierDiversity').checked,
+                    animalWelfare: getPillValue('animalWelfare') || 'none'
+                },
+                trustRisk: {
+                    minSellerRating: getPillValue('minSellerRating') || '4',
+                    minWarrantyMonths: parseInt(document.getElementById('prefMinWarranty').value) || 0,
+                    disputeResolution: getPillValue('disputeResolution') || 'platform',
+                    minReturnWindowDays: parseInt(document.getElementById('prefMinReturnWindow').value) || 14
+                },
+                dataPrivacy: {
+                    shareName: document.getElementById('prefShareName').checked,
+                    shareEmail: document.getElementById('prefShareEmail').checked,
+                    shareLocation: document.getElementById('prefShareLocation').checked,
+                    consentBeyondTransaction: document.getElementById('prefConsentBeyond').checked
+                },
+                communication: {
+                    preferredChannel: getPillValue('preferredChannel') || 'email',
+                    contactWindow: getPillValue('contactWindow') || 'business',
+                    language: document.getElementById('prefLanguage').value || 'en',
+                    notifications: getPillValue('notifications') || 'important'
+                },
+                paymentDefaults: {
+                    preferredMethods: [
+                        document.getElementById('payCard').checked ? 'card' : null,
+                        document.getElementById('payPayPal').checked ? 'paypal' : null,
+                        document.getElementById('payApplePay').checked ? 'apple-pay' : null,
+                        document.getElementById('payBankTransfer').checked ? 'bank-transfer' : null
+                    ].filter(Boolean),
+                    currency: document.getElementById('prefCurrencySelect').value || JURISDICTION_CURRENCY[document.getElementById('jurisdiction').value] || 'USD',
+                    instalmentsAcceptable: document.getElementById('prefInstalments').checked
+                },
+                deliveryLogistics: {
+                    deliveryMethod: getPillValue('deliveryMethod') || 'delivery',
+                    speedPreference: getPillValue('speedPreference') || 'balanced',
+                    packagingPreference: getPillValue('deliveryPackaging') || 'minimal'
+                },
+                qualityDefaults: {
+                    conditionTolerance: getPillValue('conditionTolerance') || 'new',
+                    brandExclusions: brandExclusions.slice(),
+                    countryPreferences: countryPreferences.slice()
+                }
+            };
+        }
+
+        // ---- Backward Compatibility Bridge ----
+        function writeBackwardCompatKeys(prefs) {
+            var ethicsMap = { low: 2, medium: 3, high: 5 };
+            var speedMap = { fastest: 4, balanced: 3, cheapest: 2 };
+            localStorage.setItem('vendeeX_valueRanking', JSON.stringify({
+                cost: 4,
+                quality: prefs.qualityDefaults.conditionTolerance === 'new' ? 4 : 3,
+                speed: speedMap[prefs.deliveryLogistics.speedPreference] || 3,
+                ethics: ethicsMap[prefs.valuesEthics.carbonSensitivity] || 3
+            }));
+            localStorage.setItem('vendeeX_prefFreeReturns', String(prefs.trustRisk.minReturnWindowDays >= 14));
+            localStorage.setItem('vendeeX_prefDeliverySpeed', prefs.deliveryLogistics.speedPreference);
+            localStorage.setItem('vendeeX_prefSustainability', String(prefs.valuesEthics.carbonSensitivity !== 'low'));
+            localStorage.setItem('vendeeX_prefSustainabilityWeight', String(ethicsMap[prefs.valuesEthics.carbonSensitivity] || 3));
+        }
+
+        // ---- Form Submission ----
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            var fullName = document.getElementById('fullName').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var jurisdiction = document.getElementById('jurisdiction').value;
+            var orgName = document.getElementById('orgName').value.trim();
+            var standingInstructions = document.getElementById('standingInstructions').value.trim();
+            var currency = document.getElementById('prefCurrencySelect').value || JURISDICTION_CURRENCY[jurisdiction] || 'USD';
+
+            // Collect all 7-category preferences
+            var avatarPreferences = collectAllPreferences();
+
+            var isEditMode = new URLSearchParams(window.location.search).get('edit') === 'true' && localStorage.getItem('vendeeX_isLoggedIn') === 'true';
+            var submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = isEditMode ? 'Updating Avatar...' : 'Creating Avatar...';
+
+            // Store Step 1 data to localStorage
+            localStorage.setItem('vendeeX_userName', fullName);
+            localStorage.setItem('vendeeX_userEmail', email);
+            localStorage.setItem('vendeeX_accountType', selectedAccountType);
+            localStorage.setItem('vendeeX_companyName', orgName);
+            localStorage.setItem('vendeeX_jurisdiction', jurisdiction);
+            localStorage.setItem('vendeeX_buyerLocation', jurisdiction);
+            localStorage.setItem('vendeeX_currency', currency);
+            localStorage.setItem('vendeeX_buyLocal', String(buyLocalToggle.checked));
+            localStorage.setItem('vendeeX_buyLocalRadius', buyLocalToggle.checked ? selectedRadius : '');
+            localStorage.setItem('vendeeX_isLoggedIn', 'true');
+            localStorage.setItem('vendeeX_avatarCreated', new Date().toISOString());
+            localStorage.setItem('vendeeX_shippingPreference', 'standard');
+            localStorage.setItem('vendeeX_standingInstructions', standingInstructions);
+
+            // Store new 7-category preferences (source of truth)
+            localStorage.setItem('vendeeX_avatarPreferences', JSON.stringify(avatarPreferences));
+
+            // Write backward-compatible old keys for existing consumers
+            writeBackwardCompatKeys(avatarPreferences);
+
+            // sessionStorage avatar for backward compat
+            var avatarData = {
+                fullName: fullName,
+                email: email,
+                accountType: selectedAccountType,
+                location: { country: jurisdiction },
+                jurisdiction: jurisdiction
+            };
+            sessionStorage.setItem('vendeeAvatar', JSON.stringify(avatarData));
+
+            // Try server registration (graceful fallback)
+            try {
+                var response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        email: email,
+                        accountType: selectedAccountType,
+                        orgName: orgName,
+                        jurisdiction: jurisdiction,
+                        avatarPreferences: avatarPreferences,
+                        standingInstructions: standingInstructions,
+                        buyLocal: buyLocalToggle.checked,
+                        buyLocalRadius: buyLocalToggle.checked ? parseInt(selectedRadius) : null,
+                        // Backward compat fields derived from new prefs
+                        valueRanking: JSON.parse(localStorage.getItem('vendeeX_valueRanking')),
+                        prefFreeReturns: avatarPreferences.trustRisk.minReturnWindowDays >= 14,
+                        prefDeliverySpeed: avatarPreferences.deliveryLogistics.speedPreference,
+                        prefSustainability: avatarPreferences.valuesEthics.carbonSensitivity !== 'low',
+                        prefSustainabilityWeight: {low:2,medium:3,high:5}[avatarPreferences.valuesEthics.carbonSensitivity] || 3,
+                    })
+                });
+
+                var data = await response.json();
+                if (data.session && data.session.token) {
+                    sessionStorage.setItem('vendeeToken', data.session.token);
+                }
+            } catch (err) {
+                // Server unavailable — avatar saved locally, continue
+            }
+
+            // Show success
+            var firstName = fullName.split(' ')[0];
+            if (isEditMode) {
+                document.querySelector('#avatarSuccess h2').textContent = 'Avatar Updated';
+                document.getElementById('successMessage').textContent =
+                    firstName + ', your preferences have been updated. Your agent will use these on your next search.';
+                document.querySelector('#avatarSuccess .avatar-submit-btn').textContent = 'Back to Search';
+            } else {
+                document.getElementById('successMessage').textContent =
+                    'Welcome, ' + firstName + '! Your agent now knows your preferences and will apply them to every search.' +
+                    (buyLocalToggle.checked ? ' Local sellers within ' + selectedRadius + ' km will be prioritised.' : '');
+            }
+            formSection.style.display = 'none';
+            successSection.classList.add('visible');
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = isEditMode ? 'Update My Avatar' : 'Create My Avatar';
+        });
+
+        // Reset border colors on input
+        document.querySelectorAll('.avatar-form input, .avatar-form select').forEach(function(el) {
+            el.addEventListener('focus', function() {
+                this.style.borderColor = '';
+            });
+        });
+
+        // ---- Edit Mode: Pre-fill from localStorage when ?edit=true ----
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var isEdit = params.get('edit') === 'true' && localStorage.getItem('vendeeX_isLoggedIn') === 'true';
+            if (!isEdit) return;
+
+            // Update headings and button text
+            document.querySelector('.avatar-form-header h1').textContent = 'Update Your Vendee Avatar';
+            var descP = document.querySelector('#avatarStep2 .step-description');
+            if (descP) descP.textContent = 'Review and update your preferences. Changes take effect on your next search.';
+            document.getElementById('submitBtn').textContent = 'Update My Avatar';
+
+            // Update page info banner
+            var bannerItems = document.querySelectorAll('.page-info-banner__item p');
+            if (bannerItems.length >= 3) {
+                bannerItems[0].textContent = 'You are updating your Vendee Avatar — reviewing and adjusting your shopping preferences.';
+                bannerItems[1].textContent = 'Keeping your avatar current means your agent always has the latest picture of what you value.';
+                bannerItems[2].textContent = 'Change any settings below, then save. Your agent picks up the changes on your next search.';
+            }
+
+            // Pre-fill Step 1 fields
+            var userName = localStorage.getItem('vendeeX_userName');
+            var userEmail = localStorage.getItem('vendeeX_userEmail');
+            var jurisdiction = localStorage.getItem('vendeeX_jurisdiction');
+            var accountType = localStorage.getItem('vendeeX_accountType');
+
+            if (userName) document.getElementById('fullName').value = userName;
+            if (userEmail) document.getElementById('email').value = userEmail;
+            if (jurisdiction) document.getElementById('jurisdiction').value = jurisdiction;
+
+            // Account type card
+            if (accountType) {
+                document.querySelectorAll('.account-card').forEach(function(c) { c.classList.remove('selected'); });
+                var card = document.querySelector('.account-card[data-type="' + accountType + '"]');
+                if (card) {
+                    card.classList.add('selected');
+                    selectedAccountType = accountType;
+                }
+                if (accountType === 'business' || accountType === 'government') {
+                    document.getElementById('orgNameGroup').style.display = 'block';
+                    var orgName = localStorage.getItem('vendeeX_companyName');
+                    if (orgName) document.getElementById('orgName').value = orgName;
+                }
+            }
+
+            // Show jurisdiction note if set
+            if (jurisdiction) document.getElementById('jurisdictionNote').classList.add('visible');
+
+            // Pre-fill Step 2 from saved preferences
+            var savedPrefs = null;
+            try { savedPrefs = JSON.parse(localStorage.getItem('vendeeX_avatarPreferences')); } catch(e) {}
+
+            if (savedPrefs) {
+                // Helper: set pill selector value
+                function setPill(prefAttr, value) {
+                    var selector = document.querySelector('.pill-selector[data-pref="' + prefAttr + '"]');
+                    if (!selector) return;
+                    selector.querySelectorAll('.pill-option').forEach(function(p) { p.classList.remove('selected'); });
+                    var pill = selector.querySelector('.pill-option[data-value="' + value + '"]');
+                    if (pill) pill.classList.add('selected');
+                }
+
+                // Category 1: Values and Ethics
+                if (savedPrefs.valuesEthics) {
+                    var ve = savedPrefs.valuesEthics;
+                    setPill('carbonSensitivity', ve.carbonSensitivity);
+                    document.getElementById('prefCircularEconomy').checked = !!ve.circularEconomy;
+                    setPill('packagingPref', ve.packagingPreference);
+                    document.getElementById('prefFairTrade').checked = !!ve.fairTrade;
+                    setPill('labourStandards', ve.labourStandards);
+                    setPill('localEconomy', ve.localEconomy);
+                    document.getElementById('prefBCorp').checked = !!ve.bCorpPreference;
+                    document.getElementById('prefSupplierDiversity').checked = !!ve.supplierDiversity;
+                    setPill('animalWelfare', ve.animalWelfare);
+                }
+
+                // Category 2: Trust and Risk
+                if (savedPrefs.trustRisk) {
+                    var tr = savedPrefs.trustRisk;
+                    setPill('minSellerRating', tr.minSellerRating);
+                    document.getElementById('prefMinWarranty').value = String(tr.minWarrantyMonths || 0);
+                    setPill('disputeResolution', tr.disputeResolution);
+                    document.getElementById('prefMinReturnWindow').value = String(tr.minReturnWindowDays || 14);
+                }
+
+                // Category 3: Data and Privacy
+                if (savedPrefs.dataPrivacy) {
+                    var dp = savedPrefs.dataPrivacy;
+                    document.getElementById('prefShareName').checked = !!dp.shareName;
+                    document.getElementById('prefShareEmail').checked = !!dp.shareEmail;
+                    document.getElementById('prefShareLocation').checked = !!dp.shareLocation;
+                    document.getElementById('prefConsentBeyond').checked = !!dp.consentBeyondTransaction;
+                }
+
+                // Category 4: Communication
+                if (savedPrefs.communication) {
+                    var cm = savedPrefs.communication;
+                    setPill('preferredChannel', cm.preferredChannel);
+                    setPill('contactWindow', cm.contactWindow);
+                    document.getElementById('prefLanguage').value = cm.language || 'en';
+                    setPill('notifications', cm.notifications);
+                }
+
+                // Category 5: Payment Defaults
+                if (savedPrefs.paymentDefaults) {
+                    var pd = savedPrefs.paymentDefaults;
+                    document.getElementById('payCard').checked = (pd.preferredMethods || []).indexOf('card') !== -1;
+                    document.getElementById('payPayPal').checked = (pd.preferredMethods || []).indexOf('paypal') !== -1;
+                    document.getElementById('payApplePay').checked = (pd.preferredMethods || []).indexOf('apple-pay') !== -1;
+                    document.getElementById('payBankTransfer').checked = (pd.preferredMethods || []).indexOf('bank-transfer') !== -1;
+                    document.getElementById('prefInstalments').checked = !!pd.instalmentsAcceptable;
+                    if (pd.currency) {
+                        document.getElementById('prefCurrencySelect').value = pd.currency;
+                    }
+                }
+
+                // Category 6: Delivery and Logistics
+                if (savedPrefs.deliveryLogistics) {
+                    var dl = savedPrefs.deliveryLogistics;
+                    setPill('deliveryMethod', dl.deliveryMethod);
+                    setPill('speedPreference', dl.speedPreference);
+                    setPill('deliveryPackaging', dl.packagingPreference);
+                }
+
+                // Category 7: Quality Defaults
+                if (savedPrefs.qualityDefaults) {
+                    var qd = savedPrefs.qualityDefaults;
+                    setPill('conditionTolerance', qd.conditionTolerance);
+                    if (qd.brandExclusions && qd.brandExclusions.length) {
+                        brandExclusions = qd.brandExclusions.slice();
+                        renderBrandChips();
+                    }
+                    if (qd.countryPreferences && qd.countryPreferences.length) {
+                        countryPreferences = qd.countryPreferences.slice();
+                        renderCountryChips();
+                    }
+                }
+            }
+
+            // Standing instructions
+            var instructions = localStorage.getItem('vendeeX_standingInstructions');
+            if (instructions) document.getElementById('standingInstructions').value = instructions;
+
+            // Buy Local toggle + radius
+            var buyLocal = localStorage.getItem('vendeeX_buyLocal');
+            if (buyLocal === 'true') {
+                buyLocalToggle.checked = true;
+                radiusSelector.classList.add('visible');
+                var savedRadius = localStorage.getItem('vendeeX_buyLocalRadius');
+                if (savedRadius) {
+                    document.querySelectorAll('.radius-option').forEach(function(o) { o.classList.remove('selected'); });
+                    var opt = document.querySelector('.radius-option[data-value="' + savedRadius + '"]');
+                    if (opt) opt.classList.add('selected');
+                    selectedRadius = savedRadius;
+                }
+            }
+
+            // Auto-skip to Step 2 (preferences) in edit mode
+            document.getElementById('avatarStep1').classList.remove('avatar-step-content--active');
+            document.getElementById('avatarStep2').classList.add('avatar-step-content--active');
+        })();
+    </script>
+</body>
+</html>

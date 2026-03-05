@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Preferences - VendeeX 2.0</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .preferences-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #f0f9ff 100%);
+            padding-top: 80px;
+        }
+
+        .preferences-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .preferences-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .preferences-header h1 {
+            font-size: 2rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .preferences-header p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .preferences-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-icon.economic { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+        .card-icon.quality { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+        .card-icon.ethical { background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%); }
+        .card-icon.convenience { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); }
+        .card-icon.categories { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Form Controls */
+        .pref-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .pref-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .pref-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .pref-sublabel {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        /* Slider styles */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider-label-left, .slider-label-right {
+            font-size: 0.8rem;
+            color: #6b7280;
+            white-space: nowrap;
+            min-width: 100px;
+        }
+
+        .slider-label-right {
+            text-align: right;
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Select dropdown */
+        .pref-select {
+            width: 100%;
+            max-width: 300px;
+            padding: 0.625rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #374151;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .pref-select:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        /* Radio group */
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .radio-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            font-size: 0.85rem;
+            color: #4b5563;
+        }
+
+        .radio-pill:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .radio-pill.selected {
+            border-color: #10b981;
+            background: #10b981;
+            color: white;
+        }
+
+        .radio-pill input[type="radio"] {
+            display: none;
+        }
+
+        /* Star rating selector */
+        .star-rating {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .star-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            color: #4b5563;
+            background: white;
+        }
+
+        .star-option:hover {
+            border-color: #fbbf24;
+            background: #fffbeb;
+        }
+
+        .star-option.selected {
+            border-color: #fbbf24;
+            background: #fbbf24;
+            color: white;
+        }
+
+        /* Checkbox inline */
+        .pref-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .pref-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #10b981;
+        }
+
+        /* Text input */
+        .pref-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.625rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .pref-input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        /* Category grid */
+        .category-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .category-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .category-pill:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .category-pill.selected {
+            border-color: #10b981;
+            background: #10b981;
+            color: white;
+        }
+
+        .category-pill input[type="checkbox"] {
+            display: none;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .category-action-btn {
+            background: none;
+            border: none;
+            color: #10b981;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 0;
+        }
+
+        .category-action-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Save button */
+        .preferences-actions {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .btn-save-prefs {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: #10b981;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-save-prefs:hover {
+            background: #059669;
+        }
+
+        .skip-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .skip-link:hover {
+            color: #374151;
+            text-decoration: underline;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: #1f2937;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-notice {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .demo-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #10b981;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .slider-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .slider-label-left, .slider-label-right {
+                text-align: center;
+            }
+            .radio-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                <span class="logo-version">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="pages/how-it-works.html" class="nav-link">How It Works</a>
+                <a href="pages/demo.html" class="nav-link">Try Demo</a>
+                <a href="dashboard.html" class="nav-link" id="dashboardLink" style="display: none;">Dashboard</a>
+                <a href="pages/login.html" class="nav-link" id="loginLink">Login</a>
+                <a href="register.html" class="nav-btn btn-primary" id="getStartedLink">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="preferences-page">
+        <div class="preferences-container">
+            <div class="preferences-header">
+                <h1 id="pageTitle">Set Up Your Shopping Avatar</h1>
+                <p id="pageSubtitle">Help VendeeX AI find exactly what you're looking for</p>
+            </div>
+
+            <form id="preferencesForm">
+                <!-- Section 1: Economic Preferences -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon economic">&#128176;</div>
+                        <div>
+                            <h2 class="card-title">Economic Preferences</h2>
+                            <p class="card-description">Your budget comfort zone and price sensitivity</p>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Budget Comfort Zone</label>
+                        <div class="slider-container">
+                            <span class="slider-label-left">Budget-conscious</span>
+                            <input type="range" class="range-slider" id="budgetComfort" min="1" max="5" step="1" value="3">
+                            <span class="slider-label-right">Premium / Luxury</span>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Price Sensitivity <span class="pref-sublabel">How important is getting the lowest price vs. convenience?</span></label>
+                        <div class="slider-container">
+                            <span class="slider-label-left">Convenience first</span>
+                            <input type="range" class="range-slider" id="priceSensitivity" min="1" max="5" step="1" value="3">
+                            <span class="slider-label-right">Lowest price always</span>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Currency Preference</label>
+                        <select class="pref-select" id="currencyPref">
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                            <option value="SGD">SGD - Singapore Dollar</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="NZD">NZD - New Zealand Dollar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 2: Quality Preferences -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon quality">&#11088;</div>
+                        <div>
+                            <h2 class="card-title">Quality Preferences</h2>
+                            <p class="card-description">Your expectations for product quality and brands</p>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Quality Priority</label>
+                        <div class="slider-container">
+                            <span class="slider-label-left">Good enough</span>
+                            <input type="range" class="range-slider" id="qualityPriority" min="1" max="5" step="1" value="3">
+                            <span class="slider-label-right">Best available</span>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Brand Preference</label>
+                        <div class="radio-group" id="brandPrefGroup">
+                            <label class="radio-pill selected">
+                                <input type="radio" name="brandPref" value="none" checked>
+                                No brand preference
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="brandPref" value="prefer_known">
+                                Prefer known brands
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="brandPref" value="only_trusted">
+                                Only trusted brands
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Minimum Review Rating</label>
+                        <div class="star-rating" id="starRating">
+                            <button type="button" class="star-option" data-value="3">3+</button>
+                            <button type="button" class="star-option selected" data-value="3.5">3.5+</button>
+                            <button type="button" class="star-option" data-value="4">4+</button>
+                            <button type="button" class="star-option" data-value="4.5">4.5+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Ethical & Sustainability -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon ethical">&#127793;</div>
+                        <div>
+                            <h2 class="card-title">Ethical &amp; Sustainability Preferences</h2>
+                            <p class="card-description">Your values around sustainability and sourcing</p>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Sustainability Importance</label>
+                        <div class="radio-group" id="sustainabilityGroup">
+                            <label class="radio-pill selected">
+                                <input type="radio" name="sustainability" value="not_factor" checked>
+                                Not a factor
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="sustainability" value="prefer">
+                                Prefer sustainable
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="sustainability" value="only">
+                                Sustainable only
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-checkbox">
+                            <input type="checkbox" id="ethicalSourcing">
+                            Prefer ethically sourced products
+                        </label>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Local Seller Preference</label>
+                        <div class="radio-group" id="localPrefGroup">
+                            <label class="radio-pill selected">
+                                <input type="radio" name="localPref" value="no_preference" checked>
+                                No preference
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="localPref" value="prefer_local">
+                                Prefer local sellers
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="localPref" value="local_only">
+                                Local only
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Convenience Preferences -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon convenience">&#128230;</div>
+                        <div>
+                            <h2 class="card-title">Convenience Preferences</h2>
+                            <p class="card-description">Delivery speed, returns, and location</p>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Delivery Speed Priority</label>
+                        <div class="radio-group" id="deliverySpeedGroup">
+                            <label class="radio-pill">
+                                <input type="radio" name="deliverySpeed" value="no_rush">
+                                No rush
+                            </label>
+                            <label class="radio-pill selected">
+                                <input type="radio" name="deliverySpeed" value="standard" checked>
+                                Standard (3-5 days)
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="deliverySpeed" value="express">
+                                Express (1-2 days)
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="deliverySpeed" value="same_day">
+                                Same day if available
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-checkbox">
+                            <input type="checkbox" id="freeReturns">
+                            Free returns required
+                        </label>
+                    </div>
+
+                    <div class="pref-group">
+                        <label class="pref-label">Delivery Location</label>
+                        <input type="text" class="pref-input" id="deliveryLocation" placeholder="Enter your city or postcode">
+                    </div>
+                </div>
+
+                <!-- Section 5: Category Interests -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon categories">&#128722;</div>
+                        <div>
+                            <h2 class="card-title">Category Interests</h2>
+                            <p class="card-description">Select categories you're interested in shopping</p>
+                        </div>
+                    </div>
+
+                    <div class="category-grid" id="categoryGrid">
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="electronics">
+                            &#128187; Electronics
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="fashion">
+                            &#128085; Fashion
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="home_garden">
+                            &#127968; Home &amp; Garden
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="health_wellness">
+                            &#128138; Health &amp; Wellness
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="books_media">
+                            &#128218; Books &amp; Media
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="sports_outdoors">
+                            &#9917; Sports &amp; Outdoors
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="food_drink">
+                            &#127829; Food &amp; Drink
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="beauty">
+                            &#10024; Beauty
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="toys_games">
+                            &#127918; Toys &amp; Games
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="auto">
+                            &#128663; Auto
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="pet_supplies">
+                            &#128054; Pet Supplies
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="office">
+                            &#128206; Office
+                        </label>
+                    </div>
+                    <div class="category-actions">
+                        <button type="button" class="category-action-btn" id="selectAllCategories">Select all</button>
+                        <button type="button" class="category-action-btn" id="clearAllCategories">Clear all</button>
+                    </div>
+                </div>
+
+                <div class="preferences-actions">
+                    <button type="submit" class="btn-save-prefs">Save Preferences</button>
+                    <a href="pages/demo.html" class="skip-link" id="skipLink">Skip for Now</a>
+                </div>
+            </form>
+
+            <div class="demo-notice">
+                <span class="demo-badge">DEMO</span>
+                Preferences are stored locally in your browser.
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Toast -->
+    <div class="toast" id="successToast">
+        <div class="toast-icon">
+            <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <span>Preferences saved successfully!</span>
+    </div>
+
+    <script src="js/main.js?v=3.5"></script>
+    <script>
+        // Determine setup vs edit mode
+        var urlParams = new URLSearchParams(window.location.search);
+        var isSetup = urlParams.get('setup') === 'true';
+
+        if (!isSetup) {
+            document.getElementById('pageTitle').textContent = 'Update Your Shopping Preferences';
+            document.getElementById('pageSubtitle').textContent = 'Manage your shopping avatar settings';
+        }
+
+        // Update nav based on login state
+        if (localStorage.getItem('vendeeX_isLoggedIn') === 'true') {
+            var dashLink = document.getElementById('dashboardLink');
+            if (dashLink) dashLink.style.display = '';
+            var loginLink = document.getElementById('loginLink');
+            if (loginLink) loginLink.style.display = 'none';
+            var getStartedLink = document.getElementById('getStartedLink');
+            if (getStartedLink) getStartedLink.style.display = 'none';
+        }
+
+        // Pre-populate delivery location from registration data
+        var storedAddress = localStorage.getItem('vendeeX_deliveryLocation');
+        if (storedAddress) {
+            document.getElementById('deliveryLocation').value = storedAddress;
+        }
+
+        // === Interactive Behaviours ===
+
+        // Category pills
+        document.querySelectorAll('.category-pill input[type="checkbox"]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                this.closest('.category-pill').classList.toggle('selected', this.checked);
+            });
+        });
+
+        // Select all / Clear all
+        document.getElementById('selectAllCategories').addEventListener('click', function() {
+            document.querySelectorAll('.category-pill input[type="checkbox"]').forEach(function(cb) {
+                cb.checked = true;
+                cb.closest('.category-pill').classList.add('selected');
+            });
+        });
+
+        document.getElementById('clearAllCategories').addEventListener('click', function() {
+            document.querySelectorAll('.category-pill input[type="checkbox"]').forEach(function(cb) {
+                cb.checked = false;
+                cb.closest('.category-pill').classList.remove('selected');
+            });
+        });
+
+        // Radio pill groups
+        document.querySelectorAll('.radio-group').forEach(function(group) {
+            group.querySelectorAll('.radio-pill').forEach(function(pill) {
+                pill.addEventListener('click', function() {
+                    group.querySelectorAll('.radio-pill').forEach(function(p) { p.classList.remove('selected'); });
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+        });
+
+        // Star rating
+        document.querySelectorAll('#starRating .star-option').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#starRating .star-option').forEach(function(b) { b.classList.remove('selected'); });
+                this.classList.add('selected');
+            });
+        });
+
+        // === Save / Load ===
+
+        function getEmailKey() {
+            var email = localStorage.getItem('vendeeX_userEmail') || 'anonymous';
+            return 'vendeeX_avatar_' + email;
+        }
+
+        function gatherPreferences() {
+            return {
+                economic: {
+                    budgetComfort: parseInt(document.getElementById('budgetComfort').value),
+                    priceSensitivity: parseInt(document.getElementById('priceSensitivity').value),
+                    currency: document.getElementById('currencyPref').value
+                },
+                quality: {
+                    qualityPriority: parseInt(document.getElementById('qualityPriority').value),
+                    brandPreference: document.querySelector('input[name="brandPref"]:checked').value,
+                    minRating: parseFloat(document.querySelector('#starRating .star-option.selected').dataset.value)
+                },
+                ethical: {
+                    sustainability: document.querySelector('input[name="sustainability"]:checked').value,
+                    ethicalSourcing: document.getElementById('ethicalSourcing').checked,
+                    localPreference: document.querySelector('input[name="localPref"]:checked').value
+                },
+                convenience: {
+                    deliverySpeed: document.querySelector('input[name="deliverySpeed"]:checked').value,
+                    freeReturns: document.getElementById('freeReturns').checked,
+                    deliveryLocation: document.getElementById('deliveryLocation').value
+                },
+                categories: Array.from(document.querySelectorAll('input[name="categories"]:checked')).map(function(cb) { return cb.value; })
+            };
+        }
+
+        function loadPreferences() {
+            var key = getEmailKey();
+            var saved = localStorage.getItem(key);
+            if (!saved) return;
+
+            var prefs;
+            try { prefs = JSON.parse(saved); } catch(e) { return; }
+
+            // Economic
+            if (prefs.economic) {
+                if (prefs.economic.budgetComfort) document.getElementById('budgetComfort').value = prefs.economic.budgetComfort;
+                if (prefs.economic.priceSensitivity) document.getElementById('priceSensitivity').value = prefs.economic.priceSensitivity;
+                if (prefs.economic.currency) document.getElementById('currencyPref').value = prefs.economic.currency;
+            }
+
+            // If currency wasn't loaded from the old prefs, try the canonical sources
+            if (!prefs.economic || !prefs.economic.currency) {
+                var savedCurrency = localStorage.getItem('vendeeX_currency');
+                if (!savedCurrency) {
+                    try {
+                        var avatarPrefs = JSON.parse(localStorage.getItem('vendeeX_avatarPreferences') || 'null');
+                        if (avatarPrefs && avatarPrefs.paymentDefaults && avatarPrefs.paymentDefaults.currency) {
+                            savedCurrency = avatarPrefs.paymentDefaults.currency;
+                        }
+                    } catch(e) {}
+                }
+                if (savedCurrency) {
+                    document.getElementById('currencyPref').value = savedCurrency;
+                }
+            }
+
+            // Quality
+            if (prefs.quality) {
+                if (prefs.quality.qualityPriority) document.getElementById('qualityPriority').value = prefs.quality.qualityPriority;
+                if (prefs.quality.brandPreference) {
+                    var brandRadio = document.querySelector('input[name="brandPref"][value="' + prefs.quality.brandPreference + '"]');
+                    if (brandRadio) {
+                        brandRadio.checked = true;
+                        document.querySelectorAll('#brandPrefGroup .radio-pill').forEach(function(p) { p.classList.remove('selected'); });
+                        brandRadio.closest('.radio-pill').classList.add('selected');
+                    }
+                }
+                if (prefs.quality.minRating) {
+                    document.querySelectorAll('#starRating .star-option').forEach(function(b) { b.classList.remove('selected'); });
+                    var starBtn = document.querySelector('#starRating .star-option[data-value="' + prefs.quality.minRating + '"]');
+                    if (starBtn) starBtn.classList.add('selected');
+                }
+            }
+
+            // Ethical
+            if (prefs.ethical) {
+                if (prefs.ethical.sustainability) {
+                    var sustainRadio = document.querySelector('input[name="sustainability"][value="' + prefs.ethical.sustainability + '"]');
+                    if (sustainRadio) {
+                        sustainRadio.checked = true;
+                        document.querySelectorAll('#sustainabilityGroup .radio-pill').forEach(function(p) { p.classList.remove('selected'); });
+                        sustainRadio.closest('.radio-pill').classList.add('selected');
+                    }
+                }
+                if (prefs.ethical.ethicalSourcing) document.getElementById('ethicalSourcing').checked = true;
+                if (prefs.ethical.localPreference) {
+                    var localRadio = document.querySelector('input[name="localPref"][value="' + prefs.ethical.localPreference + '"]');
+                    if (localRadio) {
+                        localRadio.checked = true;
+                        document.querySelectorAll('#localPrefGroup .radio-pill').forEach(function(p) { p.classList.remove('selected'); });
+                        localRadio.closest('.radio-pill').classList.add('selected');
+                    }
+                }
+            }
+
+            // Convenience
+            if (prefs.convenience) {
+                if (prefs.convenience.deliverySpeed) {
+                    var speedRadio = document.querySelector('input[name="deliverySpeed"][value="' + prefs.convenience.deliverySpeed + '"]');
+                    if (speedRadio) {
+                        speedRadio.checked = true;
+                        document.querySelectorAll('#deliverySpeedGroup .radio-pill').forEach(function(p) { p.classList.remove('selected'); });
+                        speedRadio.closest('.radio-pill').classList.add('selected');
+                    }
+                }
+                if (prefs.convenience.freeReturns) document.getElementById('freeReturns').checked = true;
+                if (prefs.convenience.deliveryLocation) document.getElementById('deliveryLocation').value = prefs.convenience.deliveryLocation;
+            }
+
+            // Categories
+            if (prefs.categories && prefs.categories.length > 0) {
+                prefs.categories.forEach(function(cat) {
+                    var cb = document.querySelector('input[name="categories"][value="' + cat + '"]');
+                    if (cb) {
+                        cb.checked = true;
+                        cb.closest('.category-pill').classList.add('selected');
+                    }
+                });
+            }
+        }
+
+        // Form submission
+        document.getElementById('preferencesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var prefs = gatherPreferences();
+            var key = getEmailKey();
+
+            localStorage.setItem(key, JSON.stringify(prefs));
+            localStorage.setItem('vendeeX_avatarLite_updated', new Date().toISOString());
+
+            // Also store under generic key for backward compat
+            localStorage.setItem('vendeeX_avatarLite', JSON.stringify(prefs));
+
+            // Sync currency to canonical keys used by PricingEngine & PreferenceReader
+            if (prefs.economic && prefs.economic.currency) {
+                localStorage.setItem('vendeeX_currency', prefs.economic.currency);
+                // Also update vendeeX_avatarPreferences.paymentDefaults.currency
+                try {
+                    var avatarPrefs = JSON.parse(localStorage.getItem('vendeeX_avatarPreferences') || 'null');
+                    if (avatarPrefs && avatarPrefs.paymentDefaults) {
+                        avatarPrefs.paymentDefaults.currency = prefs.economic.currency;
+                        localStorage.setItem('vendeeX_avatarPreferences', JSON.stringify(avatarPrefs));
+                    }
+                } catch(e) {}
+            }
+
+            // Show toast
+            var toast = document.getElementById('successToast');
+            toast.classList.add('show');
+
+            setTimeout(function() {
+                toast.classList.remove('show');
+                // Redirect to demo
+                window.location.href = 'pages/demo.html';
+            }, 1500);
+        });
+
+        // Skip link
+        document.getElementById('skipLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'pages/demo.html';
+        });
+
+        // Load existing preferences on page load
+        loadPreferences();
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 60px;">
+        <div class="container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+                <div class="demo-site-links">
+                    <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
+                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

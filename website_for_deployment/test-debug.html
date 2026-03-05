@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VendeeX API Debug</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        #results { white-space: pre-wrap; background: #f0f0f0; padding: 10px; margin-top: 10px; }
+        button { padding: 10px 20px; margin: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>VendeeX API Debug</h1>
+
+    <div>
+        <input type="text" id="query" value="wireless headphones" style="width: 300px; padding: 10px;">
+        <button onclick="testSearch()">Test Search API</button>
+        <button onclick="testHealth()">Test Health API</button>
+        <button onclick="clearResults()">Clear</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        function log(msg, isError = false) {
+            const line = document.createElement('div');
+            line.className = isError ? 'error' : '';
+            line.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2);
+            resultsDiv.appendChild(line);
+        }
+
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+
+        async function testHealth() {
+            log('--- Testing /api/health ---');
+            try {
+                const response = await fetch('/api/health');
+                log('Status: ' + response.status);
+                const data = await response.json();
+                log('Response:');
+                log(data);
+            } catch (error) {
+                log('ERROR: ' + error.message, true);
+            }
+        }
+
+        async function testSearch() {
+            const query = document.getElementById('query').value;
+            log('--- Testing /api/search ---');
+            log('Query: ' + query);
+
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        options: {
+                            multiProvider: true,
+                            providers: ['perplexity', 'claude', 'chatgpt']
+                        }
+                    })
+                });
+
+                log('Status: ' + response.status);
+                log('Headers: ' + response.headers.get('content-type'));
+
+                const data = await response.json();
+                log('Success: ' + (data.success || false));
+                log('isMultiProvider: ' + (data.isMultiProvider || false));
+                log('Providers: ' + JSON.stringify(data.providers));
+                log('Products count: ' + (data.products?.length || 0));
+
+                if (data.products && data.products.length > 0) {
+                    log('\n--- First 3 Products ---');
+                    data.products.slice(0, 3).forEach((p, i) => {
+                        log((i+1) + '. ' + p.name);
+                        log('   Price: $' + p.price);
+                        log('   URL: ' + (p.url || 'none'));
+                        log('   Source: ' + (p.source || 'unknown'));
+                    });
+                }
+
+                if (data.confidence) {
+                    log('\n--- Confidence ---');
+                    log(data.confidence);
+                }
+
+                log('\n--- Full Response ---');
+                log(data);
+
+            } catch (error) {
+                log('ERROR: ' + error.message, true);
+                log(error.stack, true);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+/* VendeeX 2.0 — Preference Match Styles */
+
+/* ─── Badge on product card ─── */
+.pref-match-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+}
+.pref-match-badge:hover {
+    opacity: 0.85;
+}
+.pref-match-badge--green {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+.pref-match-badge--amber {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+.pref-match-badge--red {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+.pref-match-badge--neutral {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+.pref-match-badge__icon {
+    font-size: 0.8125rem;
+}
+
+/* ─── Expandable panel inside product card ─── */
+.pref-match-panel {
+    display: none;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+}
+.pref-match-panel--open {
+    display: block;
+}
+.pref-match-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+.pref-match-panel__title {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.8125rem;
+}
+.pref-match-panel__overall {
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+/* ─── Per-category section ─── */
+.pref-match-category {
+    margin-top: 0.5rem;
+}
+.pref-match-category__name {
+    font-weight: 600;
+    color: #4b5563;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.pref-match-category__icon {
+    font-size: 0.875rem;
+}
+.pref-match-category__score {
+    margin-left: auto;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+/* ─── Individual detail row ─── */
+.pref-match-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.3;
+}
+.pref-match-row + .pref-match-row {
+    border-top: 1px solid #f3f4f6;
+}
+
+/* ─── Pass/Partial/Fail indicators ─── */
+.pref-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 0.625rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.pref-indicator--pass {
+    background: #dcfce7;
+    color: #166534;
+}
+.pref-indicator--partial {
+    background: #fef3c7;
+    color: #92400e;
+}
+.pref-indicator--fail {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.pref-match-row__label {
+    font-weight: 500;
+    color: #374151;
+    min-width: 100px;
+}
+.pref-match-row__note {
+    color: #6b7280;
+    flex: 1;
+}
+
+/* ─── "No preferences set" state ─── */
+.pref-match-empty {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 0.5rem 0;
+}
+
+/* ─── Active rules bar update ─── */
+.active-rules-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.8125rem;
+}
+.active-rules-bar__icon {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.active-rules-bar__text {
+    flex: 1;
+    line-height: 1.6;
+}
+.active-rules-bar__heading {
+    font-weight: 600;
+    color: #1e3a5f;
+    display: block;
+    margin-bottom: 4px;
+}
+.active-rules-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    margin: 2px 2px;
+    white-space: nowrap;
+}
+.active-rules-chip--avatar {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+.active-rules-chip--search {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+.active-rules-chip--category {
+    font-weight: 600;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6b7280;
+    margin-right: 2px;
+}
+.active-rules-divider {
+    display: block;
+    height: 1px;
+    background: #e5e7eb;
+    margin: 6px 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 600px) {
+    .pref-match-panel {
+        padding: 0.5rem;
+    }
+    .pref-match-row__label {
+        min-width: 80px;
+    }
+    .pref-match-badge {
+        font-size: 0.6875rem;
+        padding: 2px 8px;
+    }
+    .active-rules-bar {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+}

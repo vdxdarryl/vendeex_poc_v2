@@ -1,0 +1,327 @@
+/* ============================================================
+   VendeeX ACP Protocol Handshake Panel
+   Feature 1: Visible protocol activity feed
+   ============================================================ */
+
+/* Panel Container */
+.acp-handshake-panel {
+    display: none;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.acp-handshake-panel--visible {
+    display: block;
+}
+
+/* Header */
+.acp-handshake__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    cursor: pointer;
+    user-select: none;
+}
+
+.acp-handshake__header:hover {
+    background: #1c2129;
+}
+
+.acp-handshake__header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.acp-handshake__icon {
+    font-size: 16px;
+}
+
+.acp-handshake__title {
+    font-weight: 600;
+    color: #c9d1d9;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+
+.acp-handshake__status {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.acp-handshake__status--idle {
+    background: #21262d;
+    color: #8b949e;
+}
+
+.acp-handshake__status--active {
+    background: #0d419d;
+    color: #58a6ff;
+    animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+.acp-handshake__status--complete {
+    background: #0f5132;
+    color: #3fb950;
+}
+
+.acp-handshake__status--searching {
+    background: #1e3a5f;
+    color: #60a5fa;
+    animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.acp-handshake__toggle {
+    background: none;
+    border: none;
+    color: #8b949e;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.2s ease;
+}
+
+.acp-handshake-panel--collapsed .acp-handshake__toggle {
+    transform: rotate(-90deg);
+}
+
+/* Body */
+.acp-handshake__body {
+    max-height: 320px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.acp-handshake-panel--collapsed .acp-handshake__body {
+    max-height: 0;
+}
+
+/* Feed */
+.acp-handshake__feed {
+    padding: 12px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.acp-handshake__feed::-webkit-scrollbar {
+    width: 6px;
+}
+
+.acp-handshake__feed::-webkit-scrollbar-track {
+    background: #0d1117;
+}
+
+.acp-handshake__feed::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 3px;
+}
+
+.acp-handshake__empty {
+    color: #484f58;
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+}
+
+/* Entry */
+.acp-handshake__entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    line-height: 1.5;
+    animation: entryFadeIn 0.3s ease;
+}
+
+@keyframes entryFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.acp-entry__icon {
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.acp-handshake__entry--info .acp-entry__icon {
+    color: #58a6ff;
+}
+
+.acp-handshake__entry--success .acp-entry__icon {
+    color: #3fb950;
+}
+
+.acp-handshake__entry--error .acp-entry__icon {
+    color: #f85149;
+}
+
+.acp-handshake__entry--warning .acp-entry__icon {
+    color: #d29922;
+}
+
+.acp-entry__merchant {
+    color: #d2a8ff;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 4px;
+}
+
+.acp-entry__merchant::after {
+    content: ':';
+}
+
+.acp-entry__text {
+    color: #c9d1d9;
+    flex: 1;
+}
+
+.acp-handshake__entry--success .acp-entry__text {
+    color: #3fb950;
+}
+
+.acp-handshake__entry--error .acp-entry__text {
+    color: #f85149;
+}
+
+.acp-entry__time {
+    color: #484f58;
+    font-size: 11px;
+    white-space: nowrap;
+    margin-left: auto;
+    padding-left: 12px;
+}
+
+/* ACP Verified Badge (for product cards) */
+.acp-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, #0f5132, #0d419d);
+    color: #3fb950;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.acp-verified-badge__icon {
+    font-size: 10px;
+}
+
+/* ============================================================
+   Demo Layout — Sidebar + Main
+   ============================================================ */
+.demo-layout {
+    display: block;
+}
+
+.demo-layout__sidebar {
+    display: none;
+}
+
+.demo-layout__main {
+    min-width: 0;
+}
+
+/* When sidebar is active, switch to flex layout */
+.demo-layout--sidebar-active {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.demo-layout--sidebar-active .demo-layout__sidebar {
+    display: block;
+    width: 340px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow: hidden;
+}
+
+.demo-layout--sidebar-active .demo-layout__main {
+    flex: 1;
+    min-width: 0;
+}
+
+/* When panel is in sidebar, remove bottom margin and make it fill */
+.demo-layout__sidebar .acp-handshake-panel {
+    margin-bottom: 0;
+    border-radius: 12px;
+}
+
+.demo-layout__sidebar .acp-handshake__body {
+    max-height: calc(100vh - 160px);
+}
+
+.demo-layout__sidebar .acp-handshake__feed {
+    max-height: calc(100vh - 180px);
+}
+
+/* Widen the demo-container when sidebar layout is active */
+.demo-container:has(.demo-layout--sidebar-active) {
+    max-width: 1280px;
+    transition: max-width 0.3s ease;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+    /* Stack sidebar above main on medium screens */
+    .demo-layout--sidebar-active {
+        flex-direction: column;
+    }
+
+    .demo-layout--sidebar-active .demo-layout__sidebar {
+        width: 100%;
+        position: static;
+        max-height: none;
+    }
+
+    .demo-layout__sidebar .acp-handshake__body {
+        max-height: 320px;
+    }
+
+    .demo-layout__sidebar .acp-handshake__feed {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .acp-handshake-panel {
+        border-radius: 8px;
+    }
+
+    .acp-handshake__feed {
+        max-height: 200px;
+        font-size: 12px;
+    }
+
+    .acp-entry__time {
+        display: none;
+    }
+}

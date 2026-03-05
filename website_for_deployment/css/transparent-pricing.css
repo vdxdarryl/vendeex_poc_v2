@@ -1,0 +1,331 @@
+/* ============================================================
+   VendeeX Transparent Pricing - Product Card Styles
+   ============================================================ */
+
+/* Demo greeting bar — removed: no "Welcome back" banner */
+.demo-greeting-bar {
+    display: none !important;
+}
+
+/* Transparent Product Card */
+.product-card--transparent {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s ease;
+}
+
+.product-card--transparent:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Product Info Section within transparent card */
+.product-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.product-card__image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.product-card__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.product-card__source {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
+}
+
+.product-card__rating {
+    font-size: 14px;
+    color: #f59e0b;
+}
+
+/* Cost Breakdown Section */
+.product-card__cost-breakdown {
+    background: #f8fafe;
+    border: 1px solid #e3ecf5;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.cost-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.cost-label {
+    font-weight: 400;
+}
+
+.cost-amount {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    min-width: 80px;
+}
+
+/* VendeeX Fee Line - subtle differentiation */
+.cost-line--fee {
+    color: #666;
+    font-style: italic;
+}
+
+/* Divider between items and total */
+.cost-divider {
+    border-top: 2px solid #2563eb;
+    margin: 10px 0;
+}
+
+/* Total Line */
+.cost-line--total {
+    padding: 10px 0 6px;
+}
+
+.cost-line--total .cost-label {
+    font-weight: 700;
+    font-size: 16px;
+    color: #1a1a1a;
+}
+
+.cost-line--total .cost-amount {
+    font-weight: 700;
+    font-size: 18px;
+    color: #1a1a1a;
+}
+
+/* Crypto Reward Line */
+.cost-line--reward {
+    color: #16a34a;
+    font-size: 13px;
+    padding-top: 8px;
+}
+
+.cost-amount--reward {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+/* Net Cost After Reward */
+.cost-line--net {
+    color: #16a34a;
+    font-size: 13px;
+}
+
+.cost-line--net .cost-label {
+    font-weight: 600;
+}
+
+.cost-line--net .cost-amount {
+    font-weight: 700;
+    color: #16a34a;
+}
+
+/* Delivery Estimate */
+.product-card__delivery {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0 8px;
+    font-size: 14px;
+    color: #444;
+}
+
+.delivery-icon {
+    font-size: 18px;
+}
+
+.delivery-address {
+    font-size: 12px;
+    color: #777;
+    margin-top: 2px;
+    display: inline-block;
+}
+
+/* ============================================================
+   Shipping Toggle (Standard vs Express)
+   ============================================================ */
+.shipping-toggle {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.shipping-toggle__option {
+    padding: 6px 14px;
+    border: 1px solid #d0d0d0;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.shipping-toggle__option--active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.shipping-toggle__option:hover:not(.shipping-toggle__option--active) {
+    background: #f0f4ff;
+    border-color: #2563eb;
+}
+
+/* ============================================================
+   Jurisdiction Switcher (Demo Feature)
+   ============================================================ */
+/* Jurisdiction switcher — hidden: location auto-detected from avatar */
+.jurisdiction-switcher {
+    display: none !important;
+}
+
+.jurisdiction-switcher__label {
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.jurisdiction-switcher select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fafafa;
+    cursor: pointer;
+}
+
+.jurisdiction-switcher select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.jurisdiction-switcher__current {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
+/* ============================================================
+   Comparison Summary
+   ============================================================ */
+.comparison-summary {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.comparison-summary__badge {
+    display: inline-block;
+    background: #2BB673;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.comparison-summary p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.comparison-summary__note {
+    font-size: 12px !important;
+    color: #666 !important;
+    font-style: italic;
+}
+
+/* ============================================================
+   Global Shipping Toggle (above results)
+   ============================================================ */
+.global-shipping-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+    padding: 10px 16px;
+    background: #f8fafe;
+    border-radius: 8px;
+    border: 1px solid #e3ecf5;
+}
+
+.global-shipping-toggle__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   Responsive Adjustments
+   ============================================================ */
+@media (max-width: 768px) {
+    .demo-greeting-bar {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+        font-size: 13px;
+    }
+
+    .jurisdiction-switcher {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .product-card--transparent {
+        padding: 14px;
+    }
+
+    .product-card__cost-breakdown {
+        padding: 12px;
+    }
+
+    .cost-line--total .cost-label {
+        font-size: 14px;
+    }
+
+    .cost-line--total .cost-amount {
+        font-size: 16px;
+    }
+
+    .global-shipping-toggle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

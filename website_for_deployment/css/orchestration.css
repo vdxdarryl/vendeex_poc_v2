@@ -1,0 +1,311 @@
+/* ============================================================
+   VendeeX Multi-Merchant Orchestration View
+   Feature 2: Coordinated agent recommendation
+   ============================================================ */
+
+.orchestration-view {
+    margin-bottom: 24px;
+}
+
+/* View Toggle Tabs */
+.orchestration__view-toggle {
+    display: flex;
+    gap: 0;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+}
+
+.orchestration__tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.orchestration__tab:hover {
+    color: #374151;
+}
+
+.orchestration__tab--active {
+    background: #ffffff;
+    color: #215274;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Summary Card */
+.orchestration__summary {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.orchestration__summary-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.orchestration__summary-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.orchestration__summary-text h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0c4a6e;
+    margin: 0 0 4px;
+}
+
+.orchestration__summary-text p {
+    font-size: 15px;
+    color: #0369a1;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.orchestration__summary-text strong {
+    color: #0c4a6e;
+    font-size: 17px;
+}
+
+/* Reasoning Block */
+.orchestration__reasoning {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    padding: 14px 18px;
+}
+
+.orchestration__reasoning-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #0369a1;
+    margin-bottom: 6px;
+}
+
+.orchestration__reasoning p {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Merchant Group */
+.orchestration__merchant-group {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s ease;
+}
+
+.orchestration__merchant-group:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.orchestration__merchant-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.orchestration__merchant-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 6px;
+}
+
+.orchestration__merchant-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.orchestration__merchant-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.orchestration__merchant-meta span {
+    white-space: nowrap;
+}
+
+/* Product List within Merchant Group */
+.orchestration__product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Product Row */
+.orchestration__product {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 10px;
+    transition: background 0.15s ease;
+}
+
+.orchestration__product:hover {
+    background: #f3f4f6;
+}
+
+.orchestration__product--clickable {
+    cursor: pointer;
+}
+
+.orchestration__product--clickable:hover {
+    background: #eef2ff;
+    outline: 1px solid #c7d2fe;
+}
+
+.orchestration__product--clickable .orchestration__product-name::after {
+    content: ' \2192';
+    font-size: 12px;
+    color: #9ca3af;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.orchestration__product--clickable:hover .orchestration__product-name::after {
+    opacity: 1;
+    color: #215274;
+}
+
+/* Product Image */
+.orchestration__product-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.orchestration__product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.orchestration__product-emoji {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Product Info */
+.orchestration__product-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.orchestration__product-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.orchestration__product-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.orchestration__product-desc {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Price + Action */
+.orchestration__product-price {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.orchestration__price-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+    .orchestration__summary {
+        padding: 16px;
+    }
+
+    .orchestration__summary-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .orchestration__merchant-group {
+        padding: 14px;
+    }
+
+    .orchestration__product {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .orchestration__product-image {
+        width: 100%;
+        height: 120px;
+    }
+
+    .orchestration__product-price {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .orchestration__merchant-meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

@@ -1,0 +1,357 @@
+/* ============================================================
+   VendeeX Conversational Product Refinement
+   Chat panel for refining search results without new search
+   ============================================================ */
+
+.refinement-chat {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.refinement-chat:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.refinement-chat__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-bottom: 1px solid #bae6fd;
+    cursor: pointer;
+    user-select: none;
+}
+
+.refinement-chat__header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.refinement-chat__icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #215274, #2BB673);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.refinement-chat__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0c4a6e;
+}
+
+.refinement-chat__count {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.refinement-chat__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.refinement-chat__reset {
+    padding: 4px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    display: none; /* hidden until a refinement is made */
+}
+
+.refinement-chat__reset--visible {
+    display: inline-flex;
+}
+
+.refinement-chat__reset:hover {
+    border-color: #215274;
+    color: #215274;
+}
+
+.refinement-chat__toggle {
+    background: none;
+    border: none;
+    color: #0369a1;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.refinement-chat--collapsed .refinement-chat__toggle {
+    transform: rotate(-90deg);
+}
+
+/* ============================================================
+   Body (collapsible)
+   ============================================================ */
+.refinement-chat__body {
+    max-height: 600px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.refinement-chat--collapsed .refinement-chat__body {
+    max-height: 0;
+}
+
+/* ============================================================
+   Messages Feed
+   ============================================================ */
+.refinement-chat__messages {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.refinement-chat__messages:empty {
+    display: none;
+}
+
+/* User message — right-aligned, gradient bubble */
+.refinement-msg--user {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.refinement-msg--user .refinement-msg__bubble {
+    background: linear-gradient(135deg, #215274, #2BB673);
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 14px;
+    border-bottom-right-radius: 4px;
+    max-width: 80%;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* AI message — left-aligned with avatar */
+.refinement-msg--ai {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.refinement-msg__avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #215274, #2BB673);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.refinement-msg--ai .refinement-msg__bubble {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 10px 16px;
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+    max-width: 85%;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Typing indicator */
+.refinement-msg__typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 16px;
+    background: #f3f4f6;
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+}
+
+.refinement-msg__typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #215274;
+    animation: refinementTypingDot 1.2s infinite ease-in-out;
+}
+
+.refinement-msg__typing span:nth-child(2) { animation-delay: 0.2s; }
+.refinement-msg__typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes refinementTypingDot {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================================
+   Suggestion Chips
+   ============================================================ */
+.refinement-chat__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 18px 14px;
+}
+
+.refinement-chat__chips:empty {
+    display: none;
+}
+
+.refinement-chat__chip {
+    padding: 6px 14px;
+    border: 1px solid #2BB673;
+    border-radius: 20px;
+    background: transparent;
+    color: #2BB673;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+
+.refinement-chat__chip:hover {
+    background: #2BB673;
+    color: white;
+}
+
+/* ============================================================
+   Input Area
+   ============================================================ */
+.refinement-chat__input-area {
+    display: flex;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 0 0 14px 14px;
+}
+
+.refinement-chat__input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.refinement-chat__input:focus {
+    border-color: #2BB673;
+    box-shadow: 0 0 0 2px rgba(43, 182, 115, 0.15);
+}
+
+.refinement-chat__input:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+}
+
+.refinement-chat__send {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #215274, #2BB673);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+    flex-shrink: 0;
+}
+
+.refinement-chat__send:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+.refinement-chat__send:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.refinement-chat__send svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================================
+   Welcome state (before any refinement)
+   ============================================================ */
+.refinement-chat__welcome {
+    padding: 16px 18px 8px;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+    .refinement-chat__header {
+        padding: 12px 14px;
+    }
+
+    .refinement-chat__header-left {
+        gap: 8px;
+    }
+
+    .refinement-chat__title {
+        font-size: 14px;
+    }
+
+    .refinement-chat__messages {
+        padding: 12px 14px;
+        max-height: 250px;
+    }
+
+    .refinement-chat__chips {
+        padding: 0 14px 10px;
+    }
+
+    .refinement-chat__input-area {
+        padding: 10px 14px;
+    }
+
+    .refinement-msg--user .refinement-msg__bubble,
+    .refinement-msg--ai .refinement-msg__bubble {
+        max-width: 90%;
+    }
+}

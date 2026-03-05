@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "channel3": {
+      "command": "node",
+      "args": ["/Users/dr_darryl_carlton/Desktop/VENDEEX 2.0/VendeeX 2.0 Demo/mcp-servers/channel3-mcp/index.js"],
+      "env": {
+        "CHANNEL3_API_KEY": "DcS7vlto6L4zjM8qwf0aM1QlhUKrN76w9MwyFbEf"
+      }
+    }
+  }
+}

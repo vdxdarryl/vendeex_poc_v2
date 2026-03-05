@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACP Checkout - VendeeX 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css?v=4.2">
+    <link rel="stylesheet" href="../css/acp-styles.css?v=4.2">
+    <link rel="stylesheet" href="../css/transparent-pricing.css?v=4.2">
+    <link rel="stylesheet" href="../css/demo-banner.css">
+    <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
+</head>
+<body>
+    <!-- Persistent Demo Banner - appears on every page -->
+    <div class="demo-platform-banner">
+        <div class="demo-platform-banner__inner">
+            <span class="demo-platform-banner__icon">&#x1F50D;</span>
+            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__separator">|</span>
+            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                <span class="logo-version">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="demo.html" class="nav-link">Demo</a>
+                <a href="merchants.html" class="nav-link">Merchants</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Info Banner -->
+    <div class="page-info-banner">
+        <div class="page-info-banner__inner">
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What is happening</span>
+                <p>Your agent has verified all costs. Every charge is itemised with full transparency.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">Why it matters</span>
+                <p>No hidden fees, no surprise charges at checkout. Your agent confirms everything before you commit.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What you can do</span>
+                <p>Review your cart. Proceed to summary when ready.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Page -->
+    <main class="checkout-page">
+        <div class="checkout-flow">
+            <!-- Session Info Banner -->
+            <div class="session-info">
+                <div class="session-info-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 4v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="session-info-text">
+                    <strong>ACP Checkout Session Active</strong>
+                    <span id="sessionId">Session ID: Loading...</span>
+                </div>
+                <span id="sessionTimer" class="session-timer">29:59</span>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="checkout-progress">
+                <div class="checkout-step active" data-step="cart">
+                    <div class="step-circle">1</div>
+                    <span class="step-label">Cart</span>
+                </div>
+                <div class="checkout-step" data-step="payment">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">Summary</span>
+                </div>
+                <div class="checkout-step" data-step="confirmation">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Order Details</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Cart Review -->
+            <div id="cartStep" class="checkout-step-content active">
+                <div class="checkout-section">
+                    <h3>Review Your Cart</h3>
+                    <div id="cartItems" class="cart-items">
+                        <!-- Cart items populated by JS -->
+                    </div>
+                </div>
+
+                <div class="checkout-section">
+                    <h3>Order Summary</h3>
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span class="label">Subtotal</span>
+                            <span class="value" id="summarySubtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Discount</span>
+                            <span class="value" id="summaryDiscount">-$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Shipping</span>
+                            <span class="value" id="summaryShipping">Calculated at next step</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Tax</span>
+                            <span class="value" id="summaryTax">$0.00</span>
+                        </div>
+                        <div class="summary-row" style="font-size:0.85rem;color:var(--gray-600);">
+                            <span class="label">VendeeX Buyer Fee (2.5%)</span>
+                            <span class="value" id="summaryVendeeXFee">$0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span class="label">Total</span>
+                            <span class="value" id="summaryTotal">$0.00</span>
+                        </div>
+                        <div class="summary-row" style="font-size:0.85rem;color:var(--success, #22c55e);">
+                            <span class="label">You earn: VendeeX Crypto Reward (0.5%)</span>
+                            <span class="value" id="summaryReward">-$0.00</span>
+                        </div>
+                        <div class="summary-row" style="font-size:0.9rem;color:var(--primary);font-weight:600;">
+                            <span class="label">Effective cost after reward</span>
+                            <span class="value" id="summaryNetTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkout-actions">
+                    <button class="btn btn-outline" onclick="cancelCheckout()">Cancel</button>
+                    <button class="btn btn-primary" onclick="goToStep('payment')">Continue to Summary</button>
+                </div>
+            </div>
+
+
+            <!-- Step 3: Checkout Summary (No Payment - Seller Redirect) -->
+            <div id="paymentStep" class="checkout-step-content">
+                <div class="checkout-section" style="background:rgba(33,82,116,0.04);border:1px solid rgba(33,82,116,0.12);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+                    <div style="text-align:center;margin-bottom:1rem;">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto;">
+                            <circle cx="24" cy="24" r="22" stroke="#215274" stroke-width="2"/>
+                            <path d="M16 24l6 6 10-12" stroke="#2BB673" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3 style="text-align:center;color:#215274;margin:0 0 0.5rem;">Your Agent Has Verified All Costs</h3>
+                    <p style="text-align:center;color:#6b7280;font-size:0.9rem;line-height:1.5;margin:0;">
+                        VendeeX does not process payments at this time. Your agent has verified all costs and prepared your purchase with full transparency. To complete your purchase, we'll connect you directly to the seller.
+                    </p>
+                </div>
+
+                <div class="checkout-section">
+                    <h3>Full Cost Breakdown</h3>
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span class="label">Subtotal</span>
+                            <span class="value" id="finalSubtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Shipping</span>
+                            <span class="value" id="finalShipping">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Tax</span>
+                            <span class="value" id="finalTax">$0.00</span>
+                        </div>
+                        <div class="summary-row" style="font-size:0.85rem;color:var(--gray-600);">
+                            <span class="label">VendeeX Buyer Fee (2.5%)</span>
+                            <span class="value" id="finalVendeeXFee">$0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span class="label">Total</span>
+                            <span class="value" id="finalTotal">$0.00</span>
+                        </div>
+                        <div class="summary-row" style="font-size:0.85rem;color:var(--success, #22c55e);">
+                            <span class="label">You earn: VendeeX Crypto Reward (0.5%)</span>
+                            <span class="value" id="finalReward">-$0.00</span>
+                        </div>
+                        <div class="summary-row" style="font-size:0.9rem;color:var(--primary);font-weight:600;">
+                            <span class="label">Effective cost after reward</span>
+                            <span class="value" id="finalNetTotal">$0.00</span>
+                        </div>
+                    </div>
+                    <p style="font-size:0.75rem;color:#9ca3af;text-align:center;margin-top:0.75rem;">Ranked by your preferences, not seller commission</p>
+                </div>
+
+                <div class="checkout-actions">
+                    <button class="btn btn-outline" onclick="goToStep('cart')">Back</button>
+                    <button class="btn btn-primary btn-lg" onclick="redirectToSeller()" style="background:#2BB673;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Continue to Seller
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Order Details / Governance Summary -->
+            <div id="confirmationStep" class="checkout-step-content">
+                <div class="confirmation-content">
+                    <div class="confirmation-icon">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                            <circle cx="40" cy="40" r="38" stroke="var(--primary, #215274)" stroke-width="4"/>
+                            <path d="M26 40l10 10 18-20" stroke="var(--success, #2BB673)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h2>Agent Activity Record</h2>
+                    <p class="confirmation-message">A complete record of what your agent did on your behalf throughout this session. Full transparency on what was searched, compared, and verified.</p>
+
+                    <div class="order-details-card" style="text-align:left;">
+                        <div class="order-detail">
+                            <span class="label">Original Query</span>
+                            <span class="value" id="confirmQuery">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <span class="label">Products Evaluated</span>
+                            <span class="value" id="confirmProductsEvaluated">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <span class="label">Items Selected</span>
+                            <span class="value" id="confirmItemsSelected">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <span class="label">Total Verified Cost</span>
+                            <span class="value" id="confirmTotal">-</span>
+                        </div>
+                        <div class="order-detail">
+                            <span class="label">Seller Redirect</span>
+                            <span class="value" id="confirmRedirect">Pending</span>
+                        </div>
+                    </div>
+
+                    <div id="multiVendorOrders" class="multi-vendor-orders">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div class="confirmation-actions">
+                        <a href="demo.html" class="btn btn-primary">Start New Search</a>
+                    </div>
+
+                    <div class="acp-attribution">
+                        <span>Powered by</span>
+                        <a href="https://github.com/agentic-commerce-protocol/agentic-commerce-protocol" target="_blank" rel="noopener noreferrer">
+                            Agentic Commerce Protocol
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 60px;">
+        <div class="container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+                <div class="demo-site-links">
+                    <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
+                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js?v=4.2"></script>
+    <script src="../js/preference-reader.js?v=3.1"></script>
+    <script src="../js/demo-customer.js?v=4.3"></script>
+    <script src="../js/pricing-engine.js?v=4.3"></script>
+    <script src="../js/merchant-data.js?v=4.2"></script>
+    <script src="../js/acp-service.js?v=4.2"></script>
+    <script src="../js/checkout.js?v=4.3"></script>
+</body>
+</html>

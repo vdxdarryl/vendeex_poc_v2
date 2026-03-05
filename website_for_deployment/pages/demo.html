@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Try Demo - VendeeX 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css?v=4.2">
+    <link rel="stylesheet" href="../css/acp-styles.css?v=4.2">
+    <link rel="stylesheet" href="../css/transparent-pricing.css?v=4.2">
+    <link rel="stylesheet" href="../css/acp-handshake.css?v=4.2">
+    <link rel="stylesheet" href="../css/buyer-policies.css?v=4.2">
+    <link rel="stylesheet" href="../css/orchestration.css?v=4.2">
+    <link rel="stylesheet" href="../css/refinement-chat.css?v=4.2">
+    <link rel="stylesheet" href="../css/vendor-trust.css?v=4.2">
+    <link rel="stylesheet" href="../css/preference-match.css?v=2.1">
+    <link rel="stylesheet" href="../css/demo-banner.css?v=4.1">
+    <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
+</head>
+<body>
+    <!-- Persistent Demo Banner - appears on every page -->
+    <div class="demo-platform-banner">
+        <div class="demo-platform-banner__inner">
+            <span class="demo-platform-banner__icon">&#x1F50D;</span>
+            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__separator">|</span>
+            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                <span class="logo-version">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="how-it-works.html" class="nav-link">How It Works</a>
+                <a href="demo.html" class="nav-link active">Try Demo</a>
+                <a href="merchants.html" class="nav-link">Merchants</a>
+                <a href="login.html" class="nav-btn btn-outline" id="navLoginBtn">Login</a>
+                <button id="navNewSearchBtn" class="nav-btn btn-primary" style="display:none;" onclick="if(typeof resetDemo==='function') resetDemo();">New Search</button>
+                <a href="register.html" class="nav-btn btn-primary" id="navGetStartedBtn">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Info Banner -->
+    <div class="page-info-banner">
+        <div class="page-info-banner__inner">
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What is happening</span>
+                <p>Your agent is listening. It will search across a billion products to find the best matches for your needs.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">Why it matters</span>
+                <p>A smarter conversation now means better results later. The agent reasons about your request before acting.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What you can do</span>
+                <p>Describe what you want to buy in natural language. Refine results through the chat after searching.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Demo Page -->
+    <main class="demo-page">
+        <div class="demo-container">
+            <!-- Demo Header -->
+            <div class="demo-header">
+                <h1>Experience VendeeX AI</h1>
+                <p>Describe what you're looking for, and watch our AI find the perfect matches</p>
+            </div>
+
+            <!-- Step 1: Request Input -->
+            <div id="requestSection" class="request-card">
+                <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem;">
+                    <h2>What are you looking for?</h2>
+                    <a href="../register.html?edit=true" id="editAvatarLink" class="edit-avatar-link" style="display:none; font-size:0.8125rem; color:#215274; text-decoration:none; font-weight:600; white-space:nowrap;">&#x2699; Edit Avatar</a>
+                </div>
+                <p>Describe your ideal product in natural language. Include details like budget, features, and preferences.</p>
+
+                <form id="searchForm">
+                    <div class="form-group">
+                        <textarea
+                            id="searchQuery"
+                            class="form-input"
+                            placeholder="Example: I need a lightweight laptop for travel, under $1000, with at least 10 hours of battery life and a good keyboard for writing..."
+                            rows="4"
+                            required
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <span>Find Products</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="example-requests">
+                    <h3>Try these examples</h3>
+                    <div class="example-chips">
+                        <button class="example-chip" data-query="Refresh my workout wardrobe for under $500 — I need training leggings, running shoes, and a few basics">Workout Wardrobe Refresh</button>
+                        <button class="example-chip" data-query="I need a lightweight laptop for travel, under $1000, with good battery life and a comfortable keyboard for writing">Laptop for Travel</button>
+                        <button class="example-chip" data-query="Looking for sustainable fashion basics and comfortable everyday shoes, budget around $400">Sustainable Basics</button>
+                        <button class="example-chip" data-query="Setting up a new bedroom — need quality sheets, pillows, and a good mattress, budget $1500">New Bedroom Setup</button>
+                        <button class="example-chip" data-query="Looking for a robot vacuum that can handle pet hair, works with smart home systems, budget under $600">Robot Vacuum</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-Search Qualifying Chat -->
+            <div id="qualifyingChat" class="qualifying-chat" style="display:none;">
+                <div class="qualifying-chat__header">
+                    <h2>Your Agent is Listening</h2>
+                    <p>Answer a few quick questions so your agent can find exactly what you need.</p>
+                </div>
+                <div class="qualifying-chat__messages" id="qualifyMessages"></div>
+                <div class="qualifying-chat__input">
+                    <input type="text" id="qualifyInput" class="form-input" placeholder="Type your answer...">
+                    <button id="qualifySend" class="btn btn-primary">Send</button>
+                </div>
+                <div class="qualifying-chat__actions">
+                    <button id="qualifySkip" class="btn btn-outline" style="font-size:0.8125rem;">Skip &mdash; search now</button>
+                </div>
+            </div>
+
+            <!-- Sidebar + Content Layout (wraps search progress & results) -->
+            <div class="demo-layout" id="demoLayout">
+                <!-- ACP Handshake sidebar (injected by JS) -->
+                <div class="demo-layout__sidebar" id="demoLayoutSidebar"></div>
+
+                <!-- Main content area -->
+                <div class="demo-layout__main">
+                    <!-- Step 2: AI Search Progress -->
+                    <div id="searchProgress" class="search-progress">
+                        <div class="progress-animation">
+                            <div class="progress-circle"></div>
+                            <span class="progress-icon">&#x1F916;</span>
+                        </div>
+                        <h2>AI Agents are Searching...</h2>
+                        <p id="searchQueryDisplay">Finding the perfect match for your request</p>
+
+                        <div class="progress-steps">
+                            <div class="progress-step" data-step="1">
+                                <span class="step-icon">1</span>
+                                <span class="step-text">Analyzing your requirements...</span>
+                            </div>
+                            <div class="progress-step" data-step="2">
+                                <span class="step-icon">2</span>
+                                <span class="step-text">Searching across 500+ retailers...</span>
+                            </div>
+                            <div class="progress-step" data-step="3">
+                                <span class="step-icon">3</span>
+                                <span class="step-text">Comparing prices and features...</span>
+                            </div>
+                            <div class="progress-step" data-step="4">
+                                <span class="step-icon">4</span>
+                                <span class="step-text">Analyzing reviews and ratings...</span>
+                            </div>
+                            <div class="progress-step" data-step="5">
+                                <span class="step-icon">5</span>
+                                <span class="step-text">Curating top recommendations...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Results -->
+                    <div id="resultsSection" class="results-section">
+                        <div class="results-header">
+                            <div>
+                                <h2>Your Curated Recommendations</h2>
+                                <p class="results-count">Found <span id="resultCount">5</span> products matching your criteria</p>
+                            </div>
+                        </div>
+
+                        <!-- AI Analysis Summary -->
+                        <div class="ai-analysis">
+                            <div class="ai-analysis-header">
+                                <div class="ai-analysis-icon">V</div>
+                                <h3>VendeeX AI Analysis</h3>
+                            </div>
+                            <p id="aiSummary">Based on your requirements for a lightweight travel laptop under $1000 with excellent battery life, I've identified 5 products that best match your needs. The top pick offers the best balance of portability, battery life, and value. All recommendations have been verified for availability and current pricing.</p>
+                        </div>
+
+                        <!-- Comparison Summary (inserted dynamically) -->
+                        <div id="comparisonSummary"></div>
+
+                        <!-- Global Shipping Toggle -->
+                        <div class="global-shipping-toggle" id="globalShippingToggle" style="display: none;">
+                            <span class="global-shipping-toggle__label">Shipping:</span>
+                            <div class="shipping-toggle">
+                                <button class="shipping-toggle__option shipping-toggle__option--active" data-shipping="standard" onclick="toggleGlobalShipping('standard')">Standard</button>
+                                <button class="shipping-toggle__option" data-shipping="express" onclick="toggleGlobalShipping('express')">Express</button>
+                            </div>
+                        </div>
+
+                        <!-- Results Grid -->
+                        <div id="resultsGrid" class="results-grid">
+                            <!-- Results will be dynamically inserted here -->
+                        </div>
+
+                        <div class="new-search-btn">
+                            <button id="newSearchBtnBottom" class="btn btn-outline btn-lg">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 10 10)"/>
+                                </svg>
+                                Start New Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 60px;">
+        <div class="container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+                <div class="demo-site-links">
+                    <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
+                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <script>
+        // Adapt nav for logged-in members: show "New Search", hide "Get Started" + "Login"
+        var isLoggedIn = localStorage.getItem('vendeeX_isLoggedIn') === 'true' || localStorage.getItem('vendeeX_avatarCreated');
+        if (isLoggedIn) {
+            var editLink = document.getElementById('editAvatarLink');
+            if (editLink) editLink.style.display = '';
+
+            var navNewSearch = document.getElementById('navNewSearchBtn');
+            var navGetStarted = document.getElementById('navGetStartedBtn');
+            var navLogin = document.getElementById('navLoginBtn');
+            if (navNewSearch) navNewSearch.style.display = '';
+            if (navGetStarted) navGetStarted.style.display = 'none';
+            if (navLogin) navLogin.style.display = 'none';
+        }
+    </script>
+    <script src="../js/main.js?v=4.2"></script>
+    <script src="../js/preference-reader.js?v=3.1"></script>
+    <script src="../js/demo-customer.js?v=4.3"></script>
+    <script src="../js/pricing-engine.js?v=4.3"></script>
+    <script src="../js/acp-service.js?v=4.2"></script>
+    <script src="../js/merchant-data.js?v=4.2"></script>
+    <script src="../js/buyer-policies.js?v=4.3"></script>
+    <script src="../js/acp-handshake.js?v=4.3"></script>
+    <script src="../js/orchestration.js?v=4.8"></script>
+    <script src="../js/refinement-chat.js?v=4.3"></script>
+    <script src="../js/qualifying-chat.js?v=4.3"></script>
+    <script src="../js/preference-scorer.js?v=2.1"></script>
+    <script src="../js/demo.js?v=4.7"></script>
+    <!-- jurisdiction-switcher removed: location auto-detected from avatar -->
+</body>
+</html>

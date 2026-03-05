@@ -1,0 +1,286 @@
+/* ============================================================
+   VendeeX Vendor Trust Panel
+   Displays merchant verification and trust signals on product cards
+   ============================================================ */
+
+/* Panel Container */
+.product-card__vendor-trust {
+    background: #f7f9fc;
+    border: 1px solid #dce5f0;
+    border-radius: 8px;
+    padding: 0;
+    margin: 12px 0 16px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+/* Header (always visible, clickable) */
+.vendor-trust__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.vendor-trust__header:hover {
+    background: #eef3f9;
+}
+
+.vendor-trust__header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.vendor-trust__icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.vendor-trust__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.vendor-trust__merchant-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vendor-trust__verification {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #2563eb;
+    font-weight: 500;
+}
+
+.vendor-trust__verification-icon {
+    font-size: 10px;
+}
+
+.vendor-trust__quick-stats {
+    font-size: 11px;
+    color: #666;
+}
+
+.vendor-trust__toggle {
+    flex-shrink: 0;
+    color: #888;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.product-card__vendor-trust--collapsed .vendor-trust__toggle {
+    transform: rotate(-90deg);
+}
+
+/* Body (collapsible details) */
+.vendor-trust__body {
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.product-card__vendor-trust--collapsed .vendor-trust__body {
+    max-height: 0;
+}
+
+.vendor-trust__details {
+    padding: 0 14px 12px;
+}
+
+/* Detail Sections */
+.vendor-trust__section {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e8ecf2;
+}
+
+.vendor-trust__section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.vendor-trust__section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.vendor-trust__detail-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+    font-size: 13px;
+    color: #444;
+}
+
+.vendor-trust__detail-icon {
+    font-size: 12px;
+    flex-shrink: 0;
+    color: #666;
+}
+
+.vendor-trust__detail-text {
+    flex: 1;
+}
+
+/* Rating */
+.vendor-trust__rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vendor-trust__stars {
+    color: #f59e0b;
+    font-size: 13px;
+}
+
+.vendor-trust__rating-text {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Sustainability score badges */
+.vendor-trust__sustainability-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+.vendor-trust__sustainability-badge--a {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.vendor-trust__sustainability-badge--b {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.vendor-trust__sustainability-badge--c {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Credentials chips */
+.vendor-trust__credentials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.vendor-trust__credential-chip {
+    font-size: 11px;
+    padding: 3px 8px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+/* Payment method chips */
+.vendor-trust__payment-methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.vendor-trust__payment-chip {
+    font-size: 11px;
+    padding: 3px 7px;
+    background: #f3f4f6;
+    color: #374151;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
+
+/* Generic seller styling (for unmatched brands) */
+.product-card__vendor-trust--generic {
+    background: #fafbfc;
+    border-color: #e5e7eb;
+}
+
+.product-card__vendor-trust--generic .vendor-trust__verification {
+    color: #6b7280;
+}
+
+.product-card__vendor-trust--generic .vendor-trust__header:hover {
+    background: #f3f4f6;
+}
+
+.vendor-trust__source-note {
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Positive/negative/neutral indicators */
+.vendor-trust__indicator--positive {
+    color: #16a34a;
+}
+
+.vendor-trust__indicator--positive .vendor-trust__detail-icon {
+    color: #16a34a;
+}
+
+.vendor-trust__indicator--negative {
+    color: #dc2626;
+}
+
+.vendor-trust__indicator--negative .vendor-trust__detail-icon {
+    color: #dc2626;
+}
+
+.vendor-trust__indicator--neutral {
+    color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .vendor-trust__quick-stats {
+        font-size: 10px;
+    }
+
+    .vendor-trust__detail-line {
+        font-size: 12px;
+    }
+
+    .vendor-trust__credentials,
+    .vendor-trust__payment-methods {
+        gap: 3px;
+    }
+
+    .vendor-trust__credential-chip,
+    .vendor-trust__payment-chip {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}

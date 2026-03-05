@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How It Works - VendeeX 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/demo-banner.css">
+    <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
+</head>
+<body>
+    <!-- Persistent Demo Banner - appears on every page -->
+    <div class="demo-platform-banner">
+        <div class="demo-platform-banner__inner">
+            <span class="demo-platform-banner__icon">&#x1F50D;</span>
+            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__separator">|</span>
+            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                <span class="logo-version">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="how-it-works.html" class="nav-link active">How It Works</a>
+                <a href="demo.html" class="nav-link">Try Demo</a>
+                <a href="login.html" class="nav-btn btn-outline">Login</a>
+                <a href="register.html" class="nav-btn btn-primary">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Info Banner -->
+    <div class="page-info-banner">
+        <div class="page-info-banner__inner">
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What is happening</span>
+                <p>You are viewing the architecture behind VendeeX and how the AI agent works on your behalf.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">Why it matters</span>
+                <p>Understanding the platform helps you see why this is fundamentally different from a marketplace.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What you can do</span>
+                <p>Read about each step, then try the demo to experience it firsthand.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Page -->
+    <main class="hiw-page">
+        <!-- Hero -->
+        <section class="hiw-hero">
+            <div class="container">
+                <h1>The Future of Smart Buying</h1>
+                <p>Discover how VendeeX's AI agents transform the way you find and purchase products online</p>
+            </div>
+        </section>
+
+        <!-- Step 1: Describe -->
+        <section class="hiw-section">
+            <div class="container">
+                <div class="hiw-content">
+                    <div class="hiw-text">
+                        <span>Step 1</span>
+                        <h2>Describe What You Need</h2>
+                        <p>Simply tell VendeeX what you're looking for using natural language. No need to know specific product names or technical specifications.</p>
+                        <ul>
+                            <li>Use everyday language to describe your ideal product</li>
+                            <li>Specify your budget range and must-have features</li>
+                            <li>Mention your use case for better recommendations</li>
+                            <li>Include any brand preferences or exclusions</li>
+                        </ul>
+                    </div>
+                    <div class="hiw-visual">
+                        <div class="preview-content" style="background: var(--gray-50); border-radius: var(--radius-lg); padding: 24px;">
+                            <div class="chat-message user" style="margin-bottom: 0;">
+                                <p style="font-size: 1rem;">"I need a laptop for my daughter who's starting college. Budget around $800, needs to be reliable and good for note-taking and occasional video editing."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2: AI Search -->
+        <section class="hiw-section">
+            <div class="container">
+                <div class="hiw-content reverse">
+                    <div class="hiw-text">
+                        <span>Step 2</span>
+                        <h2>AI Agents Search the Web</h2>
+                        <p>Our intelligent agents work simultaneously across hundreds of online retailers, aggregating data and analyzing products in real-time.</p>
+                        <ul>
+                            <li>Searches 500+ retailers simultaneously</li>
+                            <li>Analyzes product specifications and features</li>
+                            <li>Checks current prices and availability</li>
+                            <li>Reviews customer feedback and ratings</li>
+                            <li>Compares shipping options and return policies</li>
+                        </ul>
+                    </div>
+                    <div class="hiw-visual">
+                        <div style="text-align: center; padding: 40px;">
+                            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 24px;">
+                                <div style="width: 60px; height: 60px; background: var(--gray-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">&#x1F6D2;</div>
+                                <div style="width: 60px; height: 60px; background: var(--gray-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">&#x1F4BB;</div>
+                                <div style="width: 60px; height: 60px; background: var(--gray-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">&#x1F3EA;</div>
+                            </div>
+                            <div style="font-size: 2rem; margin-bottom: 8px;">&#x1F916;</div>
+                            <p style="color: var(--primary); font-weight: 600;">Searching 2,847 products...</p>
+                            <p style="color: var(--gray-500); font-size: 0.875rem;">Across Amazon, Best Buy, Newegg, and 497 more</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3: Analysis -->
+        <section class="hiw-section">
+            <div class="container">
+                <div class="hiw-content">
+                    <div class="hiw-text">
+                        <span>Step 3</span>
+                        <h2>Smart Analysis & Ranking</h2>
+                        <p>VendeeX doesn't just find products - it understands them. Our AI evaluates each option against your specific requirements.</p>
+                        <ul>
+                            <li>Matches products to your exact criteria</li>
+                            <li>Calculates value scores based on features vs. price</li>
+                            <li>Identifies potential issues or limitations</li>
+                            <li>Highlights standout features relevant to you</li>
+                            <li>Considers long-term value and reliability</li>
+                        </ul>
+                    </div>
+                    <div class="hiw-visual">
+                        <div style="padding: 24px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                                <div style="width: 40px; height: 40px; background: var(--gradient-primary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">V</div>
+                                <span style="font-weight: 600; color: var(--gray-900);">AI Analysis</span>
+                            </div>
+                            <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-weight: 500;">Feature Match</span>
+                                    <span style="color: var(--success); font-weight: 600;">94%</span>
+                                </div>
+                                <div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 94%; height: 100%; background: var(--success); border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                            <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-weight: 500;">Budget Fit</span>
+                                    <span style="color: var(--success); font-weight: 600;">100%</span>
+                                </div>
+                                <div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 100%; height: 100%; background: var(--success); border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                            <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-weight: 500;">Value Score</span>
+                                    <span style="color: var(--primary); font-weight: 600;">87%</span>
+                                </div>
+                                <div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 87%; height: 100%; background: var(--primary); border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 4: Results -->
+        <section class="hiw-section">
+            <div class="container">
+                <div class="hiw-content reverse">
+                    <div class="hiw-text">
+                        <span>Step 4</span>
+                        <h2>Curated Recommendations</h2>
+                        <p>Receive a carefully selected shortlist of products, each with a detailed explanation of why it's a good fit for your needs.</p>
+                        <ul>
+                            <li>Top 5 products ranked by relevance</li>
+                            <li>Clear pros and cons for each option</li>
+                            <li>AI summary explaining the recommendations</li>
+                            <li>Direct links to purchase from trusted retailers</li>
+                            <li>Price alerts for potential savings</li>
+                        </ul>
+                    </div>
+                    <div class="hiw-visual">
+                        <div style="padding: 16px;">
+                            <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; border: 2px solid var(--primary);">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                    <div>
+                                        <span style="background: var(--gradient-primary); color: white; font-size: 0.625rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; display: inline-block; margin-bottom: 4px;">TOP PICK</span>
+                                        <h4 style="font-weight: 600; color: var(--gray-900);">ASUS Vivobook 15</h4>
+                                    </div>
+                                    <span style="font-weight: 700; color: var(--gray-900);">$649</span>
+                                </div>
+                                <p style="font-size: 0.8125rem; color: var(--gray-600);">Best balance of performance and value for college students</p>
+                            </div>
+                            <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                    <h4 style="font-weight: 600; color: var(--gray-900);">Lenovo IdeaPad 3</h4>
+                                    <span style="font-weight: 700; color: var(--gray-900);">$579</span>
+                                </div>
+                                <p style="font-size: 0.8125rem; color: var(--gray-600);">Budget-friendly with great keyboard</p>
+                            </div>
+                            <div style="background: var(--gray-50); border-radius: var(--radius-md); padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                    <h4 style="font-weight: 600; color: var(--gray-900);">HP Pavilion 15</h4>
+                                    <span style="font-weight: 700; color: var(--gray-900);">$749</span>
+                                </div>
+                                <p style="font-size: 0.8125rem; color: var(--gray-600);">Premium build quality and display</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Ready to Buy Smarter?</h2>
+                    <p>Experience the power of AI-driven product discovery</p>
+                    <div class="cta-buttons">
+                        <a href="demo.html" class="btn btn-white btn-lg">Try the Demo</a>
+                        <a href="register.html" class="btn btn-outline-white btn-lg">Create Account</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="../index.html" class="logo">
+                        <img src="../assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                        <span class="logo-version">2.0</span>
+                    </a>
+                    <p>AI-powered purchasing assistant that helps you find exactly what you need.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="how-it-works.html">How It Works</a>
+                        <a href="demo.html">Demo</a>
+                        <a href="#">Pricing</a>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-site-links">
+                <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
+                <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js?v=4.2"></script>
+    <script src="../js/pricing-engine.js?v=4.2"></script>
+</body>
+</html>

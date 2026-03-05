@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buying Preferences - VendeeX 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .preferences-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #f0f9ff 100%);
+            padding-top: 80px;
+        }
+
+        .preferences-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .preferences-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .preferences-header h1 {
+            font-size: 2rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .preferences-header p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .setup-progress {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-step {
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            transition: background 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: #10b981;
+        }
+
+        .progress-step.completed {
+            background: #10b981;
+        }
+
+        .preferences-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-icon.categories { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+        .card-icon.budget { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+        .card-icon.brands { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+        .card-icon.delivery { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); }
+        .card-icon.notifications { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Category Pills */
+        .category-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .category-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .category-pill:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .category-pill.selected {
+            border-color: #10b981;
+            background: #10b981;
+            color: white;
+        }
+
+        .category-pill input[type="checkbox"] {
+            display: none;
+        }
+
+        .category-pill .pill-icon {
+            font-size: 1.1rem;
+        }
+
+        /* Budget Range Slider */
+        .budget-section {
+            margin-top: 1rem;
+        }
+
+        .budget-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .budget-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .budget-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+            transition: transform 0.2s ease;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+        }
+
+        .budget-presets {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .budget-preset {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+
+        .budget-preset:hover,
+        .budget-preset.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+            color: #10b981;
+        }
+
+        /* Brand Preferences */
+        .brand-input-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .brand-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .brand-input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .brand-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .brand-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #f0fdf4;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #047857;
+        }
+
+        .brand-tag .remove-btn {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .brand-tag .remove-btn:hover {
+            opacity: 1;
+        }
+
+        .suggested-brands {
+            margin-top: 1rem;
+        }
+
+        .suggested-brands-title {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Delivery Preferences */
+        .delivery-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .delivery-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .delivery-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .delivery-option:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .delivery-option.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .delivery-option input[type="radio"] {
+            display: none;
+        }
+
+        .delivery-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .delivery-option.selected .delivery-radio {
+            border-color: #10b981;
+        }
+
+        .delivery-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .delivery-option.selected .delivery-radio::after {
+            opacity: 1;
+        }
+
+        .delivery-content h4 {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .delivery-content p {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        /* Notification Toggles */
+        .notification-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+
+        .notification-info h4 {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-info p {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d5db;
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #10b981;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Action Buttons */
+        .preferences-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            color: #6b7280;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: #d1d5db;
+            background: #f9fafb;
+        }
+
+        .btn-save {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            background: #10b981;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-save:hover {
+            background: #059669;
+        }
+
+        /* Success Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: #1f2937;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-notice {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .demo-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #10b981;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../images/logo.svg" alt="VendeeX" class="logo-img">
+                <span class="version-badge">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html">Home</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="demo.html">Try Demo</a>
+                <a href="dashboard.html" id="dashboardLink" style="display: none;">Dashboard</a>
+                <a href="login.html" id="loginLink">Login</a>
+                <a href="register.html" class="btn btn-primary" id="getStartedLink">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="preferences-page">
+        <div class="preferences-container">
+            <div class="preferences-header">
+                <h1 id="pageTitle">Set Up Your Preferences</h1>
+                <p id="pageSubtitle">Help VendeeX AI find exactly what you're looking for</p>
+            </div>
+
+            <div class="setup-progress" id="setupProgress">
+                <div class="progress-step completed"></div>
+                <div class="progress-step active"></div>
+                <div class="progress-step"></div>
+            </div>
+
+            <form id="preferencesForm">
+                <!-- Buying Categories -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon categories">🛍️</div>
+                        <div>
+                            <h2 class="card-title">Buying Categories</h2>
+                            <p class="card-description">Select categories you frequently buy in</p>
+                        </div>
+                    </div>
+                    <div class="category-grid">
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="electronics">
+                            <span class="pill-icon">💻</span>
+                            Electronics
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="fashion">
+                            <span class="pill-icon">👕</span>
+                            Fashion
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="home">
+                            <span class="pill-icon">🏠</span>
+                            Home & Garden
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="sports">
+                            <span class="pill-icon">⚽</span>
+                            Sports & Outdoors
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="beauty">
+                            <span class="pill-icon">✨</span>
+                            Beauty & Personal Care
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="books">
+                            <span class="pill-icon">📚</span>
+                            Books & Media
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="automotive">
+                            <span class="pill-icon">🚗</span>
+                            Automotive
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="office">
+                            <span class="pill-icon">📎</span>
+                            Office Supplies
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="toys">
+                            <span class="pill-icon">🎮</span>
+                            Toys & Games
+                        </label>
+                        <label class="category-pill">
+                            <input type="checkbox" name="categories" value="food">
+                            <span class="pill-icon">🍕</span>
+                            Food & Grocery
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Budget Preferences -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon budget">💰</div>
+                        <div>
+                            <h2 class="card-title">Budget Preferences</h2>
+                            <p class="card-description">Set your typical spending range for purchases</p>
+                        </div>
+                    </div>
+                    <div class="budget-section">
+                        <div class="budget-display">
+                            <div>
+                                <span class="budget-label">Maximum budget per item</span>
+                            </div>
+                            <div class="budget-value" id="budgetValue">$500</div>
+                        </div>
+                        <input type="range" class="range-slider" id="budgetSlider" min="50" max="5000" step="50" value="500">
+                        <div class="budget-presets">
+                            <button type="button" class="budget-preset" data-value="100">$100</button>
+                            <button type="button" class="budget-preset" data-value="250">$250</button>
+                            <button type="button" class="budget-preset selected" data-value="500">$500</button>
+                            <button type="button" class="budget-preset" data-value="1000">$1,000</button>
+                            <button type="button" class="budget-preset" data-value="2500">$2,500</button>
+                            <button type="button" class="budget-preset" data-value="5000">$5,000+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferred Brands -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon brands">⭐</div>
+                        <div>
+                            <h2 class="card-title">Preferred Brands</h2>
+                            <p class="card-description">Add brands you trust and prefer (optional)</p>
+                        </div>
+                    </div>
+                    <div class="brand-input-container">
+                        <input type="text" class="brand-input" id="brandInput" placeholder="Type a brand name and press Enter">
+                    </div>
+                    <div class="brand-tags" id="brandTags">
+                        <!-- Tags will be added here dynamically -->
+                    </div>
+                    <div class="suggested-brands">
+                        <div class="suggested-brands-title">Popular Brands</div>
+                        <div class="category-grid">
+                            <button type="button" class="category-pill brand-suggestion" data-brand="Apple">
+                                <span class="pill-icon">🍎</span>
+                                Apple
+                            </button>
+                            <button type="button" class="category-pill brand-suggestion" data-brand="Samsung">
+                                <span class="pill-icon">📱</span>
+                                Samsung
+                            </button>
+                            <button type="button" class="category-pill brand-suggestion" data-brand="Sony">
+                                <span class="pill-icon">🎧</span>
+                                Sony
+                            </button>
+                            <button type="button" class="category-pill brand-suggestion" data-brand="Nike">
+                                <span class="pill-icon">👟</span>
+                                Nike
+                            </button>
+                            <button type="button" class="category-pill brand-suggestion" data-brand="IKEA">
+                                <span class="pill-icon">🪑</span>
+                                IKEA
+                            </button>
+                            <button type="button" class="category-pill brand-suggestion" data-brand="Dyson">
+                                <span class="pill-icon">🌀</span>
+                                Dyson
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Preferences -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon delivery">📦</div>
+                        <div>
+                            <h2 class="card-title">Delivery Preferences</h2>
+                            <p class="card-description">How do you prefer to receive your purchases?</p>
+                        </div>
+                    </div>
+                    <div class="delivery-options">
+                        <label class="delivery-option selected">
+                            <input type="radio" name="delivery" value="fastest" checked>
+                            <div class="delivery-radio"></div>
+                            <div class="delivery-content">
+                                <h4>Fastest Delivery</h4>
+                                <p>Prioritise speed over cost</p>
+                            </div>
+                        </label>
+                        <label class="delivery-option">
+                            <input type="radio" name="delivery" value="cheapest">
+                            <div class="delivery-radio"></div>
+                            <div class="delivery-content">
+                                <h4>Cheapest Delivery</h4>
+                                <p>Prioritise savings over speed</p>
+                            </div>
+                        </label>
+                        <label class="delivery-option">
+                            <input type="radio" name="delivery" value="eco">
+                            <div class="delivery-radio"></div>
+                            <div class="delivery-content">
+                                <h4>Eco-Friendly</h4>
+                                <p>Consolidated shipping when possible</p>
+                            </div>
+                        </label>
+                        <label class="delivery-option">
+                            <input type="radio" name="delivery" value="flexible">
+                            <div class="delivery-radio"></div>
+                            <div class="delivery-content">
+                                <h4>Flexible</h4>
+                                <p>Let AI decide based on context</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Notification Preferences -->
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <div class="card-icon notifications">🔔</div>
+                        <div>
+                            <h2 class="card-title">Notifications</h2>
+                            <p class="card-description">Choose what updates you'd like to receive</p>
+                        </div>
+                    </div>
+                    <div class="notification-options">
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Price Drops</h4>
+                                <p>Get notified when items on your list drop in price</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="notify_price_drops" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Back in Stock</h4>
+                                <p>Know when out-of-stock items become available</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="notify_back_in_stock" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>New Recommendations</h4>
+                                <p>Receive personalised product suggestions</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="notify_recommendations">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <h4>Weekly Digest</h4>
+                                <p>Summary of deals matching your preferences</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="notify_weekly_digest" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preferences-actions">
+                    <button type="button" class="btn-secondary" id="skipBtn">Skip for Now</button>
+                    <button type="submit" class="btn-save">
+                        Save Preferences
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            <div class="demo-notice">
+                <span class="demo-badge">DEMO</span>
+                This is a demonstration. No data is stored.
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Toast -->
+    <div class="toast" id="successToast">
+        <div class="toast-icon">
+            <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <span>Preferences saved successfully!</span>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+        // Check if user is in setup flow
+        const urlParams = new URLSearchParams(window.location.search);
+        const isSetup = urlParams.get('setup') === 'true';
+        
+        if (!isSetup) {
+            // User is editing preferences, update UI
+            document.getElementById('pageTitle').textContent = 'Your Preferences';
+            document.getElementById('pageSubtitle').textContent = 'Manage your buying preferences';
+            document.getElementById('setupProgress').style.display = 'none';
+            document.getElementById('skipBtn').textContent = 'Cancel';
+        }
+
+        // Update nav based on login state
+        if (localStorage.getItem('vendeeX_isLoggedIn') === 'true') {
+            document.getElementById('dashboardLink').style.display = 'block';
+            document.getElementById('loginLink').style.display = 'none';
+            document.getElementById('getStartedLink').style.display = 'none';
+        }
+
+        // Category Pills Selection
+        document.querySelectorAll('.category-pill input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                this.closest('.category-pill').classList.toggle('selected', this.checked);
+            });
+        });
+
+        // Budget Slider
+        const budgetSlider = document.getElementById('budgetSlider');
+        const budgetValue = document.getElementById('budgetValue');
+        const budgetPresets = document.querySelectorAll('.budget-preset');
+
+        budgetSlider.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            budgetValue.textContent = value >= 5000 ? '$5,000+' : '$' + value.toLocaleString();
+            
+            // Update preset selection
+            budgetPresets.forEach(preset => {
+                preset.classList.toggle('selected', parseInt(preset.dataset.value) === value);
+            });
+        });
+
+        budgetPresets.forEach(preset => {
+            preset.addEventListener('click', function() {
+                const value = parseInt(this.dataset.value);
+                budgetSlider.value = value;
+                budgetValue.textContent = value >= 5000 ? '$5,000+' : '$' + value.toLocaleString();
+                
+                budgetPresets.forEach(p => p.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Brand Tags
+        const brandInput = document.getElementById('brandInput');
+        const brandTags = document.getElementById('brandTags');
+        let brands = [];
+
+        function addBrand(brand) {
+            if (brand && !brands.includes(brand)) {
+                brands.push(brand);
+                renderBrandTags();
+            }
+        }
+
+        function removeBrand(brand) {
+            brands = brands.filter(b => b !== brand);
+            renderBrandTags();
+        }
+
+        function renderBrandTags() {
+            brandTags.innerHTML = brands.map(brand => `
+                <span class="brand-tag">
+                    ${brand}
+                    <span class="remove-btn" onclick="removeBrand('${brand}')">✕</span>
+                </span>
+            `).join('');
+        }
+
+        brandInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addBrand(this.value.trim());
+                this.value = '';
+            }
+        });
+
+        // Brand Suggestions
+        document.querySelectorAll('.brand-suggestion').forEach(btn => {
+            btn.addEventListener('click', function() {
+                addBrand(this.dataset.brand);
+                this.classList.add('selected');
+            });
+        });
+
+        // Delivery Options
+        document.querySelectorAll('.delivery-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.delivery-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+
+        // Form Submission
+        document.getElementById('preferencesForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('.btn-save');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Saving...';
+            submitBtn.disabled = true;
+            
+            const formData = {
+                categories: Array.from(document.querySelectorAll('input[name="categories"]:checked')).map(cb => cb.value),
+                budget: parseInt(budgetSlider.value),
+                brands: brands,
+                delivery: document.querySelector('input[name="delivery"]:checked').value,
+                notifications: {
+                    priceDrops: document.querySelector('input[name="notify_price_drops"]').checked,
+                    backInStock: document.querySelector('input[name="notify_back_in_stock"]').checked,
+                    recommendations: document.querySelector('input[name="notify_recommendations"]').checked,
+                    weeklyDigest: document.querySelector('input[name="notify_weekly_digest"]').checked
+                }
+            };
+            
+            const sessionToken = localStorage.getItem('vendeeX_sessionToken');
+            
+            try {
+                if (sessionToken) {
+                    // Save to API if logged in
+                    const response = await fetch('/api/user/preferences', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${sessionToken}`
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.message || 'Failed to save preferences');
+                    }
+                }
+                
+                // Also store locally for offline access
+                localStorage.setItem('vendeeX_preferences', JSON.stringify(formData));
+                
+                console.log('Preferences saved:', formData);
+                
+                // Show success toast
+                const toast = document.getElementById('successToast');
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.disabled = false;
+                    
+                    if (isSetup) {
+                        // Redirect to dashboard after setup
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error saving preferences:', error);
+                alert(error.message || 'Failed to save preferences');
+                submitBtn.innerHTML = originalHTML;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Skip button
+        document.getElementById('skipBtn').addEventListener('click', function() {
+            if (isSetup) {
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        // Load existing preferences
+        async function loadPreferences() {
+            const sessionToken = localStorage.getItem('vendeeX_sessionToken');
+            let prefs = null;
+            
+            // Try loading from API first
+            if (sessionToken) {
+                try {
+                    const response = await fetch('/api/user/preferences', {
+                        headers: { 'Authorization': `Bearer ${sessionToken}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        prefs = data.preferences;
+                        // Sync to localStorage
+                        localStorage.setItem('vendeeX_preferences', JSON.stringify(prefs));
+                    }
+                } catch (error) {
+                    console.warn('Failed to load preferences from API:', error);
+                }
+            }
+            
+            // Fallback to localStorage
+            if (!prefs) {
+                const savedPrefs = localStorage.getItem('vendeeX_preferences');
+                if (savedPrefs) {
+                    prefs = JSON.parse(savedPrefs);
+                }
+            }
+            
+            if (prefs) {
+                // Restore categories
+                prefs.categories?.forEach(cat => {
+                    const checkbox = document.querySelector(`input[name="categories"][value="${cat}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        checkbox.closest('.category-pill').classList.add('selected');
+                    }
+                });
+                
+                // Restore budget
+                if (prefs.budget) {
+                    budgetSlider.value = prefs.budget;
+                    budgetValue.textContent = prefs.budget >= 5000 ? '$5,000+' : '$' + prefs.budget.toLocaleString();
+                    budgetPresets.forEach(preset => {
+                        preset.classList.toggle('selected', parseInt(preset.dataset.value) === prefs.budget);
+                    });
+                }
+                
+                // Restore brands
+                if (prefs.brands) {
+                    brands = prefs.brands;
+                    renderBrandTags();
+                }
+                
+                // Restore delivery
+                if (prefs.delivery) {
+                    const deliveryOption = document.querySelector(`input[name="delivery"][value="${prefs.delivery}"]`);
+                    if (deliveryOption) {
+                        deliveryOption.checked = true;
+                        document.querySelectorAll('.delivery-option').forEach(o => o.classList.remove('selected'));
+                        deliveryOption.closest('.delivery-option').classList.add('selected');
+                    }
+                }
+                
+                // Restore notifications
+                if (prefs.notifications) {
+                    document.querySelector('input[name="notify_price_drops"]').checked = prefs.notifications.priceDrops ?? true;
+                    document.querySelector('input[name="notify_back_in_stock"]').checked = prefs.notifications.backInStock ?? true;
+                    document.querySelector('input[name="notify_recommendations"]').checked = prefs.notifications.recommendations ?? false;
+                    document.querySelector('input[name="notify_weekly_digest"]').checked = prefs.notifications.weeklyDigest ?? true;
+                }
+            }
+        }
+        
+        // Load preferences on page load
+        loadPreferences();
+    </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Directory - VendeeX 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/acp-styles.css">
+    <link rel="stylesheet" href="../css/demo-banner.css">
+    <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
+</head>
+<body>
+    <!-- Persistent Demo Banner - appears on every page -->
+    <div class="demo-platform-banner">
+        <div class="demo-platform-banner__inner">
+            <span class="demo-platform-banner__icon">&#x1F50D;</span>
+            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__separator">|</span>
+            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                <span class="logo-version">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="how-it-works.html" class="nav-link">How It Works</a>
+                <a href="demo.html" class="nav-link">Try Demo</a>
+                <a href="merchants.html" class="nav-link active">Merchants</a>
+                <a href="login.html" class="nav-btn btn-outline">Login</a>
+                <a href="register.html" class="nav-btn btn-primary">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Info Banner -->
+    <div class="page-info-banner">
+        <div class="page-info-banner__inner">
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What is happening</span>
+                <p>Browse the directory of merchants integrated with the Agentic Commerce Protocol.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">Why it matters</span>
+                <p>ACP-enabled merchants allow your agent to negotiate, checkout, and verify costs on your behalf.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What you can do</span>
+                <p>Explore merchant capabilities, then start shopping through the demo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Merchant Directory Page -->
+    <main class="merchants-page">
+        <!-- Hero Section -->
+        <section class="merchants-hero">
+            <div class="container">
+                <div class="hero-badge">
+                    <span class="badge-icon">&#x1F6D2;</span>
+                    <span>Powered by Agentic Commerce Protocol</span>
+                </div>
+                <h1>Merchant Directory</h1>
+                <p>Discover ACP-enabled retailers where VendeeX AI can buy on your behalf</p>
+
+                <!-- Protocol Info Banner -->
+                <div class="protocol-info">
+                    <div class="protocol-card">
+                        <div class="protocol-icon acp">ACP</div>
+                        <div class="protocol-details">
+                            <h3>Agentic Commerce Protocol</h3>
+                            <p>Full AI agent checkout support with session management</p>
+                        </div>
+                    </div>
+                    <div class="protocol-card">
+                        <div class="protocol-icon ucp">UCP</div>
+                        <div class="protocol-details">
+                            <h3>Universal Commerce Protocol</h3>
+                            <p>Product discovery and comparison capabilities</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search and Filters -->
+        <section class="merchants-search">
+            <div class="container">
+                <div class="search-bar">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <input type="text" id="merchantSearch" class="form-input" placeholder="Search merchants, categories, or products...">
+                    </div>
+                    <button id="searchBtn" class="btn btn-primary">Search</button>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Category:</label>
+                        <select id="categoryFilter" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="beauty">Beauty & Skincare</option>
+                            <option value="home">Home & Living</option>
+                            <option value="activewear">Activewear</option>
+                            <option value="footwear">Footwear</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="travel">Travel</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Protocol:</label>
+                        <select id="protocolFilter" class="filter-select">
+                            <option value="all">All Protocols</option>
+                            <option value="ACP">ACP Enabled</option>
+                            <option value="UCP">UCP Enabled</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select id="statusFilter" class="filter-select">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="results-summary">
+                    <span id="merchantCount">0</span> merchants found
+                </div>
+            </div>
+        </section>
+
+        <!-- Merchant Grid -->
+        <section class="merchants-grid-section">
+            <div class="container">
+                <div id="merchantsGrid" class="merchants-grid">
+                    <!-- Merchants will be dynamically inserted here -->
+                </div>
+
+                <div id="loadingState" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Loading merchants...</p>
+                </div>
+
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-icon">&#x1F50D;</div>
+                    <h3>No merchants found</h3>
+                    <p>Try adjusting your search or filters</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ACP Info Section -->
+        <section class="acp-info-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>About Agentic Commerce Protocol</h2>
+                    <p>The open standard for AI-powered buying experiences</p>
+                </div>
+
+                <div class="acp-features-grid">
+                    <div class="acp-feature-card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <path d="M16 4L4 8v10c0 6.627 5.373 12 12 12s12-5.373 12-12V8L16 4z" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 16l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Secure Transactions</h3>
+                        <p>Payment processing through Stripe with full buyer protection and secure tokenization.</p>
+                    </div>
+                    <div class="acp-feature-card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <path d="M16 4v24M4 16h24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <h3>Open Standard</h3>
+                        <p>Jointly maintained by OpenAI and Stripe, ensuring broad compatibility and trust.</p>
+                    </div>
+                    <div class="acp-feature-card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <path d="M16 4C9.373 4 4 9.373 4 16s5.373 12 12 12 12-5.373 12-12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M16 12v8M16 12l4 4M16 12l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Real-Time Updates</h3>
+                        <p>Session-based checkout with live pricing, inventory, and shipping calculations.</p>
+                    </div>
+                    <div class="acp-feature-card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <rect x="4" y="8" width="24" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                                <path d="M4 14h24M10 19h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3>Multi-Payment Support</h3>
+                        <p>Accept Stripe, Apple Pay, Google Pay, and more payment methods seamlessly.</p>
+                    </div>
+                </div>
+
+                <div class="acp-cta">
+                    <a href="https://github.com/agentic-commerce-protocol/agentic-commerce-protocol" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0110 4.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C17.137 18.167 20 14.42 20 10c0-5.523-4.477-10-10-10z" fill="currentColor"/>
+                        </svg>
+                        View ACP Specification
+                    </a>
+                    <a href="https://checkout.directory" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        Visit checkout.directory
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="../index.html" class="logo">
+                        <img src="../assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                        <span class="logo-version">2.0</span>
+                    </a>
+                    <p>AI-powered purchasing assistant with ACP integration for seamless agentic commerce.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="how-it-works.html">How It Works</a>
+                        <a href="demo.html">Demo</a>
+                        <a href="merchants.html">Merchants</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Protocol</h4>
+                        <a href="https://github.com/agentic-commerce-protocol/agentic-commerce-protocol" target="_blank">ACP Spec</a>
+                        <a href="https://checkout.directory" target="_blank">Merchant Directory</a>
+                        <a href="https://github.com/nekuda-ai/ACP-Checkout-Gateway" target="_blank">Gateway Reference</a>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-site-links">
+                <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
+                <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js?v=4.2"></script>
+    <script src="../js/pricing-engine.js?v=4.2"></script>
+    <script src="../js/acp-service.js?v=4.2"></script>
+    <script src="../js/merchants.js?v=4.2"></script>
+</body>
+</html>

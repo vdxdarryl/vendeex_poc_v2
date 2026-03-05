@@ -1,0 +1,11 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "node server.js"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Prevent Railway from sleeping the service (ensures cron fires at 06:00 UTC)
+# Note: requires a paid plan. Free tier services will still sleep after inactivity.
+sleepApplication = false

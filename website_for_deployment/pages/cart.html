@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACP Multi-Vendor Checkout - VendeeX 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css?v=4.2">
+    <link rel="stylesheet" href="../css/acp-styles.css?v=4.2">
+    <link rel="stylesheet" href="../css/demo-banner.css">
+    <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
+    <style>
+        .cart-page { padding: 1.5rem 1rem 3rem; max-width: 800px; margin: 0 auto; }
+        .cart-page h1 { font-size: 1.5rem; color: #111827; margin: 0 0 0.25rem; }
+        .cart-page .cart-subtitle { color: #6b7280; font-size: 0.875rem; margin: 0 0 1.5rem; }
+
+        .cart-location-banner {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.625rem 1rem; background: rgba(33,82,116,0.05);
+            border: 1px solid rgba(33,82,116,0.12); border-radius: 8px;
+            font-size: 0.8125rem; color: #374151; margin-bottom: 1.25rem;
+        }
+        .cart-location-banner strong { color: #215274; }
+
+        .cart-vendor-group {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 1rem; overflow: hidden;
+        }
+        .cart-vendor-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem 1rem; background: rgba(33,82,116,0.04);
+            border-bottom: 1px solid rgba(33,82,116,0.08);
+        }
+        .cart-vendor-name { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #111827; }
+        .cart-vendor-badge { font-size: 0.6875rem; color: #2BB673; font-weight: 600; }
+
+        .cart-item-row {
+            display: grid; grid-template-columns: 1fr auto auto auto;
+            align-items: center; gap: 1rem; padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .cart-item-row:last-of-type { border-bottom: none; }
+        .cart-item-info strong { display: block; font-size: 0.875rem; color: #111827; }
+        .cart-item-info .item-desc { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
+
+        .cart-item-quantity {
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .cart-item-quantity button {
+            width: 28px; height: 28px; border-radius: 6px;
+            border: 1px solid #d1d5db; background: white;
+            font-size: 1rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; color: #374151;
+        }
+        .cart-item-quantity button:hover { background: #f3f4f6; }
+        .cart-item-quantity span { min-width: 20px; text-align: center; font-weight: 600; }
+
+        .cart-item-price { font-weight: 600; color: #111827; text-align: right; white-space: nowrap; }
+        .cart-item-remove {
+            background: none; border: none; color: #9ca3af;
+            font-size: 1.125rem; cursor: pointer; padding: 4px;
+        }
+        .cart-item-remove:hover { color: #ef4444; }
+
+        .cart-vendor-footer {
+            padding: 0.625rem 1rem; background: rgba(33,82,116,0.02);
+            border-top: 1px solid #f3f4f6;
+        }
+        .cart-vendor-shipping {
+            display: flex; justify-content: space-between; font-size: 0.8125rem; color: #6b7280;
+        }
+        .cart-vendor-subtotal {
+            display: flex; justify-content: space-between; font-size: 0.875rem;
+            margin-top: 0.375rem; padding-top: 0.375rem;
+            border-top: 1px solid rgba(33,82,116,0.08);
+        }
+
+        .cart-summary {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 1.25rem; margin-top: 1.5rem;
+        }
+        .cart-summary h3 { font-size: 1rem; color: #111827; margin: 0 0 0.75rem; }
+        .cart-summary-line {
+            display: flex; justify-content: space-between;
+            padding: 0.375rem 0; font-size: 0.875rem; color: #374151;
+        }
+        .cart-summary-line--total {
+            border-top: 2px solid #111827; margin-top: 0.5rem;
+            padding-top: 0.75rem; font-size: 1rem; font-weight: 700;
+        }
+        .cart-summary-line--fee { font-size: 0.8125rem; color: #6b7280; }
+        .cart-summary-line--reward { font-size: 0.8125rem; color: #22c55e; }
+        .cart-summary-line--net { font-size: 0.9375rem; color: #215274; font-weight: 600; }
+
+        .cart-actions {
+            display: flex; justify-content: space-between; gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .cart-actions .btn { flex: 1; text-align: center; }
+
+        .cart-empty {
+            text-align: center; padding: 3rem 1rem; color: #6b7280;
+        }
+        .cart-empty h2 { color: #374151; margin: 1rem 0 0.5rem; }
+        .cart-empty p { margin: 0 0 1.5rem; }
+
+        .shipping-note {
+            font-size: 0.75rem; color: #9ca3af; text-align: center;
+            margin-top: 0.75rem; font-style: italic;
+        }
+
+        @media (max-width: 640px) {
+            .cart-item-row { grid-template-columns: 1fr; gap: 0.5rem; }
+            .cart-item-quantity { justify-content: flex-start; }
+            .cart-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Persistent Demo Banner -->
+    <div class="demo-platform-banner">
+        <div class="demo-platform-banner__inner">
+            <span class="demo-platform-banner__icon">&#x1F50D;</span>
+            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__separator">|</span>
+            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/vendeex-logo.png" alt="VendeeX" class="logo-img">
+                <span class="logo-version">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="demo.html" class="nav-link">Try Demo</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Info Banner -->
+    <div class="page-info-banner">
+        <div class="page-info-banner__inner">
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What is happening</span>
+                <p>Your agent has collected your selected products. Review items, quantities, and full cost transparency.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">Why it matters</span>
+                <p>Every cost is calculated up front: tax based on your location, estimated shipping, and no hidden charges.</p>
+            </div>
+            <div class="page-info-banner__item">
+                <span class="page-info-banner__label">What you can do</span>
+                <p>Adjust quantities, remove items, or proceed to checkout when ready.</p>
+            </div>
+        </div>
+    </div>
+
+    <main class="cart-page">
+        <h1>ACP Multi-Vendor Checkout</h1>
+        <p class="cart-subtitle" id="cartSubtitle">Loading...</p>
+
+        <div id="cartLocationBanner" class="cart-location-banner" style="display:none;">
+            <span>&#x1F4CD;</span>
+            <span>Shipping to: <strong id="cartLocationDisplay">-</strong></span>
+            <span style="margin-left:auto;font-size:0.75rem;color:#6b7280;">Tax and shipping estimated from your avatar location</span>
+        </div>
+
+        <div id="cartContent">
+            <!-- Populated by JS -->
+        </div>
+
+        <div id="cartSummary" class="cart-summary" style="display:none;">
+            <h3>Order Summary</h3>
+            <div id="summaryLines"></div>
+        </div>
+
+        <div id="cartActions" class="cart-actions" style="display:none;">
+            <a href="demo.html" class="btn btn-outline">Continue Shopping</a>
+            <button class="btn btn-primary" onclick="proceedToCheckout()">Proceed to Checkout</button>
+        </div>
+
+        <p class="shipping-note" id="shippingNote" style="display:none;">
+            Shipping and tax are estimates based on your avatar location. Final costs confirmed at checkout.
+        </p>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 60px;">
+        <div class="container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+                <div class="demo-site-links">
+                    <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
+                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js?v=4.2"></script>
+    <script src="../js/demo-customer.js?v=4.2"></script>
+    <script src="../js/pricing-engine.js?v=4.2"></script>
+    <script src="../js/merchant-data.js?v=4.2"></script>
+    <script>
+        // ============================================
+        // Cart Page Logic
+        // ============================================
+
+        var cart = [];
+        try {
+            var cartJson = sessionStorage.getItem('vendeex_acp_cart');
+            cart = cartJson ? JSON.parse(cartJson) : [];
+        } catch (e) { cart = []; }
+
+        var buyerLocation = localStorage.getItem('vendeeX_buyerLocation') || 'UK';
+        var locationDisplay = localStorage.getItem('vendeeX_buyerLocationDisplay') || buyerLocation;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function persistCart() {
+            sessionStorage.setItem('vendeex_acp_cart', JSON.stringify(cart));
+        }
+
+        function groupByVendor() {
+            var groups = {};
+            cart.forEach(function(item, index) {
+                var vendor = item.merchant || item.brand || 'Unknown Vendor';
+                if (!groups[vendor]) groups[vendor] = { items: [], indices: [] };
+                groups[vendor].items.push(item);
+                groups[vendor].indices.push(index);
+            });
+            return groups;
+        }
+
+        function getVendorShipping(vendorName, vendorItems) {
+            var vendorSubtotal = vendorItems.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+
+            if (typeof ACPMerchantData !== 'undefined') {
+                var allMerchants = ACPMerchantData.getAllMerchants();
+                var match = allMerchants.find(function(m) { return m.name.toLowerCase() === vendorName.toLowerCase(); });
+                if (match && match.terms) {
+                    if (vendorSubtotal >= match.terms.freeShippingThreshold) {
+                        return { cost: 0, label: 'Free shipping', days: match.terms.maxDeliveryDays + ' days' };
+                    }
+                    return { cost: 5.99, label: 'Standard shipping', days: match.terms.maxDeliveryDays + ' days' };
+                }
+            }
+
+            if (vendorSubtotal >= 50) return { cost: 0, label: 'Free shipping', days: '3-7 days' };
+            return { cost: 5.99, label: 'Standard shipping', days: '3-7 days' };
+        }
+
+        function updateQuantity(index, delta) {
+            if (!cart[index]) return;
+            cart[index].quantity += delta;
+            if (cart[index].quantity <= 0) cart.splice(index, 1);
+            persistCart();
+            renderCart();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            persistCart();
+            renderCart();
+        }
+
+        function proceedToCheckout() {
+            if (cart.length === 0) { alert('Your cart is empty.'); return; }
+            persistCart();
+            window.location.href = 'protocol-checkout.html';
+        }
+
+        function renderCart() {
+            var content = document.getElementById('cartContent');
+            var summary = document.getElementById('cartSummary');
+            var actions = document.getElementById('cartActions');
+            var subtitle = document.getElementById('cartSubtitle');
+            var locationBanner = document.getElementById('cartLocationBanner');
+            var locationEl = document.getElementById('cartLocationDisplay');
+            var shippingNote = document.getElementById('shippingNote');
+
+            if (cart.length === 0) {
+                content.innerHTML = '<div class="cart-empty">' +
+                    '<div style="font-size:3rem;margin-bottom:0.5rem;">&#x1F6D2;</div>' +
+                    '<h2>Your cart is empty</h2>' +
+                    '<p>Search for products and add them to your cart.</p>' +
+                    '<a href="demo.html" class="btn btn-primary">Search Products</a>' +
+                    '</div>';
+                summary.style.display = 'none';
+                actions.style.display = 'none';
+                shippingNote.style.display = 'none';
+                subtitle.textContent = 'No items in your cart';
+                return;
+            }
+
+            // Show location banner
+            locationBanner.style.display = 'flex';
+            locationEl.textContent = locationDisplay;
+
+            var groups = groupByVendor();
+            var vendorNames = Object.keys(groups);
+            var itemCount = cart.reduce(function(sum, item) { return sum + item.quantity; }, 0);
+            var vendorCount = vendorNames.length;
+
+            subtitle.textContent = itemCount + ' item' + (itemCount > 1 ? 's' : '') + ' from ' + vendorCount + ' vendor' + (vendorCount > 1 ? 's' : '');
+
+            var totalProducts = 0;
+            var totalShipping = 0;
+            var html = '';
+
+            vendorNames.forEach(function(vendor) {
+                var group = groups[vendor];
+                var vendorSubtotal = group.items.reduce(function(sum, item) { return sum + (item.price * item.quantity); }, 0);
+                var shipping = getVendorShipping(vendor, group.items);
+                totalProducts += vendorSubtotal;
+                totalShipping += shipping.cost;
+
+                var itemsHTML = group.items.map(function(item, i) {
+                    var idx = group.indices[i];
+                    return '<div class="cart-item-row">' +
+                        '<div class="cart-item-info"><strong>' + escapeHtml(item.name) + '</strong>' +
+                        (item.brand ? '<span class="item-desc">' + escapeHtml(item.brand) + '</span>' : '') +
+                        '</div>' +
+                        '<div class="cart-item-quantity">' +
+                        '<button onclick="updateQuantity(' + idx + ', -1)">-</button>' +
+                        '<span>' + item.quantity + '</span>' +
+                        '<button onclick="updateQuantity(' + idx + ', 1)">+</button>' +
+                        '</div>' +
+                        '<div class="cart-item-price">' + PricingEngine.formatPrice(item.price * item.quantity) + '</div>' +
+                        '<button class="cart-item-remove" onclick="removeItem(' + idx + ')">&#x2715;</button>' +
+                        '</div>';
+                }).join('');
+
+                html += '<div class="cart-vendor-group">' +
+                    '<div class="cart-vendor-header">' +
+                    '<div class="cart-vendor-name"><span>&#x1F3EA;</span> ' + escapeHtml(vendor) + '</div>' +
+                    '<span class="cart-vendor-badge">&#x2713; ACP Verified</span>' +
+                    '</div>' +
+                    itemsHTML +
+                    '<div class="cart-vendor-footer">' +
+                    '<div class="cart-vendor-shipping">' +
+                    '<span>&#x1F69A; ' + escapeHtml(shipping.label) + ' (est. ' + escapeHtml(shipping.days) + ')</span>' +
+                    '<span>' + (shipping.cost === 0 ? 'Free' : PricingEngine.formatPrice(shipping.cost)) + '</span>' +
+                    '</div>' +
+                    '<div class="cart-vendor-subtotal">' +
+                    '<span>Vendor subtotal</span>' +
+                    '<strong>' + PricingEngine.formatPrice(vendorSubtotal + shipping.cost) + '</strong>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            });
+
+            content.innerHTML = html;
+
+            // Calculate summary with tax and fees
+            var taxInfo = PricingEngine.getTaxInfo(buyerLocation);
+            var taxAmount = Math.round(totalProducts * taxInfo.rate * 100) / 100;
+            var subtotalBeforeFee = totalProducts + totalShipping;
+            var feeRate = PricingEngine.vendeeXFees.buyerFeeRate;
+            var vendeeXFee = Math.round(subtotalBeforeFee * feeRate * 100) / 100;
+            var grandTotal = Math.round((totalProducts + taxAmount + totalShipping + vendeeXFee) * 100) / 100;
+            var rewardRate = PricingEngine.vendeeXFees.cryptoRewardRate;
+            var cryptoReward = Math.round(grandTotal * rewardRate * 100) / 100;
+            var netTotal = Math.round((grandTotal - cryptoReward) * 100) / 100;
+
+            var summaryHTML =
+                '<div class="cart-summary-line"><span>Products (' + itemCount + ' items)</span><span>' + PricingEngine.formatPrice(totalProducts) + '</span></div>' +
+                '<div class="cart-summary-line"><span>Shipping (' + vendorCount + ' vendor' + (vendorCount > 1 ? 's' : '') + ')</span><span>' + (totalShipping === 0 ? 'Free' : PricingEngine.formatPrice(totalShipping)) + '</span></div>' +
+                '<div class="cart-summary-line"><span>' + escapeHtml(taxInfo.display) + ' (' + (taxInfo.rate * 100).toFixed(1) + '%)</span><span>' + PricingEngine.formatPrice(taxAmount) + '</span></div>' +
+                '<div class="cart-summary-line cart-summary-line--fee"><span>' + escapeHtml(PricingEngine.vendeeXFees.feeName) + ' (' + (feeRate * 100).toFixed(1) + '%)</span><span>' + PricingEngine.formatPrice(vendeeXFee) + '</span></div>' +
+                '<div class="cart-summary-line cart-summary-line--total"><span>Total</span><span>' + PricingEngine.formatPrice(grandTotal) + '</span></div>' +
+                '<div class="cart-summary-line cart-summary-line--reward"><span>You earn: ' + escapeHtml(PricingEngine.vendeeXFees.rewardName) + ' (' + (rewardRate * 100).toFixed(1) + '%)</span><span>-' + PricingEngine.formatPrice(cryptoReward) + '</span></div>' +
+                '<div class="cart-summary-line cart-summary-line--net"><span>Effective cost after reward</span><span>' + PricingEngine.formatPrice(netTotal) + '</span></div>';
+
+            document.getElementById('summaryLines').innerHTML = summaryHTML;
+            summary.style.display = 'block';
+            actions.style.display = 'flex';
+            shippingNote.style.display = 'block';
+        }
+
+        // Initial render
+        renderCart();
+
+        // Show cart notification if items exist (for returning to demo page)
+        if (cart.length > 0) {
+            // Update page title with count
+            document.title = 'Cart (' + cart.length + ') - VendeeX 2.0';
+        }
+    </script>
+</body>
+</html>

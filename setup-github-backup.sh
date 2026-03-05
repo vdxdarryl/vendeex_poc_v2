@@ -1,0 +1,48 @@
+#!/bin/bash
+# Run this script from your terminal to connect the dev copy to GitHub and push.
+# Usage: cd "/Users/dr_darryl_carlton/Desktop/VENDEEX 2.0/VendeeX 2.0 Demo - dev" && bash setup-github-backup.sh
+
+set -e
+REPO_URL="https://github.com/vdxdarryl/vendeex_poc_v2.git"
+
+echo "→ Initializing Git (if needed)..."
+if [ ! -d .git ]; then
+  git init
+  git remote add origin "$REPO_URL"
+  echo "  Git initialized and remote added."
+else
+  if ! git remote get-url origin 2>/dev/null; then
+    git remote add origin "$REPO_URL"
+    echo "  Remote 'origin' added."
+  else
+    echo "  Git already set up. Current remote: $(git remote get-url origin)"
+  fi
+fi
+
+# Ensure remote URL is correct (in case it was wrong)
+git remote set-url origin "$REPO_URL"
+
+echo "→ Staging all files..."
+git add -A
+
+echo "→ Checking status..."
+git status
+
+echo ""
+echo "→ Creating initial commit (if there are changes)..."
+if [ -n "$(git status --porcelain)" ]; then
+  git commit -m "Initial backup: VendeeX 2.0 Demo dev copy (POC v2)"
+  echo "  Commit created."
+else
+  echo "  Nothing to commit (working tree clean)."
+fi
+
+echo ""
+echo "→ Pushing to GitHub..."
+# Ensure we're on main (GitHub default) and push
+git branch -M main
+git push -u origin main
+
+echo ""
+echo "Done. Your dev copy is backed up to: $REPO_URL"
+echo "To update GitHub later: git add -A && git commit -m 'Your message' && git push"

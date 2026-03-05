@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - VendeeX 2.0</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Account Type Selection Styles */
+        .account-type-section {
+            margin-bottom: 2rem;
+        }
+        
+        .account-type-label {
+            display: block;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .account-type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        @media (max-width: 640px) {
+            .account-type-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .account-type-card {
+            position: relative;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+        
+        .account-type-card:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .account-type-card.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .account-type-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .account-type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+        }
+        
+        .account-type-card.personal .account-type-icon {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+        
+        .account-type-card.business .account-type-icon {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+        
+        .account-type-card.enterprise .account-type-icon {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+        
+        .account-type-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .account-type-desc {
+            font-size: 0.8rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .check-indicator {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .account-type-card.selected .check-indicator {
+            background: #10b981;
+            border-color: #10b981;
+        }
+        
+        .check-indicator svg {
+            width: 12px;
+            height: 12px;
+            opacity: 0;
+            color: white;
+            transition: opacity 0.2s ease;
+        }
+        
+        .account-type-card.selected .check-indicator svg {
+            opacity: 1;
+        }
+
+        /* Form section spacing */
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        /* Enhanced auth container */
+        .auth-container {
+            max-width: 520px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../images/logo.svg" alt="VendeeX" class="logo-img">
+                <span class="version-badge">2.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html">Home</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="demo.html">Try Demo</a>
+                <a href="login.html">Login</a>
+                <a href="register.html" class="btn btn-primary">Get Started</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Create Your Account</h1>
+                    <p>Start buying smarter with AI-powered recommendations</p>
+                </div>
+
+                <!-- Social Login -->
+                <div class="social-login">
+                    <button type="button" class="btn btn-social btn-google">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+                    <button type="button" class="btn btn-social btn-github">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        Continue with GitHub
+                    </button>
+                </div>
+
+                <div class="divider">
+                    <span>or sign up with email</span>
+                </div>
+
+                <form id="registerForm" class="auth-form">
+                    <!-- Account Type Section -->
+                    <div class="form-section">
+                        <div class="form-section-title">Account Type</div>
+                        <div class="account-type-section">
+                            <div class="account-type-grid">
+                                <label class="account-type-card personal selected">
+                                    <input type="radio" name="accountType" value="personal" checked>
+                                    <div class="check-indicator">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <div class="account-type-icon">👤</div>
+                                    <div class="account-type-name">Personal</div>
+                                    <div class="account-type-desc">For individual buyers looking for personal purchases</div>
+                                </label>
+                                
+                                <label class="account-type-card business">
+                                    <input type="radio" name="accountType" value="business">
+                                    <div class="check-indicator">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <div class="account-type-icon">💼</div>
+                                    <div class="account-type-name">Business</div>
+                                    <div class="account-type-desc">For small teams and businesses with procurement needs</div>
+                                </label>
+                                
+                                <label class="account-type-card enterprise">
+                                    <input type="radio" name="accountType" value="enterprise">
+                                    <div class="check-indicator">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <div class="account-type-icon">🏢</div>
+                                    <div class="account-type-name">Enterprise</div>
+                                    <div class="account-type-desc">For large organisations with complex requirements</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Details Section -->
+                    <div class="form-section">
+                        <div class="form-section-title">Account Details</div>
+                        
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        </div>
+
+                        <div class="form-group" id="companyNameGroup" style="display: none;">
+                            <label for="companyName">Company Name</label>
+                            <input type="text" id="companyName" name="companyName" placeholder="Enter your company name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="Create a password" required>
+                            <span class="input-hint">Must be at least 8 characters</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">
+                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="login.html">Sign in</a></p>
+                </div>
+            </div>
+
+            <div class="demo-notice">
+                <span class="demo-badge">DEMO</span>
+                This is a demonstration. No data is stored.
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/main.js"></script>
+    <script>
+        // Account Type Selection Logic
+        document.querySelectorAll('.account-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selected class from all cards
+                document.querySelectorAll('.account-type-card').forEach(c => c.classList.remove('selected'));
+                // Add selected class to clicked card
+                this.classList.add('selected');
+                // Check the radio button
+                this.querySelector('input[type="radio"]').checked = true;
+                
+                // Show/hide company name field based on account type
+                const accountType = this.querySelector('input[type="radio"]').value;
+                const companyNameGroup = document.getElementById('companyNameGroup');
+                
+                if (accountType === 'business' || accountType === 'enterprise') {
+                    companyNameGroup.style.display = 'block';
+                    companyNameGroup.querySelector('input').required = true;
+                } else {
+                    companyNameGroup.style.display = 'none';
+                    companyNameGroup.querySelector('input').required = false;
+                }
+            });
+        });
+
+        // Form Submission
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Creating Account...';
+            submitBtn.disabled = true;
+            
+            const formData = {
+                accountType: document.querySelector('input[name="accountType"]:checked').value,
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                companyName: document.getElementById('companyName').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Registration failed');
+                }
+                
+                // Store session data
+                localStorage.setItem('vendeeX_sessionToken', data.session.token);
+                localStorage.setItem('vendeeX_accountType', data.user.accountType);
+                localStorage.setItem('vendeeX_userName', data.user.fullName);
+                localStorage.setItem('vendeeX_userEmail', data.user.email);
+                localStorage.setItem('vendeeX_userId', data.user.id);
+                localStorage.setItem('vendeeX_isLoggedIn', 'true');
+                
+                console.log('Registration successful:', data);
+                
+                // Redirect to preferences setup
+                window.location.href = 'preferences.html?setup=true';
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert(error.message || 'Registration failed. Please try again.');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
