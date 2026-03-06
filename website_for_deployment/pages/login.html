@@ -149,46 +149,57 @@
                 localStorage.setItem('vendeeX_userId', data.user.id);
                 localStorage.setItem('vendeeX_isLoggedIn', 'true');
 
-                // Restore full avatar preferences from DB
+                // Restore full avatar preferences from DB (order matters)
                 const avatar = data.avatar || {};
-                if (avatar.jurisdiction) localStorage.setItem('vendeeX_jurisdiction', avatar.jurisdiction);
-                if (avatar.jurisdiction) localStorage.setItem('vendeeX_buyerLocation', avatar.jurisdiction);
-                if (avatar.valueRanking) localStorage.setItem('vendeeX_valueRanking', JSON.stringify(avatar.valueRanking));
-                if (avatar.prefFreeReturns !== undefined) localStorage.setItem('vendeeX_prefFreeReturns', String(avatar.prefFreeReturns));
-                if (avatar.prefDeliverySpeed) localStorage.setItem('vendeeX_prefDeliverySpeed', avatar.prefDeliverySpeed);
-                if (avatar.prefSustainability !== undefined) localStorage.setItem('vendeeX_prefSustainability', String(avatar.prefSustainability));
-                if (avatar.prefSustainabilityWeight !== undefined) localStorage.setItem('vendeeX_prefSustainabilityWeight', String(avatar.prefSustainabilityWeight));
-                if (avatar.standingInstructions !== undefined) localStorage.setItem('vendeeX_standingInstructions', avatar.standingInstructions);
 
-                // Restore full 7-category preferences from DB
+                // 1. Write full 7-category avatar preferences first
                 if (avatar.avatarPreferences && Object.keys(avatar.avatarPreferences).length > 0) {
                     localStorage.setItem('vendeeX_avatarPreferences', JSON.stringify(avatar.avatarPreferences));
                 }
 
-                const JURISDICTION_CURRENCY = {
-                    'UK': 'GBP', 'JE': 'GBP', 'GG': 'GBP',
-                    'US-CA': 'USD', 'US-NY': 'USD', 'US-TX': 'USD',
-                    'AU': 'AUD', 'DE': 'EUR', 'FR': 'EUR',
-                    'SG': 'SGD', 'JP': 'JPY'
-                };
-                // Respect explicit avatar currency preference; only fall back to jurisdiction map
-                // if no preference has been saved.
-                var explicitCurrency = null;
-                try {
-                    var avatarPrefsRaw = localStorage.getItem('vendeeX_avatarPreferences');
-                    if (avatarPrefsRaw) {
-                        var avatarPrefs = JSON.parse(avatarPrefsRaw);
-                        if (avatarPrefs && avatarPrefs.paymentDefaults && avatarPrefs.paymentDefaults.currency) {
-                            explicitCurrency = avatarPrefs.paymentDefaults.currency;
-                        }
-                    }
-                } catch(e) {}
-                if (!explicitCurrency && avatar.currency) {
-                    explicitCurrency = avatar.currency;
+                // 2. Resolve currency — avatar preference takes priority over jurisdiction
+                var resolvedCurrency = null;
+                if (avatar.avatarPreferences && avatar.avatarPreferences.paymentDefaults &&
+                    avatar.avatarPreferences.paymentDefaults.currency) {
+                    resolvedCurrency = avatar.avatarPreferences.paymentDefaults.currency;
+                } else if (avatar.currency && avatar.currency !== 'USD') {
+                    resolvedCurrency = avatar.currency;
+                } else if (avatar.jurisdiction) {
+                    var JURISDICTION_CURRENCY = {
+                        'UK': 'GBP', 'JE': 'GBP', 'GG': 'GBP',
+                        'US-CA': 'USD', 'US-NY': 'USD', 'US-TX': 'USD',
+                        'AU': 'AUD', 'DE': 'EUR', 'FR': 'EUR',
+                        'SG': 'SGD', 'JP': 'JPY'
+                    };
+                    resolvedCurrency = JURISDICTION_CURRENCY[avatar.jurisdiction] || 'USD';
                 }
-                var resolvedCurrency = explicitCurrency
-                    || (avatar.jurisdiction ? (JURISDICTION_CURRENCY[avatar.jurisdiction] || 'USD') : 'USD');
-                localStorage.setItem('vendeeX_currency', resolvedCurrency);
+                if (resolvedCurrency) {
+                    localStorage.setItem('vendeeX_currency', resolvedCurrency);
+                }
+
+                // 3. Jurisdiction and buyer location
+                if (avatar.jurisdiction) {
+                    localStorage.setItem('vendeeX_jurisdiction', avatar.jurisdiction);
+                    localStorage.setItem('vendeeX_buyerLocation', avatar.jurisdiction);
+                }
+                if (avatar.valueRanking) localStorage.setItem('vendeeX_valueRanking', JSON.stringify(avatar.valueRanking));
+
+                // 4. Delivery speed from avatarPreferences
+                if (avatar.avatarPreferences && avatar.avatarPreferences.deliveryLogistics && avatar.avatarPreferences.deliveryLogistics.speedPreference) {
+                    localStorage.setItem('vendeeX_prefDeliverySpeed', avatar.avatarPreferences.deliveryLogistics.speedPreference);
+                } else if (avatar.prefDeliverySpeed) {
+                    localStorage.setItem('vendeeX_prefDeliverySpeed', avatar.prefDeliverySpeed);
+                }
+                // 5. Free returns from avatarPreferences
+                if (avatar.avatarPreferences && avatar.avatarPreferences.trustRisk && avatar.avatarPreferences.trustRisk.minReturnWindowDays !== undefined) {
+                    localStorage.setItem('vendeeX_prefFreeReturns', String(avatar.avatarPreferences.trustRisk.minReturnWindowDays >= 14));
+                } else if (avatar.prefFreeReturns !== undefined) {
+                    localStorage.setItem('vendeeX_prefFreeReturns', String(avatar.prefFreeReturns));
+                }
+                if (avatar.prefSustainability !== undefined) localStorage.setItem('vendeeX_prefSustainability', String(avatar.prefSustainability));
+                if (avatar.prefSustainabilityWeight !== undefined) localStorage.setItem('vendeeX_prefSustainabilityWeight', String(avatar.prefSustainabilityWeight));
+                // 6. Standing instructions
+                if (avatar.standingInstructions !== undefined) localStorage.setItem('vendeeX_standingInstructions', avatar.standingInstructions);
 
                 // Restore avatar into sessionStorage
                 sessionStorage.setItem('vendeeAvatar', JSON.stringify({

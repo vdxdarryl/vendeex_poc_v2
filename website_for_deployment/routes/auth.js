@@ -80,7 +80,10 @@ module.exports = function authRoutes(deps) {
                         fullName: existing.fullName,
                         location: existing.location,
                         buyLocal: existing.buyLocal,
-                        preferences: existing.preferences
+                        preferences: existing.preferences,
+                        currency: currency || 'USD',
+                        jurisdiction: jurisdiction || 'UK',
+                        avatarPreferences: avatarPreferences || {}
                     },
                     session: {
                         token: sessionToken,
@@ -164,7 +167,10 @@ module.exports = function authRoutes(deps) {
                     fullName: user.fullName,
                     location: user.location,
                     buyLocal: user.buyLocal,
-                    preferences: user.preferences
+                    preferences: user.preferences,
+                    currency: currency || 'USD',
+                    jurisdiction: jurisdiction || 'UK',
+                    avatarPreferences: avatarPreferences || {}
                 },
                 session: {
                     token: sessionToken,

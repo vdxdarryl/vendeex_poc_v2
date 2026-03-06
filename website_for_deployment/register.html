@@ -1680,6 +1680,28 @@
                 if (data.session && data.session.token) {
                     sessionStorage.setItem('vendeeToken', data.session.token);
                 }
+                if (data.user) {
+                    if (data.user.avatarPreferences && Object.keys(data.user.avatarPreferences).length > 0) {
+                        localStorage.setItem('vendeeX_avatarPreferences', JSON.stringify(data.user.avatarPreferences));
+                    }
+                    var resolvedCurrency = null;
+                    if (data.user.avatarPreferences && data.user.avatarPreferences.paymentDefaults && data.user.avatarPreferences.paymentDefaults.currency) {
+                        resolvedCurrency = data.user.avatarPreferences.paymentDefaults.currency;
+                    } else if (data.user.currency) {
+                        resolvedCurrency = data.user.currency;
+                    } else if (jurisdiction) {
+                        var JURISDICTION_CURRENCY_REG = {
+                            'UK': 'GBP', 'JE': 'GBP', 'GG': 'GBP',
+                            'US-CA': 'USD', 'US-NY': 'USD', 'US-TX': 'USD',
+                            'AU': 'AUD', 'DE': 'EUR', 'FR': 'EUR',
+                            'SG': 'SGD', 'JP': 'JPY'
+                        };
+                        resolvedCurrency = JURISDICTION_CURRENCY_REG[jurisdiction] || 'USD';
+                    }
+                    if (resolvedCurrency) {
+                        localStorage.setItem('vendeeX_currency', resolvedCurrency);
+                    }
+                }
             } catch (err) {
                 // Server unavailable — avatar saved locally, continue
             }

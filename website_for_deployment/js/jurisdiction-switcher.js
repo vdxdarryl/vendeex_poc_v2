@@ -77,7 +77,19 @@
         localStorage.setItem('vendeeX_buyerLocation', code);
         if (typeof PricingEngine !== 'undefined') {
             var currency = PricingEngine.getCurrencyForLocation(code);
-            localStorage.setItem('vendeeX_currency', currency);
+            // Only set currency from jurisdiction if no explicit preference exists
+            var existingCurrency = localStorage.getItem('vendeeX_currency');
+            var avatarPrefsRaw = localStorage.getItem('vendeeX_avatarPreferences');
+            var avatarCurrency = null;
+            try {
+                if (avatarPrefsRaw) {
+                    var ap = JSON.parse(avatarPrefsRaw);
+                    avatarCurrency = ap && ap.paymentDefaults && ap.paymentDefaults.currency;
+                }
+            } catch(e) {}
+            if (!existingCurrency && !avatarCurrency) {
+                localStorage.setItem('vendeeX_currency', currency);
+            }
         }
 
         // Update the display text
