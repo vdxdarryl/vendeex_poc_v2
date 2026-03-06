@@ -1,0 +1,37 @@
+2026-03-06T12:58:06Z create 100GB network volume
+2026-03-06T12:58:06Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:06Z image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:06Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:11Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:11Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:20Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:20Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:21Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:21Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:21Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:21Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:22Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:22Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:23Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:23Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:23Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:23Z error creating container: image pull: runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04: pending
+2026-03-06T12:58:48Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:58:56Z create container: still fetching image runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:04Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:04Z create container: still fetching image runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:05Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:05Z create container: still fetching image runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:15Z error pulling image: Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+2026-03-06T12:59:17Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:17Z error creating container: Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+2026-03-06T12:59:17Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:17Z error creating container: Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+2026-03-06T12:59:17Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:17Z error creating container: Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+2026-03-06T12:59:21Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:21Z error creating container: Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+2026-03-06T12:59:23Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:23Z error creating container: Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+2026-03-06T12:59:38Z create container runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+2026-03-06T12:59:38Z error creating container: Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)

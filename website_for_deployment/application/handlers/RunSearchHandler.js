@@ -1,6 +1,7 @@
 /**
  * Application: RunSearch handler.
- * Orchestrates parallel search (Affiliate.com, Channel3, AI), domain filters, and returns the same response shape as the legacy /api/search route.
+ * Orchestrates parallel search (Channel3, AI); Affiliate.com runs only as last-resort backfill when primary results are below MIN_RESULTS.
+ * Domain filters and response shape match the legacy /api/search route.
  */
 
 const { channel3Request } = require('../../infrastructure/Channel3Gateway');
@@ -37,23 +38,6 @@ function createRunSearchHandler(deps) {
         }
 
         const searchPromises = {};
-
-        if (affiliateApiKey && !isPharmaQuery) {
-            const affiliateBody = {
-                page: 1,
-                per_page: '100',
-                search: [{ field: 'name', value: query, operator: 'like' }],
-            };
-            searchPromises.affiliateCom = affiliateRequest(affiliateBaseUrl, affiliateApiKey, '/products', 'POST', affiliateBody)
-                .then(result => {
-                    const products = (result.data || []).map(p => transformAffiliateProduct(p)).filter(Boolean);
-                    return { products, source: 'affiliate.com', meta: result.meta || {} };
-                })
-                .catch(err => {
-                    console.error('[RunSearch] Affiliate.com error:', err.message);
-                    return { products: [], source: 'affiliate.com', error: err.message };
-                });
-        }
 
         if (channel3ApiKey && !isPharmaQuery) {
             const body = { query };
@@ -109,7 +93,7 @@ function createRunSearchHandler(deps) {
         });
 
         const searchDuration = Date.now() - startTime;
-        const affiliateProducts = results.affiliateCom?.products || [];
+        const affiliateProducts = []; // populated by last-resort backfill only
         const channel3Products = results.channel3?.products || [];
         const aiProducts = results.aiProviders?.products || [];
 
@@ -133,12 +117,13 @@ function createRunSearchHandler(deps) {
         const postFilterCount = qualifiedProducts.length + qualifiedAffiliateProducts.length;
 
         if (postFilterCount < MIN_RESULTS && !isPharmaQuery) {
+            console.log(`[RunSearch] Primary results below threshold (${postFilterCount}/${MIN_RESULTS}) — triggering Affiliate.com last-resort backfill`);
             const backfillPromises = [];
             if (affiliateApiKey) {
                 backfillPromises.push(
                     affiliateRequest(affiliateBaseUrl, affiliateApiKey, '/products', 'POST', {
-                        page: 2,
-                        per_page: '100',
+                        page: 1,
+                        per_page: '50',
                         search: [{ field: 'name', value: query, operator: 'like' }],
                     }).then(result => (result.data || []).map(p => transformAffiliateProduct(p)).filter(isQualifiedProduct)).catch(() => [])
                 );
