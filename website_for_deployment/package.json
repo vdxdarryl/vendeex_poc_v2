@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "netlify": "netlify dev",
     "test:search": "node -e \"const {MultiProviderSearch} = require('./services'); console.log('Services loaded successfully');\""
   },
   "keywords": [

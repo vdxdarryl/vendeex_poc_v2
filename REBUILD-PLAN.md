@@ -20,7 +20,7 @@ This document is the master plan. Implement in the **dev copy** (`VendeeX 2.0 De
 | **Services** | `services/` | `MultiProviderSearch`, `PharmaPricingService`, `ResultConsolidator`, providers (Claude, ChatGPT, Perplexity), `Channel3Service`, `AffiliateComService`, `VisitorTracker` — used by server but not behind a clear application boundary |
 | **Data access** | `db.js`, `server.js` | `db.js`: pool + `query()`; **user/session/avatar/audit logic and SQL live in server.js** (e.g. `findUserByEmail`, `createSession`, `recordSearchEvent`) |
 | **Client (UI)** | `js/*.js`, `*.html` | **Business logic in browser:** `orchestration.js` (curation, Miller’s Law, scoring/blending), `demo.js` (search flow, ACP handshake coordination), `qualifying-chat.js` / `refinement-chat.js` (conversation + API calls), `preference-scorer.js`, `pricing-engine.js`, `checkout.js`, etc. UI also holds state and drives workflows |
-| **Netlify functions** | `netlify/functions/*.js` | Thin wrappers (e.g. `search.js`, `refine.js`, `auth.js`) that proxy to or duplicate behaviour that lives in `server.js` |
+| *(Removed)* | — | Netlify functions were removed; app runs as a single Express server (e.g. on Railway). |
 | **Config** | `.env`, `config` in server | API keys and feature flags read in server (and some in client); no single config abstraction |
 
 ### 1.2 Pain Points
@@ -41,7 +41,7 @@ This document is the master plan. Implement in the **dev copy** (`VendeeX 2.0 De
    Route handlers call services directly, build prompts and DTOs inline, and know about DB and external APIs. Client scripts call specific endpoints and assume response shapes. Changing one flow often touches server and multiple JS files.
 
 5. **Duplication and drift**  
-   Netlify functions vs Express routes; client-side vs server-side validation and rules; multiple places that know about “product” or “search” shape. Risk of behaviour drifting between environments.
+   Client-side vs server-side validation and rules; multiple places that know about “product” or “search” shape. Risk of behaviour drifting between environments.
 
 6. **Performance and efficiency**  
    - All search orchestration (parallel providers, dedup, filter, backfill) runs inside a single request handler; harder to cache, queue, or scale independently.  

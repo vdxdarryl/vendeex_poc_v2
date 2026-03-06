@@ -1,0 +1,235 @@
+# docker-compose.yaml
+# VX-029-CAP-LLM: Self-Hosted Intelligence Layer
+# Version: 1.0 | 05/03/2026
+# Classification: CONFIDENTIAL
+# (c) 2026 Vendee Labs Limited
+#
+# NOTE: This deployment is on RunPod (US-incorporated) for PoC iteration only.
+# Must migrate to a qualifying European-incorporated provider before any
+# member data or investor demonstration. See VX-029 §5.2 Test 1.
+#
+# Target: Single RTX A6000 48GB GPU, EU-Central region, RunPod Pod
+# All five services communicate over internal Docker network only.
+
+version: "3.8"
+
+services:
+
+  # ------------------------------------------------------------
+  # Vector Store (Qdrant)
+  # Rust-native, Apache 2.0, gRPC + REST API
+  # No GPU required. RAM-resident index, NVMe-persisted payload.
+  # ------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: vx-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC API
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__STORAGE__ON_DISK_PAYLOAD=true
+    networks:
+      - vx-intelligence
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ------------------------------------------------------------
+  # Layer 3: LLM (Qwen 2.5-32B via vLLM)
+  # OpenAI-compatible API endpoint, continuous batching
+  # GPU allocation: ~45% of 48GB = ~21GB VRAM
+  # 120s start period: allows model weight loading from cache
+  # ------------------------------------------------------------
+  vllm-llm:
+    image: vllm/vllm-openai:latest
+    container_name: vx-llm
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - model_cache:/root/.cache/huggingface
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    command: >
+      --model Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4
+      --quantization gptq
+      --max-model-len 32768
+      --gpu-memory-utilization 0.45
+      --dtype half
+      --enforce-eager
+      --api-key ${VX_LLM_API_KEY}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - vx-intelligence
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # ------------------------------------------------------------
+  # Layer 1: Embedding (Qwen3-Embedding-4B)
+  # HuggingFace Text Embeddings Inference
+  # GPU allocation: ~17% of 48GB = ~8GB VRAM
+  # Exposes port 8001 externally, internal container port 80
+  # ------------------------------------------------------------
+  tei-embedding:
+    image: ghcr.io/huggingface/text-embeddings-inference:latest
+    container_name: vx-embedding
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    volumes:
+      - model_cache:/data
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    command: >
+      --model-id Qwen/Qwen3-Embedding-4B
+      --dtype float16
+      --max-client-batch-size 64
+      --max-batch-tokens 16384
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - vx-intelligence
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ------------------------------------------------------------
+  # Layer 2: Reranker (Qwen3-Reranker-8B)
+  # HuggingFace Text Embeddings Inference
+  # GPU allocation: ~12% of 48GB = ~5GB VRAM
+  # Exposes port 8002 externally, internal container port 80
+  # ------------------------------------------------------------
+  tei-reranker:
+    image: ghcr.io/huggingface/text-embeddings-inference:latest
+    container_name: vx-reranker
+    restart: unless-stopped
+    ports:
+      - "8002:80"
+    volumes:
+      - model_cache:/data
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    command: >
+      --model-id Qwen/Qwen3-Reranker-8B
+      --dtype float16
+      --max-client-batch-size 64
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - vx-intelligence
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ------------------------------------------------------------
+  # RAG Orchestration Service (PoC placeholder)
+  # Python/FastAPI -- production migration to Rust per VX-023-ENG
+  # Coordinates five-step RAG pipeline per VX-029 §6.4
+  # Exposes WebSocket for streaming to chat interface
+  # ------------------------------------------------------------
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile
+    container_name: vx-orchestrator
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Layer 3: LLM endpoint
+      - VX_LLM_BASE_URL=http://vx-llm:8000/v1
+      - VX_LLM_API_KEY=${VX_LLM_API_KEY}
+      - VX_LLM_MODEL=Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4
+      # Layer 1: Embedding endpoint
+      - VX_EMBED_URL=http://vx-embedding:80
+      # Layer 2: Reranker endpoint
+      - VX_RERANK_URL=http://vx-reranker:80
+      # Vector store
+      - VX_QDRANT_HOST=vx-qdrant
+      - VX_QDRANT_GRPC_PORT=6334
+      - VX_QDRANT_REST_PORT=6333
+      # Retrieval configuration
+      - VX_EMBED_DIMENSIONS=768
+      - VX_RETRIEVAL_TOP_K=50
+      - VX_RERANK_TOP_N=10
+      # Operational database (deterministic retrieval -- not active in PoC)
+      - VX_DB_HOST=${VX_DB_HOST:-localhost}
+      - VX_DB_PORT=${VX_DB_PORT:-5432}
+      - VX_DB_NAME=${VX_DB_NAME:-vendeex}
+      - VX_DB_USER=${VX_DB_USER:-vendeex}
+      - VX_DB_PASSWORD=${VX_DB_PASSWORD:-}
+      # External product search API keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY:-}
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      vllm-llm:
+        condition: service_healthy
+      tei-embedding:
+        condition: service_healthy
+      tei-reranker:
+        condition: service_healthy
+    networks:
+      - vx-intelligence
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# ------------------------------------------------------------
+# Persistent Volumes
+# model_cache: shared across vLLM and TEI containers
+# qdrant_data: vector store persistence
+# ------------------------------------------------------------
+volumes:
+  qdrant_data:
+    driver: local
+  model_cache:
+    driver: local
+
+# ------------------------------------------------------------
+# Internal Network
+# All inter-service communication isolated from host
+# No member data exposed outside this network boundary
+# ------------------------------------------------------------
+networks:
+  vx-intelligence:
+    driver: bridge
+    name: vx-intelligence-net

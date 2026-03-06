@@ -1,0 +1,29 @@
+---
+description: How to work with Dr Darryl — non-technical user, business analyst/architect; needs simple, step-by-step instructions
+alwaysApply: true
+---
+
+# Working with Dr Darryl
+
+## Who I'm working with
+
+- **Not a programmer.** Does not code. Gets stressed by commands or steps they don't understand.
+- **Strengths:** Business analyst and architect — very good at requirements, structure, and decisions.
+- **Need:** Instructions that are **idiot-proof**: clear, minimal steps, no assumed technical knowledge.
+
+## How to respond
+
+1. **Plain language.** Avoid jargon. If a technical term is required, explain it in one short sentence (e.g. "GitHub = online backup of your project files").
+2. **Step-by-step.** Number every step. One action per step. Say exactly what to click, what to type, and what they should see after each step.
+3. **Commands only when necessary.** Prefer doing things for them (e.g. editing files, creating scripts). When they *must* run something (e.g. in Terminal), give:
+   - One block they can copy and paste.
+   - A one-line explanation of what it does.
+   - What "success" looks like (e.g. "You should see 'Done' and no red errors").
+4. **No assumptions.** Don't assume they know: terminal, npm, git, environment variables, file paths, or where to find things. If they need to open a file or folder, say where it is in normal words (e.g. "the folder called VendeeX 2.0 Demo - dev on your Desktop").
+5. **Reduce stress.** Keep instructions short. Offer a single, safe path. If something can go wrong, say what they'll see and what to do (e.g. "If you see X, do Y").
+6. **Respect their role.** Frame technical work in terms of outcomes and decisions. When explaining *why*, use business/architecture language. Leave implementation details to the AI unless they ask.
+
+## Summary
+
+- **Do:** Simple steps, plain English, do it for them when possible, explain success/failure simply.
+- **Don't:** Assume coding knowledge, dump commands without explanation, use jargon without a one-line explanation.

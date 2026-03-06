@@ -5,7 +5,7 @@
  */
 
 // API Configuration
-// Works for both local development and Netlify deployment
+// Works for both local development and Railway deployment
 const API_BASE_URL = '';
 
 // Use real API search or fallback to demo mode
@@ -278,7 +278,7 @@ async function callMultiProviderSearch(query) {
         consolidate: searchConfig.consolidate
     };
 
-    // Use /api/search for both local and Netlify (the function handles multi-provider)
+    // Use /api/search for both local and Railway (Express server handles multi-provider)
     const response = await fetch(`${API_BASE_URL}/api/search`, {
         method: 'POST',
         headers: {
@@ -294,7 +294,7 @@ async function callMultiProviderSearch(query) {
 
     const data = await response.json();
 
-    // The response already has the right format from the updated Netlify function
+    // The response already has the right format from the server
     // Check if it's a multi-provider response or legacy response
     if (data.isMultiProvider || data.confidence) {
         return transformMultiProviderResponse(data);
@@ -324,7 +324,7 @@ async function callLegacySearch(query) {
 
 // Transform multi-provider response to display format
 function transformMultiProviderResponse(data) {
-    // Handle both formats: direct (Netlify) and nested consolidated (local server)
+    // Handle both formats: direct and nested consolidated (server response shape)
     const isDirectFormat = data.aiSummary !== undefined || data.products !== undefined;
     const consolidated = isDirectFormat ? data : (data.consolidated || {});
 

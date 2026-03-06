@@ -39,9 +39,15 @@ fi
 
 echo ""
 echo "→ Pushing to GitHub..."
-# Ensure we're on main (GitHub default) and push
+# Ensure we're on main (GitHub default)
 git branch -M main
-git push -u origin main
+
+# If remote has commits we don't have (e.g. README created on GitHub), pull first then push
+if ! git push -u origin main 2>/dev/null; then
+  echo "  Remote has existing commits. Pulling and merging..."
+  git pull origin main --allow-unrelated-histories --no-edit
+  git push -u origin main
+fi
 
 echo ""
 echo "Done. Your dev copy is backed up to: $REPO_URL"

@@ -8,10 +8,10 @@ This folder is a **full copy** of the live app. Use this copy for all developmen
 
 ## What was copied
 
-- All source code (`website_for_deployment/`, `api/`, `netlify/`, `mcp-servers/`)
-- Config files (`.env`, `.env.example`, `vercel.json`, `_redirects`)
+- All source code (`website_for_deployment/`, `api/`, `mcp-servers/`)
+- Config files (`.env`, `.env.example`)
 - Supporting docs, assets, and data folders
-- **Not** copied: `node_modules`, `.git`, `.netlify` (so this copy is independent and you reinstall/link as needed)
+- **Not** copied: `node_modules`, `.git` (so this copy is independent and you reinstall as needed)
 
 ## Get the dev copy running
 
@@ -29,7 +29,7 @@ This folder is a **full copy** of the live app. Use this copy for all developmen
    ```bash
    npm start
    ```
-   Or use `netlify dev` if you use Netlify locally.
+   The app runs as a single Express server (deployed on Railway).
 
 4. **MCP server** (if you use it):
    ```bash
@@ -52,7 +52,7 @@ This folder is a **full copy** of the live app. Use this copy for all developmen
 ## Deploying
 
 - Do **not** deploy from this folder to your **production** site.
-- To go live with changes: copy or merge changes back into `VendeeX 2.0 Demo/`, then build/deploy from there (or use a separate Netlify/Vercel “dev” site that points at this folder).
+- To go live with changes: deploy this copy to Railway (see **DEPLOY-VENDEEX-COM.md** for www.vendeex.com), or copy/merge changes into the production folder and deploy from there.
 
 ## Summary
 

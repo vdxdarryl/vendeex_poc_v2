@@ -7,11 +7,11 @@ Recommendations for building an **efficient, highly performant** VendeeX impleme
 ## 1. Environment & Stack Summary
 
 - **Runtime:** Node.js 18+
-- **Server:** Express (and Netlify serverless functions)
+- **Server:** Express
 - **Data:** PostgreSQL (e.g. Railway/Neon), connection pooling
 - **External APIs:** Channel3, Affiliate.com, Perplexity, Claude, OpenAI (LLMs and product search)
 - **Client:** Vanilla JS (or minimal framework), HTML/CSS
-- **Deployment:** Netlify (and/or Express on Railway)
+- **Deployment:** Railway
 
 Best practices below are tailored to this environment.
 
@@ -77,7 +77,7 @@ Best practices below are tailored to this environment.
 ### 3.2 Network and API usage
 
 - **Fewer round-trips:** Prefer one “get everything needed for this view” call over many small calls (e.g. one “search + ACP context” response instead of search then N ACP calls). Design the API around use cases.
-- **Compression:** Ensure the server sends gzip/Brotli for JSON and HTML (Netlify/Express can do this via middleware or platform config).
+- **Compression:** Ensure the server sends gzip/Brotli for JSON and HTML (Express middleware or Railway config).
 - **Caching:** Use `Cache-Control` for static assets (JS, CSS, images). For API responses, use short-lived caching only where safe (e.g. GET preferences with `private`, max-age=60). Don’t cache POST or mutating requests.
 
 ### 3.3 Rendering and responsiveness
