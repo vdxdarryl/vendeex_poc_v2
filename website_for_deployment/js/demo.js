@@ -2145,9 +2145,6 @@ function getShippingAddressDisplay() {
 function switchJurisdiction(jurisdictionCode) {
     localStorage.setItem('vendeeX_buyerLocation', jurisdictionCode);
 
-    // Update the currency for the new location
-    var currency = PricingEngine.getCurrencyForLocation(jurisdictionCode);
-    localStorage.setItem('vendeeX_currency', currency);
 
     // Update the jurisdiction display
     var currentDisplay = document.getElementById('jurisdictionCurrent');
