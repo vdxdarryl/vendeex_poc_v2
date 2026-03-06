@@ -4,8 +4,8 @@
  * Drop this script (after pricing-engine.js) onto ANY page to get
  * the floating "Demo: Buyer Location" panel in the bottom-right corner.
  *
- * It reads/writes `vendeeX_buyerLocation` and `vendeeX_currency` in
- * localStorage and calls PricingEngine helpers for currency mapping.
+ * It writes `vendeeX_buyerLocation` only. Currency is set exclusively from
+ * avatar preferences on login and registration (never by this switcher).
  *
  * On the demo page the full switchJurisdiction() in demo.js takes over
  * (it re-renders product cards etc.). On other pages this script handles
@@ -73,24 +73,8 @@
 
     // ---- Handle change ---------------------------------------------------
     function onJurisdictionChange(code) {
-        // Update localStorage
+        // Update localStorage (currency is set only from avatar preferences on login/registration)
         localStorage.setItem('vendeeX_buyerLocation', code);
-        if (typeof PricingEngine !== 'undefined') {
-            var currency = PricingEngine.getCurrencyForLocation(code);
-            // Only set currency from jurisdiction if no explicit preference exists
-            var existingCurrency = localStorage.getItem('vendeeX_currency');
-            var avatarPrefsRaw = localStorage.getItem('vendeeX_avatarPreferences');
-            var avatarCurrency = null;
-            try {
-                if (avatarPrefsRaw) {
-                    var ap = JSON.parse(avatarPrefsRaw);
-                    avatarCurrency = ap && ap.paymentDefaults && ap.paymentDefaults.currency;
-                }
-            } catch(e) {}
-            if (!existingCurrency && !avatarCurrency) {
-                localStorage.setItem('vendeeX_currency', currency);
-            }
-        }
 
         // Update the display text
         var currentEl = document.getElementById('jurisdictionCurrent');
