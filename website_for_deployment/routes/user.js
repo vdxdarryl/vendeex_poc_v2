@@ -227,7 +227,7 @@ module.exports = function userRoutes(deps) {
 
         const { jurisdiction, valueRanking, prefFreeReturns, prefDeliverySpeed,
                 prefSustainability, prefSustainabilityWeight, standingInstructions,
-                fullName, accountType, avatarPreferences } = req.body;
+                fullName, accountType, avatarPreferences, currency } = req.body;
 
         const existing = await authService.findAvatar(user.id) || {};
 
@@ -247,7 +247,8 @@ module.exports = function userRoutes(deps) {
             standingInstructions: standingInstructions !== undefined ? standingInstructions : (existing.standingInstructions || ''),
             keepInformed: existing.keepInformed || false,
             accountType: accountType || existing.accountType || user.accountType || 'personal',
-            avatarPreferences: avatarPreferences || existing.avatarPreferences || {}
+            avatarPreferences: avatarPreferences || existing.avatarPreferences || {},
+            currency: currency !== undefined ? currency : (existing.currency || 'USD')
         };
 
         await authService.upsertAvatar(user.id, updated);

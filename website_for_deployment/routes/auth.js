@@ -24,7 +24,7 @@ module.exports = function authRoutes(deps) {
         const { email, fullName, accountType, location, buyLocal, buyLocalRadius, preferences, keepInformed,
                 jurisdiction, valueRanking, prefFreeReturns, prefDeliverySpeed,
                 prefSustainability, prefSustainabilityWeight, standingInstructions,
-                avatarPreferences } = req.body;
+                avatarPreferences, currency } = req.body;
         if (!email || !fullName) {
             return res.status(400).json({
                 error: 'validation_error',
@@ -53,6 +53,7 @@ module.exports = function authRoutes(deps) {
                 };
                 await authService.createSession(sessionToken, sessionData);
 
+                const existingAvatar = await authService.findAvatar(existing.id);
                 await authService.upsertAvatar(existing.id, {
                     fullName: existing.fullName, email: existing.email,
                     location: existing.location, jurisdiction: jurisdiction || existing.jurisdiction,
@@ -65,7 +66,8 @@ module.exports = function authRoutes(deps) {
                     prefSustainabilityWeight: prefSustainabilityWeight || existing.prefSustainabilityWeight,
                     standingInstructions: standingInstructions !== undefined ? standingInstructions : existing.standingInstructions,
                     keepInformed: existing.keepInformed, accountType: existing.accountType,
-                    avatarPreferences: avatarPreferences || {}
+                    avatarPreferences: avatarPreferences || {},
+                    currency: currency !== undefined ? currency : (existingAvatar?.currency || 'USD')
                 });
 
                 console.log(`[AUTH] Avatar updated: ${email}`);
@@ -138,7 +140,8 @@ module.exports = function authRoutes(deps) {
                 prefSustainabilityWeight: prefSustainabilityWeight || 3,
                 standingInstructions: standingInstructions || '',
                 keepInformed: user.keepInformed, accountType: user.accountType,
-                avatarPreferences: avatarPreferences || {}
+                avatarPreferences: avatarPreferences || {},
+                currency: currency || 'USD'
             });
 
             await insertAuditEvent({

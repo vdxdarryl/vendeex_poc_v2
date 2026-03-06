@@ -17,8 +17,8 @@ class AvatarRepository {
                 buy_local_radius, preferences, value_ranking,
                 pref_free_returns, pref_delivery_speed, pref_sustainability,
                 pref_sustainability_weight, standing_instructions,
-                keep_informed, account_type, avatar_preferences)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+                keep_informed, account_type, avatar_preferences, currency)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
             ON CONFLICT (user_id) DO UPDATE SET
                 full_name = EXCLUDED.full_name, email = EXCLUDED.email,
                 location = EXCLUDED.location, jurisdiction = EXCLUDED.jurisdiction,
@@ -32,7 +32,9 @@ class AvatarRepository {
                 standing_instructions = EXCLUDED.standing_instructions,
                 keep_informed = EXCLUDED.keep_informed,
                 account_type = EXCLUDED.account_type,
-                avatar_preferences = EXCLUDED.avatar_preferences, updated_at = NOW()`,
+                avatar_preferences = EXCLUDED.avatar_preferences,
+                currency = EXCLUDED.currency,
+                updated_at = NOW()`,
             [userId, avatarData.fullName, avatarData.email,
              JSON.stringify(avatarData.location || null),
              avatarData.jurisdiction || 'UK',
@@ -47,7 +49,8 @@ class AvatarRepository {
              avatarData.standingInstructions || '',
              avatarData.keepInformed || false,
              avatarData.accountType || 'personal',
-             JSON.stringify(avatarData.avatarPreferences || {})]
+             JSON.stringify(avatarData.avatarPreferences || {}),
+             avatarData.currency || 'USD']
         );
     }
 
@@ -72,7 +75,8 @@ class AvatarRepository {
             standingInstructions: row.standing_instructions || '',
             keepInformed: row.keep_informed,
             accountType: row.account_type,
-            avatarPreferences: row.avatar_preferences || {}
+            avatarPreferences: row.avatar_preferences || {},
+            currency: row.currency || 'USD'
         };
     }
 }

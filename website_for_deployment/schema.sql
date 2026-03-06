@@ -83,6 +83,7 @@ ALTER TABLE avatars ADD COLUMN IF NOT EXISTS pref_sustainability BOOLEAN NOT NUL
 ALTER TABLE avatars ADD COLUMN IF NOT EXISTS pref_sustainability_weight INTEGER NOT NULL DEFAULT 3;
 ALTER TABLE avatars ADD COLUMN IF NOT EXISTS standing_instructions TEXT NOT NULL DEFAULT '';
 ALTER TABLE avatars ADD COLUMN IF NOT EXISTS avatar_preferences JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE avatars ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'USD';
 
 CREATE INDEX IF NOT EXISTS idx_avatars_user_id ON avatars (user_id);
 
