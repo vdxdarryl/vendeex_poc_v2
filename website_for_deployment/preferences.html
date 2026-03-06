@@ -964,6 +964,21 @@
                 } catch(e) {}
             }
 
+            // Persist to server when logged in so currency (and avatar_preferences) save to PostgreSQL
+            var token = localStorage.getItem('vendeeX_sessionToken');
+            if (token && prefs.economic && prefs.economic.currency) {
+                var avatarPayload = { currency: document.getElementById('currencyPref').value };
+                try {
+                    var existingPrefs = localStorage.getItem('vendeeX_avatarPreferences');
+                    if (existingPrefs) avatarPayload.avatarPreferences = JSON.parse(existingPrefs);
+                } catch(e) {}
+                fetch('/api/user/avatar', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(avatarPayload)
+                }).catch(function(err) { console.warn('[Preferences] Avatar save failed:', err.message); });
+            }
+
             // Show toast
             var toast = document.getElementById('successToast');
             toast.classList.add('show');
