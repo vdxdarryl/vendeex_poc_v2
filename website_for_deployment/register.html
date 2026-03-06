@@ -1520,9 +1520,10 @@
             var jurisdiction = document.getElementById('jurisdiction').value;
             var currency = JURISDICTION_CURRENCY[jurisdiction] || 'USD';
             var select = document.getElementById('prefCurrencySelect');
-            if (select) select.value = currency;
+            if (select && !select._userModified) select.value = currency;
         }
         document.getElementById('jurisdiction').addEventListener('change', updateCurrencyDisplay);
+        document.getElementById('prefCurrencySelect').addEventListener('change', function() { this._userModified = true; });
 
         // ---- Helper: get selected pill value ----
         function getPillValue(prefAttr) {
