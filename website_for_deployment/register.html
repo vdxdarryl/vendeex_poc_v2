@@ -1666,6 +1666,7 @@
                         standingInstructions: standingInstructions,
                         buyLocal: buyLocalToggle.checked,
                         buyLocalRadius: buyLocalToggle.checked ? parseInt(selectedRadius) : null,
+                        currency: (document.getElementById('currencyPref') || document.getElementById('prefCurrencySelect')).value,
                         // Backward compat fields derived from new prefs
                         valueRanking: JSON.parse(localStorage.getItem('vendeeX_valueRanking')),
                         prefFreeReturns: avatarPreferences.trustRisk.minReturnWindowDays >= 14,
