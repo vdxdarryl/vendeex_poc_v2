@@ -1,4 +1,5 @@
 /**
+ * copyright Dr Darryl Carlton
  * Application: RunSearch handler.
  * Orchestrates parallel search (Channel3, AI); Affiliate.com runs only as last-resort backfill when primary results are below MIN_RESULTS.
  * Domain filters and response shape match the legacy /api/search route.
