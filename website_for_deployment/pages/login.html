@@ -165,16 +165,30 @@
                     localStorage.setItem('vendeeX_avatarPreferences', JSON.stringify(avatar.avatarPreferences));
                 }
 
-                // Derive currency from jurisdiction
                 const JURISDICTION_CURRENCY = {
                     'UK': 'GBP', 'JE': 'GBP', 'GG': 'GBP',
                     'US-CA': 'USD', 'US-NY': 'USD', 'US-TX': 'USD',
                     'AU': 'AUD', 'DE': 'EUR', 'FR': 'EUR',
                     'SG': 'SGD', 'JP': 'JPY'
                 };
-                if (avatar.jurisdiction) {
-                    localStorage.setItem('vendeeX_currency', JURISDICTION_CURRENCY[avatar.jurisdiction] || 'USD');
+                // Respect explicit avatar currency preference; only fall back to jurisdiction map
+                // if no preference has been saved.
+                var explicitCurrency = null;
+                try {
+                    var avatarPrefsRaw = localStorage.getItem('vendeeX_avatarPreferences');
+                    if (avatarPrefsRaw) {
+                        var avatarPrefs = JSON.parse(avatarPrefsRaw);
+                        if (avatarPrefs && avatarPrefs.paymentDefaults && avatarPrefs.paymentDefaults.currency) {
+                            explicitCurrency = avatarPrefs.paymentDefaults.currency;
+                        }
+                    }
+                } catch(e) {}
+                if (!explicitCurrency && avatar.currency) {
+                    explicitCurrency = avatar.currency;
                 }
+                var resolvedCurrency = explicitCurrency
+                    || (avatar.jurisdiction ? (JURISDICTION_CURRENCY[avatar.jurisdiction] || 'USD') : 'USD');
+                localStorage.setItem('vendeeX_currency', resolvedCurrency);
 
                 // Restore avatar into sessionStorage
                 sessionStorage.setItem('vendeeAvatar', JSON.stringify({

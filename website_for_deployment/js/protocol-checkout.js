@@ -913,7 +913,7 @@
         lines.push('EVENT LOG');
         lines.push(dash);
         allEvents.forEach(function (evt) {
-            if (evt.text) lines.push(evt.timestamp + '  ' + evt.text);
+            if (evt.text) lines.push(((evt.time || '').split('T')[1] || '').substring(0, 12) + '  ' + evt.text);
         });
         lines.push('');
         lines.push(sep);
