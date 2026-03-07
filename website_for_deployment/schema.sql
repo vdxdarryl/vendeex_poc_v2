@@ -266,3 +266,21 @@ CREATE TABLE IF NOT EXISTS report_log (
 );
 
 CREATE INDEX IF NOT EXISTS idx_report_log_date ON report_log (report_date);
+
+-- ─── QDRANT DEAD-LETTER QUEUE ────────────────────────────────
+-- Captures failed Qdrant upsert events for later retry.
+-- See infrastructure/DeadLetterService.js
+CREATE TABLE IF NOT EXISTS qdrant_dead_letter (
+    id          BIGSERIAL   PRIMARY KEY,
+    collection  TEXT        NOT NULL,
+    point_id    TEXT        NOT NULL,
+    vector      JSONB,
+    payload     JSONB       NOT NULL,
+    error       TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    retried_at  TIMESTAMPTZ,
+    requeued    BOOLEAN     NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX IF NOT EXISTS idx_qdl_requeued    ON qdrant_dead_letter (requeued);
+CREATE INDEX IF NOT EXISTS idx_qdl_created_at  ON qdrant_dead_letter (created_at);
