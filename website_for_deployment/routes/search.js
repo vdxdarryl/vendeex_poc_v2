@@ -14,6 +14,7 @@ const express = require('express');
 const QwenProvider = require('../services/providers/QwenProvider');
 const { captureQualify, captureSearch, captureRefine, captureCartAdd } = require('../services/SessionCaptureService');
 const { captureOutcome } = require('../services/PopulationCaptureService');
+const { captureConfirm, captureReject } = require('../services/FeedbackCaptureService');
 const { buildQualifyContext } = require('../services/RAGService');
 
 module.exports = function searchRoutes(deps) {
@@ -296,6 +297,29 @@ module.exports = function searchRoutes(deps) {
     }
 
     res.json({ success: true, captured: true });
+  });
+
+
+  // ─── POST /api/session/feedback ──────────────────────────────────────────────
+  // Phase D+: explicit buyer feedback from All Products card.
+  // confirm = buyer marked product as good fit (✓)
+  // reject  = buyer dismissed product with reason (✗ + reason chip)
+  // Both signals write to member_sessions; reject also writes to population_corpus.
+
+  router.post('/session/feedback', async (req, res) => {
+    const { product, originalQuery, feedback, reason } = req.body;
+    if (!product || !feedback) return res.status(400).json({ success: false, error: 'product and feedback required' });
+
+    const sessionId = await resolveSessionId(req);
+    const query     = originalQuery || '';
+
+    if (feedback === 'confirm') {
+      captureConfirm(sessionId, query, product);
+    } else if (feedback === 'reject') {
+      captureReject(sessionId, query, product, reason || 'not_specified');
+    }
+
+    res.json({ success: true, feedback, reason: reason || null });
   });
 
   return router;
