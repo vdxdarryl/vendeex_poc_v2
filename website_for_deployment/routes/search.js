@@ -7,6 +7,7 @@
  *   2. Claude (ANTHROPIC_API_KEY)
  *   3. OpenAI (OPENAI_API_KEY)
  *
+ * Phase B: session capture wired at four stages via SessionCaptureService (fire-and-forget).
  * Product search providers unchanged (Channel3, Affiliate.com, Claude, ChatGPT, Perplexity).
  */
 
@@ -14,6 +15,7 @@
 
 const express = require('express');
 const QwenProvider = require('../services/providers/QwenProvider');
+const { captureQualify, captureSearch, captureRefine, captureCartAdd } = require('../services/SessionCaptureService');
 
 module.exports = function searchRoutes(deps) {
   const {
@@ -23,8 +25,6 @@ module.exports = function searchRoutes(deps) {
   } = deps;
 
   const router = express.Router();
-
-  // Initialise Qwen once at route setup time
   const _qwen = new QwenProvider(process.env.VLLM_URL);
 
   // ─── LLM helpers ────────────────────────────────────────────────────────────
@@ -63,6 +63,19 @@ module.exports = function searchRoutes(deps) {
     throw new Error('No LLM provider available');
   }
 
+  // ─── Session ID helper ───────────────────────────────────────────────────────
+  // Priority: authenticated userId > visitorHash > anonymous fallback
+  async function resolveSessionId(req) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (token) {
+      try {
+        const session = await authService.findSession(token);
+        if (session?.userId) return 'user-' + session.userId;
+      } catch (_) {}
+    }
+    return req.visitorHash || 'anon-' + Date.now();
+  }
+
   // ─── POST /api/search ────────────────────────────────────────────────────────
 
   router.post('/search', async (req, res) => {
@@ -77,13 +90,19 @@ module.exports = function searchRoutes(deps) {
     }
     const availableProviders = multiProviderSearch.getAvailableProviders();
     if (!AFFILIATE_COM_API_KEY && !CHANNEL3_API_KEY && availableProviders.length === 0) {
-      return res.status(500).json({ error: 'no_providers', message: 'No search providers configured. Set AFFILIATE_COM_API_KEY, CHANNEL3_API_KEY, or AI provider keys.' });
+      return res.status(500).json({ error: 'no_providers', message: 'No search providers configured.' });
     }
     try {
       const result = await messageBus.dispatch(RUN_SEARCH, { query, options });
       const sourceAttribution = result.providers || [];
       const isPharmaQuery = result.isPharmaQuery || false;
       const searchDurationMs = parseInt(String(result.searchDuration || '0'), 10) || 0;
+
+      // Stage 2 capture — fire-and-forget
+      resolveSessionId(req).then(sessionId => {
+        captureSearch(sessionId, query, result.products || [], sourceAttribution);
+      });
+
       getVisitorCountry(req.visitorHash).then(country => {
         recordSearchEvent(query, country, 'standard', { isPharma: isPharmaQuery, providers: sourceAttribution, resultCount: result.productCount || 0, durationMs: searchDurationMs, hadError: false });
       });
@@ -91,7 +110,7 @@ module.exports = function searchRoutes(deps) {
     } catch (error) {
       console.error('[API] Search error:', error);
       if (error.message === 'no_providers') {
-        return res.status(500).json({ error: 'no_providers', message: 'No search providers configured. Set AFFILIATE_COM_API_KEY, CHANNEL3_API_KEY, or AI provider keys.' });
+        return res.status(500).json({ error: 'no_providers', message: 'No search providers configured.' });
       }
       return res.status(500).json({ error: 'search_failed', message: error.message || 'Search failed' });
     }
@@ -142,7 +161,7 @@ module.exports = function searchRoutes(deps) {
         }
         if (avatarData.avatarPreferences) {
           const ap = avatarData.avatarPreferences;
-          avatarContext += '\n\nFULL AVATAR PREFERENCES (7 categories — these are the buyer\'s persistent values):';
+          avatarContext += '\n\nFULL AVATAR PREFERENCES (7 categories):';
           if (ap.valuesEthics) { const ve = ap.valuesEthics; const p = []; if (ve.carbonSensitivity) p.push('Carbon sensitivity: ' + ve.carbonSensitivity); if (ve.fairTrade) p.push('Prefers fair trade'); if (ve.bCorpPreference) p.push('Prefers B-Corp certified'); if (ve.circularEconomy) p.push('Values circular economy'); if (ve.supplierDiversity) p.push('Values supplier diversity'); if (ve.animalWelfare && ve.animalWelfare !== 'none') p.push('Animal welfare: ' + ve.animalWelfare); if (ve.packagingPreference && ve.packagingPreference !== 'any') p.push('Packaging: ' + ve.packagingPreference); if (ve.labourStandards && ve.labourStandards !== 'medium') p.push('Labour standards: ' + ve.labourStandards); if (ve.localEconomy && ve.localEconomy !== 'medium') p.push('Local economy: ' + ve.localEconomy); if (p.length > 0) avatarContext += '\n[Values & Ethics] ' + p.join('. ') + '.'; }
           if (ap.trustRisk) { const tr = ap.trustRisk; const p = []; if (tr.minSellerRating && tr.minSellerRating !== 'any') p.push('Min seller rating: ' + tr.minSellerRating + ' stars'); if (tr.minWarrantyMonths > 0) p.push('Min warranty: ' + tr.minWarrantyMonths + ' months'); if (tr.minReturnWindowDays > 0) p.push('Min return window: ' + tr.minReturnWindowDays + ' days'); if (tr.disputeResolution && tr.disputeResolution !== 'either') p.push('Dispute resolution: ' + tr.disputeResolution); if (p.length > 0) avatarContext += '\n[Trust & Risk] ' + p.join('. ') + '.'; }
           if (ap.dataPrivacy) { const dp = ap.dataPrivacy; const p = []; if (!dp.shareName) p.push('Does NOT share name with sellers'); if (!dp.shareEmail) p.push('Does NOT share email with sellers'); if (!dp.shareLocation) p.push('Does NOT share location'); if (!dp.consentBeyondTransaction) p.push('No post-transaction data use'); if (p.length > 0) avatarContext += '\n[Data & Privacy] ' + p.join('. ') + '.'; }
@@ -153,7 +172,7 @@ module.exports = function searchRoutes(deps) {
         }
       }
 
-      const systemPrompt = 'You are the VendeeX buying agent. You work EXCLUSIVELY for the buyer — you have no seller incentives, no commissions, and no advertising relationships. Your job is to understand exactly what the buyer needs before searching. ' + avatarContext + ' CRITICAL RULE — NEVER RE-ASK KNOWN INFORMATION: The BUYER AVATAR DATA above contains everything the buyer has ALREADY told you — their budget, location, currency, value priorities, delivery preferences, sustainability preferences, and standing instructions. You MUST treat ALL of this as already answered. NEVER ask a question whose answer is in the avatar data. If the buyer set a budget, do NOT ask about budget. If the buyer set delivery preferences, do NOT ask about delivery speed. Only ask about things that are genuinely unknown. CONVERSATION RULES: 1. The buyer has entered an initial product query. First check what you ALREADY KNOW from the avatar data above (budget, location, preferences, etc.). Then assess what REMAINING details are needed. 2. If the query is underspecified AND there are unknowns NOT covered by avatar data, ask 1-3 SHORT qualifying questions about ONLY the missing information. 3. If the query combined with avatar data provides enough detail, confirm and proceed immediately — do not ask unnecessary questions. 4. Keep questions concise — one line each, as a numbered list. 5. Do NOT search for products yet. Only gather information. 6. When you have enough context (either from the initial query + avatar data, or after qualifying), output a SEARCH CONFIRMATION. PRODUCT CATEGORY QUESTION GUIDES (only ask about items NOT already in avatar data): - Electronics: specific features needed, brand preferences, use case - Shoes/Clothing: gender, size, use type (running/casual/formal), material preference - Home/Furniture: room, dimensions/space constraints, style - Food/Grocery: dietary requirements, quantity, organic/conventional preference - General: must-have features, brand preferences or exclusions, urgency RESPONSE FORMAT: You must respond with ONLY valid JSON: If asking questions: { "readyToSearch": false, "message": "Your natural language response to the buyer", "questions": ["Question 1?", "Question 2?", "Question 3?"] } If ready to search: { "readyToSearch": true, "message": "Based on your answers, I\'m searching for [summary of refined search]. Shall I go ahead?", "searchParams": { "query": "The refined, detailed search query to execute", "budget": "budget range if specified", "features": ["key feature 1", "key feature 2"] }, "confirmationSummary": "One-line summary of what will be searched" }';
+      const systemPrompt = 'You are the VendeeX buying agent. You work EXCLUSIVELY for the buyer — you have no seller incentives, no commissions, and no advertising relationships. Your job is to understand exactly what the buyer needs before searching. ' + avatarContext + ' CRITICAL RULE — NEVER RE-ASK KNOWN INFORMATION: The BUYER AVATAR DATA above contains everything the buyer has ALREADY told you. You MUST treat ALL of this as already answered. Only ask about things that are genuinely unknown. CONVERSATION RULES: 1. Check what you ALREADY KNOW from the avatar data. Assess what REMAINING details are needed. 2. If the query is underspecified AND there are unknowns NOT covered by avatar data, ask 1-3 SHORT qualifying questions about ONLY the missing information. 3. If the query combined with avatar data provides enough detail, confirm and proceed immediately. 4. Keep questions concise — one line each, as a numbered list. 5. Do NOT search for products yet. Only gather information. 6. When you have enough context, output a SEARCH CONFIRMATION. RESPONSE FORMAT: You must respond with ONLY valid JSON. If asking questions: { "readyToSearch": false, "message": "Your natural language response to the buyer", "questions": ["Question 1?", "Question 2?"] } If ready to search: { "readyToSearch": true, "message": "Based on your answers, I\'m searching for [summary]. Shall I go ahead?", "searchParams": { "query": "The refined, detailed search query to execute", "budget": "budget range if specified", "features": ["key feature 1"] }, "confirmationSummary": "One-line summary of what will be searched" }';
 
       const messages = conversationHistory.length > 0
         ? conversationHistory.map(m => ({ role: m.role, content: m.content }))
@@ -168,6 +187,13 @@ module.exports = function searchRoutes(deps) {
       } catch (parseErr) {
         console.error('[Qualify] Failed to parse response:', responseText);
         parsed = { readyToSearch: true, message: responseText || 'Searching for: "' + query + '"', searchParams: { query: query.trim() } };
+      }
+
+      // Stage 1 capture — fire-and-forget, only when qualify is complete
+      if (parsed.readyToSearch) {
+        resolveSessionId(req).then(sessionId => {
+          captureQualify(sessionId, query, parsed.searchParams?.query || query, conversationHistory, avatarData);
+        });
       }
 
       recordEngagement('qualify_chat', null, req.deviceType, { readyToSearch: parsed.readyToSearch || false, queryLength: query.length, llmProvider: llm.provider });
@@ -213,7 +239,7 @@ module.exports = function searchRoutes(deps) {
         if (!prefs.deliveryLogistics && prefs.convenience) { if (prefs.convenience.freeReturns) prefContext += '\n- Free returns preferred'; if (prefs.convenience.deliverySpeed) prefContext += '\n- Delivery: ' + prefs.convenience.deliverySpeed; }
       }
 
-      const systemPrompt = 'You are a shopping assistant for VendeeX, an AI-powered commerce platform. The buyer has already searched for products and received results. They are now refining their selection through conversation.\n\nCONTEXT:\n- Original search: "' + originalQuery + '"\n- Category: "' + (category || 'general') + '"\n- ' + products.length + ' products currently shown' + (prefContext ? '\n\nBUYER PREFERENCES (factor these into your ranking):' + prefContext : '') + '\n\nPRODUCT LIST:\n' + productList + '\n\nYOUR JOB:\n1. Determine which products from the numbered list match the buyer\'s refinement criteria\n2. Re-rank them so the best matches for the refinement appear first\n3. Explain what you did in 1-2 concise sentences\n4. Suggest 2-3 short follow-up refinements the buyer might want\n\nRULES:\n- Reference products ONLY by their [index] number\n- If ALL products match, return all indices\n- If NONE match, return an empty array and explain why\n- Keep explanations brief and helpful\n- Suggested follow-ups should be short phrases (3-6 words)\n\nRespond with ONLY valid JSON, no other text:\n{\n  "refinedIndices": [<indices of matching products in recommended order>],\n  "explanation": "<1-2 sentence explanation>",\n  "suggestedFollowUps": ["<suggestion 1>", "<suggestion 2>", "<suggestion 3>"]\n}';
+      const systemPrompt = 'You are a shopping assistant for VendeeX. The buyer has already searched for products and received results. They are now refining their selection.\n\nCONTEXT:\n- Original search: "' + originalQuery + '"\n- Category: "' + (category || 'general') + '"\n- ' + products.length + ' products currently shown' + (prefContext ? '\n\nBUYER PREFERENCES (factor these into your ranking):' + prefContext : '') + '\n\nPRODUCT LIST:\n' + productList + '\n\nYOUR JOB:\n1. Determine which products match the buyer\'s refinement criteria\n2. Re-rank them so the best matches appear first\n3. Explain what you did in 1-2 concise sentences\n4. Suggest 2-3 short follow-up refinements\n\nRULES:\n- Reference products ONLY by their [index] number\n- If ALL products match, return all indices\n- If NONE match, return an empty array and explain why\n- Keep explanations brief\n- Suggested follow-ups should be short phrases (3-6 words)\n\nRespond with ONLY valid JSON:\n{\n  "refinedIndices": [<indices in recommended order>],\n  "explanation": "<1-2 sentence explanation>",\n  "suggestedFollowUps": ["<suggestion 1>", "<suggestion 2>", "<suggestion 3>"]\n}';
 
       const messages = [];
       for (const turn of conversationHistory.slice(0, -1)) {
@@ -255,6 +281,11 @@ module.exports = function searchRoutes(deps) {
       const maxIndex = products.length - 1;
       const validIndices = (parsed.refinedIndices || []).filter(idx => typeof idx === 'number' && idx >= 0 && idx <= maxIndex);
 
+      // Stage 3 capture — fire-and-forget
+      resolveSessionId(req).then(sessionId => {
+        captureRefine(sessionId, message, validIndices, products.length, parsed.explanation);
+      });
+
       recordEngagement('refine_chat', null, req.deviceType, { refinedCount: validIndices.length, originalCount: products.length, llmProvider: llm.provider });
 
       res.json({
@@ -270,6 +301,19 @@ module.exports = function searchRoutes(deps) {
       console.error('[Refine] Error:', err.message);
       res.status(500).json({ success: false, error: 'Internal server error during refinement' });
     }
+  });
+
+  // ─── POST /api/session/cart-add ───────────────────────────────────────────────
+  // Stage 4 capture endpoint — called by client when buyer adds a product to cart.
+
+  router.post('/session/cart-add', async (req, res) => {
+    const { product, originalQuery } = req.body;
+    if (!product || !product.name) {
+      return res.status(400).json({ success: false, error: 'Product required' });
+    }
+    const sessionId = await resolveSessionId(req);
+    captureCartAdd(sessionId, product, originalQuery || '');
+    res.json({ success: true, captured: true });
   });
 
   return router;
