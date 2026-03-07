@@ -98,7 +98,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle new search button (bottom of results)
-    newSearchBtnBottom.addEventListener('click', resetDemo);
+    newSearchBtnBottom.addEventListener('click', function() {
+        // If the buyer has given us feedback signals during this session,
+        // use them to refine the search rather than discarding everything.
+        // The nav 'New Search' button remains the full-reset escape hatch.
+        var s = window._vxFeedbackState;
+        if (s && s.feedbackLog && s.feedbackLog.length > 0) {
+            triggerRefinedSearch();
+        } else {
+            resetDemo();
+        }
+    });
 });
 
 // Handle search form submission
@@ -2481,6 +2491,18 @@ function truncateText(text, maxLength) {
         });
         if (feedback === 'reject')   s.rejected.add(product.name);
         if (feedback === 'confirm')  s.confirmed.add(product.name);
+
+        // Update the bottom button label on first signal so the buyer
+        // understands the button now refines rather than resets
+        if (s.feedbackLog.length === 1) {
+            var btn = document.getElementById('newSearchBtnBottom');
+            if (btn) {
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="margin-right:6px;"><path d="M10 4v12M10 4l-4 4M10 4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Refine My Search';
+                btn.style.background = 'linear-gradient(135deg, #0369a1 0%, #0284c7 100%)';
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#0369a1';
+            }
+        }
     }
 
     function checkPoolExhausted() {
