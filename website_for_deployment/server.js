@@ -15,6 +15,7 @@ const path = require('path');
 require('dotenv').config({ override: true });
 
 const VisitorTracker = require('./services/VisitorTracker');
+const { deadLetter } = require('./infrastructure/DeadLetterService');
 const db = require('./db');
 
 // Import multi-provider search services
@@ -142,6 +143,21 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// ─── Admin: dead-letter requeue ─────────────────────────────────────────────
+app.post('/api/admin/requeue', async (req, res) => {
+    const secret = process.env.ADMIN_SECRET || 'vendeex-admin';
+    if (req.headers['x-admin-secret'] !== secret) {
+        return res.status(401).json({ error: 'unauthorized' });
+    }
+    try {
+        const qdrant = require('./services/QdrantService');
+        const result = await deadLetter.requeue(qdrant);
+        res.json({ success: true, ...result });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
   const providerHealth = multiProviderSearch.getHealth();
@@ -175,6 +191,9 @@ async function startServer() {
   if (dbConnected) {
     await db.runSchema();
   }
+
+  // Initialise dead-letter service with live db connection
+  deadLetter.init(db);
 
   // Initialize VisitorTracker with database (enables PostgreSQL analytics)
   await visitorTracker.init(db);
