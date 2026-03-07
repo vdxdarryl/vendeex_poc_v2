@@ -1007,19 +1007,48 @@
                 } catch(e) {}
             }
 
-            // Persist to server when logged in so currency (and avatar_preferences) save to PostgreSQL
+            // Persist full preferences to server when logged in
             var token = localStorage.getItem('vendeeX_sessionToken');
-            if (token && prefs.economic && prefs.economic.currency) {
-                var avatarPayload = { currency: document.getElementById('currencyPref').value };
+            if (token) {
+                // Build complete avatar payload from all preference categories
+                var avatarPayload = {};
+
+                // Currency (canonical top-level field)
+                if (prefs.economic && prefs.economic.currency) {
+                    avatarPayload.currency = prefs.economic.currency;
+                }
+
+                // Merge all preferences into avatarPreferences JSONB blob
+                var currentAvatarPrefs = {};
                 try {
-                    var existingPrefs = localStorage.getItem('vendeeX_avatarPreferences');
-                    if (existingPrefs) avatarPayload.avatarPreferences = JSON.parse(existingPrefs);
+                    var existing = localStorage.getItem('vendeeX_avatarPreferences');
+                    if (existing) currentAvatarPrefs = JSON.parse(existing);
                 } catch(e) {}
+
+                // Overwrite with fresh values from the form
+                currentAvatarPrefs.economic      = prefs.economic      || currentAvatarPrefs.economic;
+                currentAvatarPrefs.quality        = prefs.quality        || currentAvatarPrefs.quality;
+                currentAvatarPrefs.ethical        = prefs.ethical        || currentAvatarPrefs.ethical;
+                currentAvatarPrefs.convenience    = prefs.convenience    || currentAvatarPrefs.convenience;
+                currentAvatarPrefs.categories     = prefs.categories     || currentAvatarPrefs.categories;
+                currentAvatarPrefs.dataPrivacy    = prefs.dataPrivacy    || currentAvatarPrefs.dataPrivacy;
+                currentAvatarPrefs.communication  = prefs.communication  || currentAvatarPrefs.communication;
+
+                avatarPayload.avatarPreferences = currentAvatarPrefs;
+
+                // Update localStorage canonical copy before sending
+                localStorage.setItem('vendeeX_avatarPreferences', JSON.stringify(currentAvatarPrefs));
+
                 fetch('/api/user/avatar', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify(avatarPayload)
-                }).catch(function(err) { console.warn('[Preferences] Avatar save failed:', err.message); });
+                })
+                .then(function(r) {
+                    if (!r.ok) console.warn('[Preferences] Avatar save HTTP error:', r.status);
+                    else console.log('[Preferences] Full preferences saved to PostgreSQL ✓');
+                })
+                .catch(function(err) { console.warn('[Preferences] Avatar save failed:', err.message); });
             }
 
             // Show toast
