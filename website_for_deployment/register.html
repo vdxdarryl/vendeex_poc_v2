@@ -1719,6 +1719,10 @@
                     conditionTolerance: getPillValue('conditionTolerance') || 'new',
                     brandExclusions: brandExclusions.slice(),
                     countryPreferences: countryPreferences.slice()
+                },
+                sourcingPreference: {
+                    buyFrom:     { entries: buyFromEntries.slice() },
+                    dontBuyFrom: { entries: dontBuyFromEntries.slice() }
                 }
             };
         }
@@ -1858,7 +1862,7 @@
             } else {
                 document.getElementById('successMessage').textContent =
                     'Welcome, ' + firstName + '! Your agent now knows your preferences and will apply them to every search.' +
-                    (sourcingPref && sourcingPref.buyFrom && sourcingPref.buyFrom.country ? ' Preference: buy from ' + sourcingPref.buyFrom.country + '.' : '');
+                    (sourcingPref && sourcingPref.buyFrom && sourcingPref.buyFrom.entries && sourcingPref.buyFrom.entries.length ? ' Preference: buy from ' + sourcingPref.buyFrom.entries.map(function(e){ return e.country; }).join(', ') + '.' : '');
             }
             formSection.style.display = 'none';
             successSection.classList.add('visible');

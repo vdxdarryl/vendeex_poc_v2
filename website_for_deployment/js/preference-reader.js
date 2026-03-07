@@ -116,10 +116,12 @@
         },
 
         getSourcingPreference: function() {
-            // Read from avatarPreferences blob (server-saved) first,
-            // then fall back to the per-email preferences key (local only)
+            // Canonical location: top-level sourcingPreference in avatarPreferences blob (server-saved).
+            // Falls back to nested ethical.sourcingPreference for backward compat with older records,
+            // then to the per-email preferences key, then to the standalone localStorage key.
             try {
                 var ap = JSON.parse(localStorage.getItem('vendeeX_avatarPreferences') || 'null');
+                if (ap && ap.sourcingPreference) return ap.sourcingPreference;
                 if (ap && ap.ethical && ap.ethical.sourcingPreference) return ap.ethical.sourcingPreference;
             } catch(e) {}
             try {
@@ -127,8 +129,13 @@
                 if (email) {
                     var key = 'vendeeX_prefs_' + email;
                     var saved = JSON.parse(localStorage.getItem(key) || 'null');
+                    if (saved && saved.sourcingPreference) return saved.sourcingPreference;
                     if (saved && saved.ethical && saved.ethical.sourcingPreference) return saved.ethical.sourcingPreference;
                 }
+            } catch(e) {}
+            try {
+                var standalone = localStorage.getItem('vendeeX_sourcingPreference');
+                if (standalone) return JSON.parse(standalone);
             } catch(e) {}
             return null;
         }

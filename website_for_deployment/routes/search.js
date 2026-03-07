@@ -98,23 +98,29 @@ module.exports = function searchRoutes(deps) {
     if (avatarData.prefSustainability)  ctx += '\n- Sustainability preference: weight ' + (avatarData.prefSustainabilityWeight || 3) + '/5';
     if (avatarData.standingInstructions) ctx += '\n- Standing instructions: ' + avatarData.standingInstructions;
 
-    // Sourcing preferences (two-row buy-from / don't-buy-from)
+    // Sourcing preferences — canonical location is avatarPreferences.sourcingPreference (top-level).
+    // Fall back to legacy nested paths for backward compat.
     const sp = avatarData.sourcingPreference ||
+               (avatarData.avatarPreferences && avatarData.avatarPreferences.sourcingPreference) ||
                (avatarData.ethical && avatarData.ethical.sourcingPreference) ||
                (avatarData.avatarPreferences && avatarData.avatarPreferences.ethical && avatarData.avatarPreferences.ethical.sourcingPreference);
+
+    function entriesToLabel(side) {
+      if (!side) return null;
+      if (side.entries && side.entries.length) {
+        return side.entries.map(function(e) {
+          return e.country + (e.region ? ' (' + e.region + ')' : '');
+        }).join(', ');
+      }
+      if (side.country) return side.country + (side.regions && side.regions.length ? ' (' + side.regions.join(', ') + ')' : '');
+      return null;
+    }
+
     if (sp) {
-      const bf = sp.buyFrom;
-      const dbf = sp.dontBuyFrom;
-      if (bf && bf.country) {
-        let line = '\n- PREFERRED SOURCING (enforce as hard preference): buy from ' + bf.country;
-        if (bf.regions && bf.regions.length > 0) line += ', especially ' + bf.regions.join(' and ');
-        ctx += line;
-      }
-      if (dbf && dbf.country) {
-        let line = '\n- SOURCING PREFERENCE (avoid, deprioritise in results): prefer not to buy from ' + dbf.country;
-        if (dbf.regions && dbf.regions.length > 0) line += ' or ' + dbf.regions.join(' or ');
-        ctx += line;
-      }
+      const bfLabel = entriesToLabel(sp.buyFrom);
+      const dbfLabel = entriesToLabel(sp.dontBuyFrom);
+      if (bfLabel) ctx += '\n- PREFERRED SOURCING (prioritise in results): buy from ' + bfLabel;
+      if (dbfLabel) ctx += '\n- SOURCING PREFERENCE (deprioritise, do not exclude): prefer not to buy from ' + dbfLabel;
     }
     if (avatarData.searchRules) {
       const sr = avatarData.searchRules;

@@ -85,6 +85,10 @@ ALTER TABLE avatars ADD COLUMN IF NOT EXISTS standing_instructions TEXT NOT NULL
 ALTER TABLE avatars ADD COLUMN IF NOT EXISTS avatar_preferences JSONB NOT NULL DEFAULT '{}'::jsonb;
 ALTER TABLE avatars ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'USD';
 
+-- sourcingPreference is stored as a top-level key inside the avatar_preferences JSONB column.
+-- Structure: { buyFrom: { entries: [{country, region}] }, dontBuyFrom: { entries: [{country, region}] } }
+-- No separate column required — avatar_preferences JSONB covers this.
+
 CREATE INDEX IF NOT EXISTS idx_avatars_user_id ON avatars (user_id);
 
 -- =============================================

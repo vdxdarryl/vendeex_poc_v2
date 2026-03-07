@@ -873,11 +873,11 @@
                 },
                 ethical: {
                     sustainability: document.querySelector('input[name="sustainability"]:checked').value,
-                    ethicalSourcing: document.getElementById('ethicalSourcing').checked,
-                    sourcingPreference: {
-                        buyFrom:     { entries: prefBuyFromEntries.slice() },
-                        dontBuyFrom: { entries: prefDontBuyFromEntries.slice() }
-                    }
+                    ethicalSourcing: document.getElementById('ethicalSourcing').checked
+                },
+                sourcingPreference: {
+                    buyFrom:     { entries: prefBuyFromEntries.slice() },
+                    dontBuyFrom: { entries: prefDontBuyFromEntries.slice() }
                 },
                 convenience: {
                     deliverySpeed: document.querySelector('input[name="deliverySpeed"]:checked').value,
