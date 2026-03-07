@@ -58,6 +58,11 @@ class AuthService {
         return this.userRepo.incrementSearchCount(userId);
     }
 
+    async patchAvatarLearnings(userId, learnings) {
+        return this.avatarRepo.patchLearnings(userId, learnings);
+    }
+
+
     /**
      * Validate session token from request. Returns { session, user, token } or null.
      */
