@@ -18,6 +18,7 @@
 
 const crypto   = require('crypto');
 const qdrant   = require('./QdrantService');
+const { deadLetter } = require('../infrastructure/DeadLetterService');
 const embedding = require('./EmbeddingService');
 const { COLLECTIONS } = require('./QdrantService');
 
@@ -91,7 +92,11 @@ function captureOutcome(originalQuery, product, merchant) {
       capturedAt:       nowISO()
     };
 
-    await qdrant.upsertPoint(COLLECTIONS.POPULATION_CORPUS, pointId, vector, payload);
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.POPULATION_CORPUS, pointId, vector, payload);
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.POPULATION_CORPUS, pointId, vector, payload, dlErr.message);
+    }
     console.log('[PopulationCapture] outcome captured:', originalQuery.substring(0, 40), '->', product.name);
   });
 }
