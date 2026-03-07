@@ -15,102 +15,6 @@
     <link rel="stylesheet" href="../css/preference-match.css?v=2.1">
     <link rel="stylesheet" href="../css/demo-banner.css?v=4.1">
     <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
-    <style>
-        /* ── VX Pipeline Ticker — Times Square red on black ─────────── */
-        .vx-ticker {
-            background: #000;
-            border: 1px solid #ff2200;
-            border-radius: 6px;
-            padding: 0;
-            overflow: hidden;
-            font-family: 'Courier New', Courier, monospace;
-            box-shadow: 0 0 24px rgba(255, 34, 0, 0.25);
-            margin: 2rem auto;
-            max-width: 720px;
-        }
-        .vx-ticker__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1a0000;
-            padding: 0.5rem 1rem;
-            border-bottom: 1px solid #ff2200;
-        }
-        .vx-ticker__title {
-            color: #ff2200;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-        .vx-ticker__badge {
-            background: #1a0d00;
-            color: #f59e0b;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            padding: 0.2rem 0.5rem;
-            border: 1px solid #f59e0b;
-            border-radius: 3px;
-        }
-        .vx-ticker__lines {
-            padding: 0.75rem 1rem 0;
-            min-height: 48px;
-            max-height: 280px;
-            overflow-y: auto;
-            scrollbar-width: none;
-        }
-        .vx-ticker__lines::-webkit-scrollbar { display: none; }
-        .vx-ticker__line {
-            color: #661100;
-            font-size: 0.82rem;
-            line-height: 1.7;
-            opacity: 0;
-            transform: translateX(-8px);
-            animation: vxLineIn 0.3s ease forwards;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .vx-ticker__line::before {
-            content: '> ';
-            color: #ff2200;
-        }
-        .vx-ticker__line--active {
-            color: #ff2200;
-        }
-        .vx-ticker__line--done {
-            color: #881100;
-        }
-        @keyframes vxLineIn {
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .vx-ticker__cursor {
-            padding: 0 1rem 0.6rem;
-        }
-        .vx-ticker__cursor-dot {
-            color: #ff2200;
-            font-size: 0.9rem;
-            animation: vxBlink 0.9s step-end infinite;
-        }
-        @keyframes vxBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        /* Collapsed summary bar shown above results after search completes */
-        .vx-ticker--summary {
-            margin: 0 0 1rem 0;
-            max-width: 100%;
-            border-radius: 4px;
-        }
-        .vx-ticker--summary .vx-ticker__lines,
-        .vx-ticker--summary .vx-ticker__cursor { display: none; }
-        .vx-ticker--summary .vx-ticker__header { border-bottom: none; }
-        .vx-ticker--summary .vx-ticker__title {
-            font-size: 0.65rem;
-            color: #882200;
-        }
-    </style>
 </head>
 <body>
     <!-- Persistent Demo Banner - appears on every page -->
@@ -236,16 +140,35 @@
 
                 <!-- Main content area -->
                 <div class="demo-layout__main">
-                    <!-- Step 2: AI Pipeline Ticker -->
-                    <div id="searchProgress" class="search-progress" style="display:none;">
-                        <div id="vxTickerPanel" class="vx-ticker">
-                            <div class="vx-ticker__header">
-                                <span class="vx-ticker__title">&#x25B6; VENDEE AGENT PIPELINE</span>
-                                <span class="vx-ticker__badge">POWERED BY QWEN 2.5&#8209;32B</span>
+                    <!-- Step 2: AI Search Progress -->
+                    <div id="searchProgress" class="search-progress">
+                        <div class="progress-animation">
+                            <div class="progress-circle"></div>
+                            <span class="progress-icon">&#x1F916;</span>
+                        </div>
+                        <h2>AI Agents are Searching...</h2>
+                        <p id="searchQueryDisplay">Finding the perfect match for your request</p>
+
+                        <div class="progress-steps">
+                            <div class="progress-step" data-step="1">
+                                <span class="step-icon">1</span>
+                                <span class="step-text">Analyzing your requirements...</span>
                             </div>
-                            <div class="vx-ticker__lines" id="vxTickerLines"></div>
-                            <div class="vx-ticker__cursor" id="vxTickerCursor">
-                                <span class="vx-ticker__cursor-dot">&#x2588;</span>
+                            <div class="progress-step" data-step="2">
+                                <span class="step-icon">2</span>
+                                <span class="step-text">Searching across 500+ retailers...</span>
+                            </div>
+                            <div class="progress-step" data-step="3">
+                                <span class="step-icon">3</span>
+                                <span class="step-text">Comparing prices and features...</span>
+                            </div>
+                            <div class="progress-step" data-step="4">
+                                <span class="step-icon">4</span>
+                                <span class="step-text">Analyzing reviews and ratings...</span>
+                            </div>
+                            <div class="progress-step" data-step="5">
+                                <span class="step-icon">5</span>
+                                <span class="step-text">Curating top recommendations...</span>
                             </div>
                         </div>
                     </div>

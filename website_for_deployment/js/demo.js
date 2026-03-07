@@ -143,13 +143,13 @@ function showSearchProgress() {
     requestSection.style.display = 'none';
     resultsSection.classList.remove('active');
     searchProgress.classList.add('active');
-    searchProgress.style.display = '';   // clear inline display:none set by ticker init
 
     // Hide buyer policies panel during search
     var policiesPanel = document.getElementById('buyerPoliciesPanel');
     if (policiesPanel) policiesPanel.style.display = 'none';
 
-    // Update the display text (element may not exist in all layouts)
+    // Update the display text
+    var searchQueryDisplay = document.getElementById('searchQueryDisplay');
     if (searchQueryDisplay) {
         searchQueryDisplay.textContent = `"${truncateText(currentSearchQuery, 80)}"`;
     }
@@ -357,18 +357,8 @@ function detectCategory(query) {
 
 // Show results
 function showResults(apiResponse = null, error = null) {
-    // Hide the ticker search panel, show results
-    var progressEl = document.getElementById('searchProgress');
-    if (progressEl) progressEl.style.display = 'none';
     searchProgress.classList.remove('active');
     resultsSection.classList.add('active');
-
-    // Move the collapsed ticker summary bar into the results section header area
-    var tickerPanel = document.getElementById('vxTickerPanel');
-    var resultsHeader = resultsSection.querySelector('.results-header');
-    if (tickerPanel && resultsHeader && resultsHeader.parentNode) {
-        resultsHeader.parentNode.insertBefore(tickerPanel, resultsHeader);
-    }
 
     // Signal ACP handshake that search results have arrived
     if (typeof ACPHandshake !== 'undefined' && ACPHandshake.resolveAwaitingResults) {
