@@ -20,6 +20,7 @@
 
 const crypto    = require('crypto');
 const qdrant    = require('./QdrantService');
+const { deadLetter } = require('../infrastructure/DeadLetterService');
 const embedding = require('./EmbeddingService');
 const { COLLECTIONS } = require('./QdrantService');
 
@@ -61,7 +62,8 @@ function captureConfirm(sessionId, query, product) {
     if (!vector) return;
 
     const pointId = toUUID('confirm:' + sessionId + ':' + (product.name || '').toLowerCase().trim());
-    await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, {
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, {
       sessionId,
       stage:        'confirm',
       query,
@@ -69,6 +71,16 @@ function captureConfirm(sessionId, query, product) {
       productBrand: product.brand || '',
       capturedAt:   nowISO(),
     });
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, {
+      sessionId,
+      stage:        'confirm',
+      query,
+      productName:  product.name  || '',
+      productBrand: product.brand || '',
+      capturedAt:   nowISO(),
+    }, dlErr.message);
+    }
     console.log('[FeedbackCapture] confirm:', query.substring(0, 40), '->', product.name);
   });
 }
@@ -94,7 +106,8 @@ function captureReject(sessionId, query, product, reason) {
 
     // Personal record — includes sessionId, full reason
     const sessionPointId = toUUID('reject:' + sessionId + ':' + (product.name || '').toLowerCase().trim());
-    await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, sessionPointId, vector, {
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, sessionPointId, vector, {
       sessionId,
       stage:        'reject',
       query,
@@ -103,10 +116,22 @@ function captureReject(sessionId, query, product, reason) {
       reason:       reason || 'not_specified',
       capturedAt:   nowISO(),
     });
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.MEMBER_SESSIONS, sessionPointId, vector, {
+      sessionId,
+      stage:        'reject',
+      query,
+      productName:  product.name  || '',
+      productBrand: product.brand || '',
+      reason:       reason || 'not_specified',
+      capturedAt:   nowISO(),
+    }, dlErr.message);
+    }
 
     // Anonymised population record — no sessionId, outcome tagged 'rejected'
     const popPointId = toUUID('reject-pop:' + query.toLowerCase().trim() + ':' + (product.name || '').toLowerCase().trim());
-    await qdrant.upsertPoint(COLLECTIONS.POPULATION_CORPUS, popPointId, vector, {
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.POPULATION_CORPUS, popPointId, vector, {
       query,
       productName:     product.name     || '',
       productBrand:    product.brand    || '',
@@ -115,6 +140,17 @@ function captureReject(sessionId, query, product, reason) {
       reason:          reason || 'not_specified',
       capturedAt:      nowISO(),
     });
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.POPULATION_CORPUS, popPointId, vector, {
+      query,
+      productName:     product.name     || '',
+      productBrand:    product.brand    || '',
+      productCategory: product.category || '',
+      outcome:         'rejected',
+      reason:          reason || 'not_specified',
+      capturedAt:      nowISO(),
+    }, dlErr.message);
+    }
 
     console.log('[FeedbackCapture] reject (' + (reason || 'unspecified') + '):', query.substring(0, 40), '->', product.name);
   });
