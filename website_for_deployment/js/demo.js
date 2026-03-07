@@ -98,17 +98,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle new search button (bottom of results)
-    newSearchBtnBottom.addEventListener('click', function() {
-        // If the buyer has given us feedback signals during this session,
-        // use them to refine the search rather than discarding everything.
-        // The nav 'New Search' button remains the full-reset escape hatch.
-        var s = window._vxFeedbackState;
-        if (s && s.feedbackLog && s.feedbackLog.length > 0) {
-            triggerRefinedSearch();
-        } else {
-            resetDemo();
-        }
-    });
+    // Bottom button always fires a refined search.
+    // The nav 'New Search' button (navNewSearchBtn) is the full-reset escape hatch.
+    newSearchBtnBottom.addEventListener('click', triggerRefinedSearch);
 });
 
 // Handle search form submission
@@ -2492,28 +2484,11 @@ function truncateText(text, maxLength) {
         if (feedback === 'reject')   s.rejected.add(product.name);
         if (feedback === 'confirm')  s.confirmed.add(product.name);
 
-        // Update the bottom button label on first signal so the buyer
-        // understands the button now refines rather than resets
-        if (s.feedbackLog.length === 1) {
-            var btn = document.getElementById('newSearchBtnBottom');
-            if (btn) {
-                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="margin-right:6px;"><path d="M10 4v12M10 4l-4 4M10 4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Refine My Search';
-                btn.style.background = 'linear-gradient(135deg, #0369a1 0%, #0284c7 100%)';
-                btn.style.color = '#fff';
-                btn.style.borderColor = '#0369a1';
-            }
-        }
     }
 
     function checkPoolExhausted() {
-        var s = getState();
-        if (!s) return;
-        var grid = document.getElementById('resultsGrid');
-        if (!grid) return;
-        var remaining = grid.querySelectorAll('.result-card');
-        if (remaining.length === 0 && s.feedbackLog.length > 0) {
-            showPoolExhaustedBanner(s);
-        }
+        // Pool exhaustion is now handled by the permanent 'Refine My Search'
+        // button at the bottom of the page. No banner needed.
     }
 
     function showPoolExhaustedBanner(state) {
@@ -2638,76 +2613,77 @@ function truncateText(text, maxLength) {
     };
 
     // ── Refined search trigger ───────────────────────────────────────────────
-    // Pre-populates the main searchQuery textarea with a synthesised query
-    // built from the original search + confirmed/rejected feedback.
-    // Scrolls to the search section so the buyer can review and adjust before
-    // pressing Find Products. Does NOT auto-submit, does NOT restart qualify.
+    // Builds a synthesised query from: original search + qualify answers (already
+    // in currentSearchQuery) + confirmed brands + rejected brands + price/style
+    // signals. Persists learnings to avatar, then fires a full new search
+    // immediately — bypassing qualifying chat (we already have the refinement).
 
     window.triggerRefinedSearch = function() {
         var s = getState();
-        if (!s) return;
 
-        var confirms = s.feedbackLog.filter(function(e) { return e.feedback === 'confirm'; });
-        var rejects  = s.feedbackLog.filter(function(e) { return e.feedback === 'reject'; });
-
-        // Build a plain-language refined query
-        var parts = [s.query || 'products'];
-
-        if (confirms.length > 0) {
-            var confNames = confirms.map(function(e) { return e.brand || e.name; })
-                .filter(function(v, i, a) { return a.indexOf(v) === i; }) // unique
-                .slice(0, 3);
-            parts.push('more like ' + confNames.join(' or '));
+        // Build refined query from feedback signals if we have them,
+        // otherwise re-run the current search as-is
+        var baseQuery = (s && s.query) || (typeof currentSearchQuery !== 'undefined' ? currentSearchQuery : '');
+        if (!baseQuery) {
+            // Nothing to refine — behave like a standard new search
+            resetDemo();
+            return;
         }
 
-        if (rejects.length > 0) {
-            var tooExp    = rejects.filter(function(e) { return e.reason === 'too_expensive'; });
-            var wrongSup  = rejects.filter(function(e) { return e.reason === 'wrong_supplier'; });
-            var notRight  = rejects.filter(function(e) { return e.reason === 'not_quite_right'; });
+        var parts = [baseQuery];
 
-            if (tooExp.length > 0) parts.push('lower price range');
-            if (wrongSup.length > 0) {
-                var badBrands = wrongSup.map(function(e) { return e.brand; })
+        if (s && s.feedbackLog && s.feedbackLog.length > 0) {
+            var confirms = s.feedbackLog.filter(function(e) { return e.feedback === 'confirm'; });
+            var rejects  = s.feedbackLog.filter(function(e) { return e.feedback === 'reject'; });
+
+            if (confirms.length > 0) {
+                var confBrands = confirms.map(function(e) { return e.brand; })
                     .filter(Boolean)
                     .filter(function(v, i, a) { return a.indexOf(v) === i; })
                     .slice(0, 3);
-                if (badBrands.length > 0) parts.push('not ' + badBrands.join(' or '));
+                if (confBrands.length > 0) parts.push('more like ' + confBrands.join(' or '));
             }
-            if (notRight.length > 0 && confirms.length === 0) {
-                parts.push('different style');
+
+            if (rejects.length > 0) {
+                var tooExp   = rejects.filter(function(e) { return e.reason === 'too_expensive'; });
+                var wrongSup = rejects.filter(function(e) { return e.reason === 'wrong_supplier'; });
+                var notRight = rejects.filter(function(e) { return e.reason === 'not_quite_right'; });
+
+                if (tooExp.length > 0) parts.push('lower price range');
+                if (wrongSup.length > 0) {
+                    var badBrands = wrongSup.map(function(e) { return e.brand; })
+                        .filter(Boolean)
+                        .filter(function(v, i, a) { return a.indexOf(v) === i; })
+                        .slice(0, 3);
+                    if (badBrands.length > 0) parts.push('not ' + badBrands.join(' or '));
+                }
+                if (notRight.length > 0 && confirms.length === 0) parts.push('different style');
             }
+
+            // Persist learnings to avatar (logged-in members only, fire-and-forget)
+            persistLearningsToAvatar(s.feedbackLog, baseQuery);
         }
 
         var refinedQuery = parts.join(', ');
 
-        // Persist learnings to avatar (logged-in members only, fire-and-forget)
-        persistLearningsToAvatar(s.feedbackLog, s.query);
-
-        // Remove the pool-exhausted banner
+        // Remove any stale pool banner
         var banner = document.getElementById('vxPoolBanner');
         if (banner) banner.remove();
 
-        // Pre-populate the main search textarea and scroll to it
-        var searchTextarea = document.getElementById('searchQuery');
-        if (searchTextarea) {
-            searchTextarea.value = refinedQuery;
-            searchTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+        // Set the query for the new search — bypass qualifying chat,
+        // avatar prefs and RAG context are already applied server-side
+        currentSearchQuery = refinedQuery;
+        if (typeof searchQuery !== 'undefined') searchQuery.value = refinedQuery;
+        if (typeof window._lastSearchQuery !== 'undefined') window._lastSearchQuery = refinedQuery;
 
-            // Show a brief 'refined from feedback' hint above the textarea
-            var existing = document.getElementById('vxRefinedHint');
-            if (existing) existing.remove();
-            var hint = document.createElement('div');
-            hint.id = 'vxRefinedHint';
-            hint.style.cssText = 'font-size:0.8rem;color:#0369a1;background:#e0f2fe;border:1px solid #7dd3fc;border-radius:6px;padding:6px 12px;margin-bottom:8px;';
-            hint.textContent = '\u2713 Pre-filled from your feedback. Edit if needed, then press Find Products.';
-            searchTextarea.parentNode.insertBefore(hint, searchTextarea);
+        // Reset feedback state so the next result set starts fresh
+        window._vxFeedbackState = null;
 
-            // Scroll to and focus the textarea
-            searchTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(function() { searchTextarea.focus(); }, 400);
-        }
+        console.log('[Feedback] firing refined search:', refinedQuery);
 
-        console.log('[Feedback] refined search pre-filled:', refinedQuery);
+        // Fire the search immediately — no qualifying chat, no textarea pre-fill
+        showSearchProgress();
+        simulateSearch();
     };
 
 })();
