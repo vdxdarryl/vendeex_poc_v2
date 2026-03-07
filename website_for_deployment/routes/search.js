@@ -280,16 +280,18 @@ module.exports = function searchRoutes(deps) {
 
         '\n\nSTEP 1 — INTENT CLASSIFICATION (do this silently before anything else):' +
         '\nClassify the query as one of:' +
-        '\n  TRANSACTIONAL: a specific product or product category is named (e.g. "running shoes", "robot vacuum", "MacBook Pro"). Buyer knows what they want.' +
-        '\n  EXPLORATORY: vague intent, no specific product named (e.g. "something for the gym", "a gift for my daughter", "sustainable wardrobe refresh").' +
+        '\n  FULLY_SPECIFIED: names a specific product with brand, model, or clear sub-category (e.g. "Nike Pegasus 40", "MacBook Pro 14 inch M3", "trail running shoes for women"). Proceed with zero questions.' +
+        '\n  TRANSACTIONAL: a product category is named but without a qualifying sub-category (e.g. "running shoes", "robot vacuum", "laptop"). Ask exactly ONE question targeting the most impactful unknown.' +
+        '\n  EXPLORATORY: vague intent, no specific product named (e.g. "something for the gym", "a gift for my daughter"). Ask exactly ONE Socratic question to help the buyer self-specify.' +
         '\n\nSTEP 2 — DECISION RULES:' +
+        '\n\nIf FULLY_SPECIFIED:' +
+        '\n  - Avatar data and search rules fill all meaningful gaps → proceed immediately, zero questions.' +
         '\n\nIf TRANSACTIONAL:' +
-        '\n  - Check avatar data and search rules. If they fill all meaningful gaps → proceed immediately with readyToSearch: true. Zero questions.' +
-        '\n  - Only ask ONE question if there is a single gap that would materially change the results (e.g. shoe size category: road vs trail). If nothing would materially change the results, proceed.' +
+        '\n  - Ask ONE question targeting the single most impactful unknown that avatar data does NOT already answer.' +
+        '\n  - Good examples: "Road or trail?" for running shoes. "Corded or robot?" for vacuum. "What will you mainly use it for?" for laptop.' +
         '\n  - NEVER ask about budget, free returns, delivery, or brand if already known from avatar data or search rules.' +
         '\n\nIf EXPLORATORY:' +
-        '\n  - Ask exactly ONE question. Make it Socratic — help the buyer self-specify. E.g. "What are you planning to use it for?" not "What is your budget?"' +
-        '\n  - After the buyer answers, either proceed or ask ONE more question maximum. Never more than two questions total.' +
+        '\n  - Ask ONE Socratic question. After the buyer answers, either proceed or ask ONE more question. Never more than two questions total.' +
         '\n\nSTEP 3 — ASSUMPTION SURFACING:' +
         '\n  When you are ready to search, surface your key assumptions in the confirmation message so the buyer can correct them rather than confirm them.' +
         '\n  Format: "I\'m going to search for [specific thing] — [key assumption 1], [key assumption 2]. Searching now." Then set readyToSearch: true.' +
