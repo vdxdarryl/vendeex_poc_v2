@@ -37,6 +37,20 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// ─── Domain redirect middleware ───────────────────────────────
+// Redirect all vendeex.ai and vendeex.cn variants to https://www.vendeex.com
+app.use((req, res, next) => {
+  const host = (req.headers.host || '').toLowerCase().replace(/:\d+$/, '');
+  const redirectHosts = [
+    'vendeex.ai', 'www.vendeex.ai',
+    'vendeex.cn', 'www.vendeex.cn',
+  ];
+  if (redirectHosts.includes(host)) {
+    return res.redirect(301, 'https://www.vendeex.com' + req.originalUrl);
+  }
+  next();
+});
+
 // Visitor tracking (before static files so page views are counted)
 const visitorTracker = new VisitorTracker({ reportEmail: 'ross@vendeelabs.com, darryl.carlton@me.com' });
 
