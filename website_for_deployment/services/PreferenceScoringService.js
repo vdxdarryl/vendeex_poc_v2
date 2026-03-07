@@ -38,19 +38,6 @@ function hardFilter(product, prefs) {
   if (qd.brandExclusions&&qd.brandExclusions.length>0&&product.brand) { const lb=product.brand.toLowerCase(); if (qd.brandExclusions.some(ex=>lb.includes(ex.toLowerCase()))) return {passed:false,reason:'Brand on exclusion list'}; }
   if (qd.conditionTolerance==='new'&&product.condition) { const c=product.condition.toLowerCase(); if (c!=='new'&&c!==''&&c!=='brand new') return {passed:false,reason:'Condition not new'}; }
 
-  // Sourcing exclusion: dontBuyFrom.country matched against product.country or product.origin
-  // Uses keyword matching since Channel3 does not return a structured country field.
-  const sp = prefs.sourcingPreference;
-  if (sp && sp.dontBuyFrom && sp.dontBuyFrom.country) {
-    const excl = sp.dontBuyFrom.country.toLowerCase();
-    const haystack = [product.country||'', product.origin||'', product.brand||'', product.description||''].join(' ').toLowerCase();
-    // Only hard-fail if the exclusion country appears explicitly in origin/country fields
-    if ((product.country && product.country.toLowerCase().includes(excl)) ||
-        (product.origin  && product.origin.toLowerCase().includes(excl))) {
-      return {passed:false, reason:'Excluded sourcing country: ' + sp.dontBuyFrom.country};
-    }
-  }
-
   return {passed:true};
 }
 
@@ -63,17 +50,45 @@ function scoreValuesEthics(product, merchant, prefs) {
   if (ve.fairTrade) { max+=20; const ft=has(desc,FAIR_TRADE_KW)||has(creds,FAIR_TRADE_KW); if(ft){pts+=20;details.push({label:'FairTrade',passed:'pass'});}else{details.push({label:'FairTrade',passed:'fail'});} }
   if (ve.bCorpPreference) { max+=15; const bc=has(creds,BCORP_KW)||(merchant&&merchant.sustainability&&merchant.sustainability.certified); if(bc){pts+=15;details.push({label:'BCorp',passed:'pass'});}else{details.push({label:'BCorp',passed:'fail'});} }
   if (ve.animalWelfare!=='none') { max+=20; if(ve.animalWelfare==='vegan'){const v=has(desc,VEGAN_KW)||has(creds,VEGAN_KW);if(v){pts+=20;details.push({label:'Vegan',passed:'pass'});}else{const cf=has(desc,CRUELTY_FREE_KW)||has(creds,CRUELTY_FREE_KW);if(cf){pts+=10;details.push({label:'CrueltyFree',passed:'partial'});}else{details.push({label:'Animal',passed:'fail'});}}}else{const cf=has(desc,CRUELTY_FREE_KW)||has(desc,VEGAN_KW)||has(creds,CRUELTY_FREE_KW);if(cf){pts+=20;details.push({label:'CrueltyFree',passed:'pass'});}else{details.push({label:'Animal',passed:'fail'});}} }
-  // Sourcing preference bonus: reward products matching buyFrom country/region
+  // Sourcing preference scoring — both rows are preferences, neither is a hard filter.
+  // buyFrom: +20 bonus if product matches preferred country/region.
+  // dontBuyFrom: -15 penalty if product matches unpreferred country/region.
+  // Products are never excluded; sourcing preferences shift rank only.
   const sp2 = prefs.sourcingPreference;
-  if (sp2 && sp2.buyFrom && sp2.buyFrom.country) {
-    max += 20;
-    const pref = sp2.buyFrom.country.toLowerCase();
-    const regions = (sp2.buyFrom.regions || []).map(r => r.toLowerCase());
+  if (sp2) {
     const hay = [product.country||'', product.origin||'', product.brand||'', product.description||''].join(' ').toLowerCase();
-    const countryMatch = hay.includes(pref);
-    const regionMatch = regions.some(r => r && hay.includes(r));
-    if (countryMatch || regionMatch) { pts += 20; details.push({label:'BuyLocal',passed:'pass',note:sp2.buyFrom.country+(regionMatch?' ('+sp2.buyFrom.regions.find(r=>hay.includes(r.toLowerCase()))+')':'')}); }
-    else { details.push({label:'BuyLocal',passed:'fail'}); }
+
+    if (sp2.buyFrom && sp2.buyFrom.country) {
+      max += 20;
+      const pref    = sp2.buyFrom.country.toLowerCase();
+      const regions = (sp2.buyFrom.regions || []).map(r => r.toLowerCase());
+      const cMatch  = hay.includes(pref);
+      const rMatch  = regions.some(r => r && hay.includes(r));
+      if (cMatch || rMatch) {
+        pts += 20;
+        const note = sp2.buyFrom.country + (rMatch ? ' (' + sp2.buyFrom.regions.find(r => hay.includes(r.toLowerCase())) + ')' : '');
+        details.push({label:'BuyFrom', passed:'pass', note});
+      } else {
+        details.push({label:'BuyFrom', passed:'fail'});
+      }
+    }
+
+    if (sp2.dontBuyFrom && sp2.dontBuyFrom.country) {
+      // Treat as a 15-point scoring band: products NOT from the unpreferred
+      // country earn full points; products from it earn zero.
+      max += 15;
+      const excl    = sp2.dontBuyFrom.country.toLowerCase();
+      const eRegions = (sp2.dontBuyFrom.regions || []).map(r => r.toLowerCase());
+      const cMatch  = hay.includes(excl);
+      const rMatch  = eRegions.some(r => r && hay.includes(r));
+      if (!cMatch && !rMatch) {
+        pts += 15;
+        details.push({label:'DontBuyFrom', passed:'pass'});
+      } else {
+        // Product appears to match the unpreferred origin — score zero for this band
+        details.push({label:'DontBuyFrom', passed:'fail', note: sp2.dontBuyFrom.country});
+      }
+    }
   }
 
   return {score:max>0?Math.round((pts/max)*100):50,details};
