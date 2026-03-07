@@ -129,6 +129,17 @@
       'reg.step2.create': 'Create My Avatar',
       'reg.success.title':'Avatar Created',
       'reg.success.search':'Start Searching',
+
+      // ── pages/demo.html — search controls panel (buyer-policies.js) ─────────
+      'demo.ctrlTitle':   'Search Controls',
+      'demo.ctrlBadge':   'Per-search overrides',
+      'demo.budget':      'Budget',
+      'demo.budgetPH':    'No limit',
+      'demo.freeReturns': 'Free Returns',
+      'demo.avatarPref':  '(from your Avatar)',
+      'demo.maxDelivery': 'Max Delivery Days',
+      'demo.customRule':  'Custom Rule',
+      'demo.customRulePH':'e.g. No fast fashion',
       'reg.footer.copyright': '© 2026 Vendee Labs Limited. All rights reserved.',
       'reg.footer.privacy':   'Privacy Notice',
     },
@@ -243,6 +254,17 @@
       'reg.step2.create': '创建我的数字分身',
       'reg.success.title':'数字分身已创建',
       'reg.success.search':'开始搜索',
+
+      // ── search controls (buyer-policies.js) ────────────────────────────────
+      'demo.ctrlTitle':   '搜索控制',
+      'demo.ctrlBadge':   '单次搜索覆盖',
+      'demo.budget':      '预算',
+      'demo.budgetPH':    '不限',
+      'demo.freeReturns': '免费退货',
+      'demo.avatarPref':  '（来自您的数字分身）',
+      'demo.maxDelivery': '最长配送天数',
+      'demo.customRule':  '自定义规则',
+      'demo.customRulePH':'例：不要快时尚',
       'reg.footer.copyright': '© 2026 Vendee Labs Limited。保留所有权利。',
       'reg.footer.privacy':   '隐私声明',
     }
@@ -346,6 +368,13 @@
       container.appendChild(btn);
     }
   }
+
+
+  // ─── Expose window.t for dynamically-rendered components (e.g. buyer-policies.js) ─
+  window.t = function (key) {
+    var dict = STRINGS[getLang()] || STRINGS['en'];
+    return dict[key] !== undefined ? dict[key] : key;
+  };
 
   // ─── Expose lang getter for other modules (e.g. qualifying-chat.js) ──────────
   window.VX_LANG = {
