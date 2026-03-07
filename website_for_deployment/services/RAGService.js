@@ -3,16 +3,20 @@
 /**
  * RAGService — retrieval-augmented context assembly for VendeeX chat windows.
  *
- * Pipeline:
- *   1. Embed the incoming query (Layer 1 — Qwen3-Embedding-4B)
- *   2. Search member_sessions in Qdrant for semantically similar past sessions
- *   3. Rerank candidates against the query (Layer 2 — bge-reranker-v2-m3)
- *   4. Assemble a structured context block for the LLM system prompt
+ * Two retrieval pipelines:
  *
- * The context block is injected into Chat Window 1 (qualify) system prompt only.
- * It is strictly read-only — the RAG pipeline never mutates Qdrant data.
- * All errors are caught and logged; on failure, an empty context is returned
- * so the qualify route always responds even if Qdrant/embedding pods are down.
+ *   A. Member sessions (member_sessions collection)
+ *      - Per-buyer historical behaviour: past queries, refinements, cart adds
+ *      - Personalised: filtered to exclude current session
+ *      - Injected as: PAST BEHAVIOUR CONTEXT
+ *
+ *   B. Population corpus (population_corpus collection)
+ *      - Anonymised aggregate outcomes across all buyers
+ *      - What buyers typically select after searching for similar queries
+ *      - Injected as: POPULAR OUTCOMES CONTEXT
+ *
+ * Both pipelines run concurrently. Both are read-only. Both degrade gracefully.
+ * Combined output is injected into Chat Window 1 (qualify) system prompt only.
  *
  * Layer: Agentic.
  */
@@ -22,104 +26,142 @@ const reranker  = require('./RerankerService');
 const qdrant    = require('./QdrantService');
 const { COLLECTIONS } = require('./QdrantService');
 
-// How many candidates to retrieve from Qdrant before reranking
-const QDRANT_RETRIEVE_LIMIT = 12;
+// Retrieval limits
+const SESSION_RETRIEVE_LIMIT    = 12;
+const POPULATION_RETRIEVE_LIMIT = 10;
 
-// How many top results to include in the context block after reranking
-const CONTEXT_TOP_K = 4;
+// Post-rerank top-K
+const SESSION_TOP_K    = 4;
+const POPULATION_TOP_K = 3;
 
-// Minimum rerank score to include a result (filters noise)
-const MIN_RERANK_SCORE = 0.02;
+// Minimum rerank score threshold
+const MIN_SCORE = 0.02;
 
-/**
- * Retrieve and assemble RAG context for a given query and session.
- *
- * @param {string} query        - the buyer's current query
- * @param {string} sessionId    - current session ID (used as Qdrant filter to avoid self-retrieval)
- * @returns {string}            - formatted context block for LLM injection, or '' if unavailable
- */
-async function buildQualifyContext(query, sessionId) {
+// ─── Member session context ──────────────────────────────────────────────────
+
+async function buildSessionContext(query, sessionId) {
   if (!embedding.isAvailable() || !qdrant.isAvailable()) return '';
-
   try {
-    // Step 1 — embed the query
     const queryVector = await embedding.embedSafe(query);
     if (!queryVector) return '';
 
-    // Step 2 — retrieve from member_sessions, excluding current session
     const filter = sessionId
       ? { must_not: [{ key: 'sessionId', match: { value: sessionId } }] }
       : null;
 
-    const hits = await qdrant.search(
-      COLLECTIONS.MEMBER_SESSIONS,
-      queryVector,
-      QDRANT_RETRIEVE_LIMIT,
-      filter
-    );
-
+    const hits = await qdrant.search(COLLECTIONS.MEMBER_SESSIONS, queryVector, SESSION_RETRIEVE_LIMIT, filter);
     if (!hits || hits.length === 0) return '';
 
-    // Step 3 — rerank: build a text representation of each hit for scoring
     const candidates = hits.map(hit => {
       const p = hit.payload || {};
-      if (p.stage === 'qualify') {
-        return p.refinedQuery || p.query || '';
-      }
-      if (p.stage === 'search') {
-        const productNames = (p.topProducts || []).slice(0, 3).map(pr => pr.name).join(', ');
-        return [p.query, productNames].filter(Boolean).join(' — ');
-      }
-      if (p.stage === 'refine') {
-        return p.refinementMessage || '';
-      }
-      if (p.stage === 'cart') {
-        return [p.productName, p.productBrand, p.originalQuery].filter(Boolean).join(' ');
-      }
+      if (p.stage === 'qualify') return p.refinedQuery || p.query || '';
+      if (p.stage === 'search')  return [p.query, (p.topProducts || []).slice(0,3).map(pr => pr.name).join(', ')].filter(Boolean).join(' — ');
+      if (p.stage === 'refine')  return p.refinementMessage || '';
+      if (p.stage === 'cart')    return [p.productName, p.productBrand, p.originalQuery].filter(Boolean).join(' ');
       return '';
     }).filter(Boolean);
 
     if (candidates.length === 0) return '';
 
-    // Rerank against current query
     const ranked = await reranker.rerankSafe(query, candidates);
-
-    // Step 4 — take top-K above threshold, assemble context block
     const topHits = ranked
-      .filter(r => r.score === null || r.score >= MIN_RERANK_SCORE)
-      .slice(0, CONTEXT_TOP_K);
-
+      .filter(r => r.score === null || r.score >= MIN_SCORE)
+      .slice(0, SESSION_TOP_K);
     if (topHits.length === 0) return '';
 
-    // Map back to original payloads
     const topPayloads = topHits.map(r => hits[r.originalIndex]?.payload).filter(Boolean);
 
-    // Build context sentences
-    const contextLines = [];
+    const lines = [];
     for (const p of topPayloads) {
-      if (p.stage === 'qualify' && p.refinedQuery) {
-        contextLines.push('Past refined search: "' + p.refinedQuery + '"');
-      } else if (p.stage === 'search' && p.query) {
-        const topProds = (p.topProducts || []).slice(0, 2).map(pr => pr.name).join(', ');
-        contextLines.push('Past search: "' + p.query + '"' + (topProds ? ' — results included: ' + topProds : ''));
-      } else if (p.stage === 'cart' && p.productName) {
-        contextLines.push('Previously added to cart: ' + p.productName + (p.productBrand ? ' by ' + p.productBrand : ''));
-      } else if (p.stage === 'refine' && p.refinementMessage) {
-        contextLines.push('Past refinement: "' + p.refinementMessage + '"');
-      }
+      if (p.stage === 'qualify' && p.refinedQuery)   lines.push('Past refined search: "' + p.refinedQuery + '"');
+      else if (p.stage === 'search' && p.query)      { const prods = (p.topProducts || []).slice(0,2).map(pr => pr.name).join(', '); lines.push('Past search: "' + p.query + '"' + (prods ? ' — results included: ' + prods : '')); }
+      else if (p.stage === 'cart' && p.productName)  lines.push('Previously added to cart: ' + p.productName + (p.productBrand ? ' by ' + p.productBrand : ''));
+      else if (p.stage === 'refine' && p.refinementMessage) lines.push('Past refinement: "' + p.refinementMessage + '"');
     }
-
-    if (contextLines.length === 0) return '';
+    if (lines.length === 0) return '';
 
     return [
-      '\n\nPAST BEHAVIOUR CONTEXT (from similar buyer sessions — use to inform your questions, do NOT repeat back verbatim):',
-      ...contextLines.map(l => '- ' + l)
+      '\n\nPAST BEHAVIOUR CONTEXT (from similar buyer sessions — use to inform smarter questions, do NOT repeat back verbatim):',
+      ...lines.map(l => '- ' + l)
     ].join('\n');
 
   } catch (e) {
-    console.error('[RAG] buildQualifyContext error:', e.message);
+    console.error('[RAG] buildSessionContext error:', e.message);
     return '';
   }
 }
 
-module.exports = { buildQualifyContext };
+// ─── Population corpus context ───────────────────────────────────────────────
+
+async function buildPopulationContext(query) {
+  if (!embedding.isAvailable() || !qdrant.isAvailable()) return '';
+  try {
+    const queryVector = await embedding.embedSafe(query);
+    if (!queryVector) return '';
+
+    const hits = await qdrant.search(COLLECTIONS.POPULATION_CORPUS, queryVector, POPULATION_RETRIEVE_LIMIT, null);
+    if (!hits || hits.length === 0) return '';
+
+    // Build candidate text for reranking: "query — brand productName (priceBand)"
+    const candidates = hits.map(hit => {
+      const p = hit.payload || {};
+      return [p.query, p.productBrand, p.productName, p.priceBand ? '(' + p.priceBand + ')' : ''].filter(Boolean).join(' ');
+    }).filter(Boolean);
+
+    if (candidates.length === 0) return '';
+
+    const ranked = await reranker.rerankSafe(query, candidates);
+    const topHits = ranked
+      .filter(r => r.score === null || r.score >= MIN_SCORE)
+      .slice(0, POPULATION_TOP_K);
+    if (topHits.length === 0) return '';
+
+    const topPayloads = topHits.map(r => hits[r.originalIndex]?.payload).filter(Boolean);
+
+    const lines = [];
+    for (const p of topPayloads) {
+      if (!p.productName) continue;
+      let line = p.productBrand ? p.productBrand + ' ' + p.productName : p.productName;
+      const tags = [];
+      if (p.priceBand)           tags.push(p.priceBand + ' price');
+      if (p.sustainabilityTier && p.sustainabilityTier !== 'none') tags.push(p.sustainabilityTier + ' sustainability');
+      if (tags.length > 0) line += ' (' + tags.join(', ') + ')';
+      lines.push(line);
+    }
+    if (lines.length === 0) return '';
+
+    return [
+      '\n\nPOPULAR OUTCOMES CONTEXT (what buyers typically select after similar searches — use as a signal, do NOT present these as recommendations):',
+      ...lines.map(l => '- ' + l)
+    ].join('\n');
+
+  } catch (e) {
+    console.error('[RAG] buildPopulationContext error:', e.message);
+    return '';
+  }
+}
+
+// ─── Combined context entry point ────────────────────────────────────────────
+
+/**
+ * Build combined RAG context for the qualify route.
+ * Runs both pipelines concurrently. Returns combined string (may be empty).
+ *
+ * @param {string} query
+ * @param {string} sessionId
+ * @returns {string}
+ */
+async function buildContext(query, sessionId) {
+  const [sessionCtx, populationCtx] = await Promise.all([
+    buildSessionContext(query, sessionId),
+    buildPopulationContext(query)
+  ]);
+  return sessionCtx + populationCtx;
+}
+
+// Preserve the Phase C export name for compatibility
+async function buildQualifyContext(query, sessionId) {
+  return buildContext(query, sessionId);
+}
+
+module.exports = { buildQualifyContext, buildContext, buildSessionContext, buildPopulationContext };
