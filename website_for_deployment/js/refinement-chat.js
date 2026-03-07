@@ -600,6 +600,12 @@ const RefinementChat = {
     _getWelcomeMessage: function() {
         var prefs = this._getAvatarPrefs();
         var msg = 'I can help you narrow these results &mdash; by price, features, brand, ratings, or anything else.';
+        msg += '<div class="refinement-chat__feedback-guide">';
+        msg += '<span class="refinement-chat__feedback-guide-title">How to get a better result set</span>';
+        msg += '<span class="refinement-chat__feedback-guide-step"><span class="rfg-badge rfg-yes">&#x2713; Good fit</span> Rate each product as you scroll &mdash; one tap is all it takes.</span>';
+        msg += '<span class="refinement-chat__feedback-guide-step"><span class="rfg-badge rfg-no">&#x2717; Not for me</span> Reject anything that misses the mark &mdash; price, brand, style, or anything else.</span>';
+        msg += '<span class="refinement-chat__feedback-guide-step"><span class="rfg-badge rfg-refine">&#x21BB; Refine My Search</span> Your agent combines every rating with your avatar preferences to fetch a sharper, personalised result set. Nothing is lost.</span>';
+        msg += '</div>';
         if (prefs) {
             var notes = [];
             if (prefs.ethical && prefs.ethical.sustainability === 'prefer') notes.push('sustainable options');
