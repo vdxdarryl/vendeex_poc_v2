@@ -17,6 +17,7 @@ require('dotenv').config({ override: true });
 const VisitorTracker = require('./services/VisitorTracker');
 const { deadLetter } = require('./infrastructure/DeadLetterService');
 const db = require('./db');
+const RunPodWatchdog = require('./services/RunPodWatchdog');
 
 // Import multi-provider search services
 const { MultiProviderSearch } = require('./services');
@@ -205,6 +206,7 @@ async function startServer() {
 
   app.listen(PORT, () => {
     visitorTracker.startCron();
+    RunPodWatchdog.start();
     visitorTracker.catchUpReport().catch(err =>
       console.error('[Startup] Report catch-up failed:', err.message)
     );
