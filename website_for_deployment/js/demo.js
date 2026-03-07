@@ -2618,20 +2618,25 @@ function truncateText(text, maxLength) {
     // signals. Persists learnings to avatar, then fires a full new search
     // immediately — bypassing qualifying chat (we already have the refinement).
 
-    window.triggerRefinedSearch = function() {
+    // ── Refined search trigger (Phase E) ────────────────────────────────────────
+    // 1. Builds a signal-enriched query from original search + feedback
+    // 2. Collects full avatar preferences (same path as qualifying-chat.js)
+    // 3. Calls /api/chat/qualify with isRefinedSearch:true — the LLM synthesises
+    //    a single optimised query using original query + avatar prefs + RAG context
+    //    + member learning history, WITHOUT asking any questions
+    // 4. Fires the search with the synthesised query
+
+    window.triggerRefinedSearch = async function() {
         var s = getState();
 
-        // Build refined query from feedback signals if we have them,
-        // otherwise re-run the current search as-is
-        var baseQuery = (s && s.query) || (typeof currentSearchQuery !== 'undefined' ? currentSearchQuery : '');
-        if (!baseQuery) {
-            // Nothing to refine — behave like a standard new search
+        var originalQuery = (s && s.query) || (typeof currentSearchQuery !== 'undefined' ? currentSearchQuery : '');
+        if (!originalQuery) {
             resetDemo();
             return;
         }
 
-        var parts = [baseQuery];
-
+        // ── Build signal-enriched query string ──────────────────────────────
+        var parts = [originalQuery];
         if (s && s.feedbackLog && s.feedbackLog.length > 0) {
             var confirms = s.feedbackLog.filter(function(e) { return e.feedback === 'confirm'; });
             var rejects  = s.feedbackLog.filter(function(e) { return e.feedback === 'reject'; });
@@ -2643,12 +2648,10 @@ function truncateText(text, maxLength) {
                     .slice(0, 3);
                 if (confBrands.length > 0) parts.push('more like ' + confBrands.join(' or '));
             }
-
             if (rejects.length > 0) {
                 var tooExp   = rejects.filter(function(e) { return e.reason === 'too_expensive'; });
                 var wrongSup = rejects.filter(function(e) { return e.reason === 'wrong_supplier'; });
                 var notRight = rejects.filter(function(e) { return e.reason === 'not_quite_right'; });
-
                 if (tooExp.length > 0) parts.push('lower price range');
                 if (wrongSup.length > 0) {
                     var badBrands = wrongSup.map(function(e) { return e.brand; })
@@ -2659,29 +2662,80 @@ function truncateText(text, maxLength) {
                 }
                 if (notRight.length > 0 && confirms.length === 0) parts.push('different style');
             }
-
-            // Persist learnings to avatar (logged-in members only, fire-and-forget)
-            persistLearningsToAvatar(s.feedbackLog, baseQuery);
+            // Persist learnings to avatar (fire-and-forget, logged-in only)
+            persistLearningsToAvatar(s.feedbackLog, originalQuery);
         }
+        var enrichedQuery = parts.join(', ');
 
-        var refinedQuery = parts.join(', ');
+        // ── Collect avatar data (same enrichment path as qualifying-chat.js) ─
+        var avatarData = null;
+        try { var stored = sessionStorage.getItem('vendeeAvatar'); if (stored) avatarData = JSON.parse(stored); } catch(e) {}
+        var enrichedAvatar = Object.assign({}, avatarData || {});
+        if (typeof PreferenceReader !== 'undefined') {
+            var allPrefs = PreferenceReader.getAll();
+            if (allPrefs) enrichedAvatar.avatarPreferences = allPrefs;
+            enrichedAvatar.valueRanking             = PreferenceReader.getValueRanking();
+            enrichedAvatar.prefFreeReturns          = PreferenceReader.getFreeReturnsPreferred();
+            enrichedAvatar.prefDeliverySpeed        = PreferenceReader.getDeliverySpeed();
+            enrichedAvatar.prefSustainability       = PreferenceReader.getSustainabilityPreferred();
+            enrichedAvatar.prefSustainabilityWeight = PreferenceReader.getSustainabilityWeight();
+            enrichedAvatar.standingInstructions     = PreferenceReader.getStandingInstructions();
+            enrichedAvatar.jurisdiction             = PreferenceReader.getJurisdiction();
+            enrichedAvatar.currency                 = PreferenceReader.getCurrency();
+        } else {
+            try { var vr2 = localStorage.getItem('vendeeX_valueRanking'); if (vr2) enrichedAvatar.valueRanking = JSON.parse(vr2); } catch(e) {}
+            enrichedAvatar.prefFreeReturns    = localStorage.getItem('vendeeX_prefFreeReturns') === 'true';
+            enrichedAvatar.prefDeliverySpeed  = localStorage.getItem('vendeeX_prefDeliverySpeed') || 'balanced';
+            enrichedAvatar.standingInstructions = localStorage.getItem('vendeeX_standingInstructions') || '';
+            enrichedAvatar.jurisdiction       = localStorage.getItem('vendeeX_jurisdiction') || '';
+            enrichedAvatar.currency           = localStorage.getItem('vendeeX_currency') || '';
+        }
+        if (window.currentSearchRules) enrichedAvatar.searchRules = window.currentSearchRules;
 
-        // Remove any stale pool banner
+        // ── Clean up stale state ────────────────────────────────────────────
         var banner = document.getElementById('vxPoolBanner');
         if (banner) banner.remove();
-
-        // Set the query for the new search — bypass qualifying chat,
-        // avatar prefs and RAG context are already applied server-side
-        currentSearchQuery = refinedQuery;
-        if (typeof searchQuery !== 'undefined') searchQuery.value = refinedQuery;
-        if (typeof window._lastSearchQuery !== 'undefined') window._lastSearchQuery = refinedQuery;
-
-        // Reset feedback state so the next result set starts fresh
         window._vxFeedbackState = null;
 
-        console.log('[Feedback] firing refined search:', refinedQuery);
+        // ── Auth token for server-side learnings fetch ──────────────────────
+        var token = localStorage.getItem('vendeeX_sessionToken') || null;
+        var headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
 
-        // Fire the search immediately — no qualifying chat, no textarea pre-fill
+        console.log('[Feedback] Phase E: silent qualify pass for refined search:', enrichedQuery);
+
+        // ── Silent qualify pass — no questions, pure synthesis ──────────────
+        try {
+            var resp = await fetch('/api/chat/qualify', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    query:            enrichedQuery,
+                    conversationHistory: [],
+                    avatarData:       enrichedAvatar,
+                    isRefinedSearch:  true,
+                    originalQuery:    originalQuery,
+                })
+            });
+            if (resp.ok) {
+                var parsed = await resp.json();
+                var synthQuery = (parsed.searchParams && parsed.searchParams.query)
+                    ? parsed.searchParams.query
+                    : enrichedQuery;
+                console.log('[Feedback] Synthesised query from LLM:', synthQuery);
+                currentSearchQuery = synthQuery;
+                if (typeof searchQuery !== 'undefined') searchQuery.value = synthQuery;
+                if (typeof window._lastSearchQuery !== 'undefined') window._lastSearchQuery = synthQuery;
+            } else {
+                // Qualify failed — use enriched query directly
+                currentSearchQuery = enrichedQuery;
+            }
+        } catch (qualifyErr) {
+            console.warn('[Feedback] Qualify pass failed, using enriched query:', qualifyErr.message);
+            currentSearchQuery = enrichedQuery;
+        }
+
+        // ── Fire the search ─────────────────────────────────────────────────
         showSearchProgress();
         simulateSearch();
     };
