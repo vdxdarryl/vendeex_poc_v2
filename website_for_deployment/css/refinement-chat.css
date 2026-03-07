@@ -355,3 +355,62 @@
         max-width: 90%;
     }
 }
+
+
+/* ── Feedback guidance strip ──────────────────────────────────────────── */
+.refinement-chat__feedback-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #374151;
+}
+
+.refinement-chat__feedback-guide-title {
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #059669;
+    margin-bottom: 2px;
+}
+
+.refinement-chat__feedback-guide-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+}
+
+.rfg-badge {
+    flex-shrink: 0;
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.rfg-yes {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.rfg-no {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.rfg-refine {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
