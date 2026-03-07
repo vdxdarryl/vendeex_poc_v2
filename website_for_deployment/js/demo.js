@@ -143,13 +143,16 @@ function showSearchProgress() {
     requestSection.style.display = 'none';
     resultsSection.classList.remove('active');
     searchProgress.classList.add('active');
+    searchProgress.style.display = '';   // clear inline display:none set by ticker init
 
     // Hide buyer policies panel during search
     var policiesPanel = document.getElementById('buyerPoliciesPanel');
     if (policiesPanel) policiesPanel.style.display = 'none';
 
-    // Update the display text
-    searchQueryDisplay.textContent = `"${truncateText(currentSearchQuery, 80)}"`;
+    // Update the display text (element may not exist in all layouts)
+    if (searchQueryDisplay) {
+        searchQueryDisplay.textContent = `"${truncateText(currentSearchQuery, 80)}"`;
+    }
 
     // Reset progress steps
     document.querySelectorAll('.progress-step').forEach(step => {
