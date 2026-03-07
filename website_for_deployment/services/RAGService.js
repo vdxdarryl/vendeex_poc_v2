@@ -6,17 +6,11 @@
  * Two retrieval pipelines:
  *
  *   A. Member sessions (member_sessions collection)
- *      - Per-buyer historical behaviour: past queries, refinements, cart adds
- *      - Personalised: filtered to exclude current session
- *      - Injected as: PAST BEHAVIOUR CONTEXT
- *
  *   B. Population corpus (population_corpus collection)
- *      - Anonymised aggregate outcomes across all buyers
- *      - What buyers typically select after searching for similar queries
- *      - Injected as: POPULAR OUTCOMES CONTEXT
  *
- * Both pipelines run concurrently. Both are read-only. Both degrade gracefully.
- * Combined output is injected into Chat Window 1 (qualify) system prompt only.
+ * SSE instrumentation: public functions accept an optional `emitter` argument.
+ * Pass SearchProgressEmitter.getEmitter(key) to surface real pipeline events.
+ * Omitting emitter is a silent no-op.
  *
  * Layer: Agentic.
  */
@@ -26,95 +20,100 @@ const reranker  = require('./RerankerService');
 const qdrant    = require('./QdrantService');
 const { COLLECTIONS } = require('./QdrantService');
 
-// Retrieval limits
 const SESSION_RETRIEVE_LIMIT    = 12;
 const POPULATION_RETRIEVE_LIMIT = 10;
-
-// Post-rerank top-K
 const SESSION_TOP_K    = 4;
 const POPULATION_TOP_K = 3;
-
-// Minimum rerank score threshold
 const MIN_SCORE = 0.02;
+
+const NULL_EMITTER = { emit: () => {}, close: () => {} };
 
 // ─── Member session context ──────────────────────────────────────────────────
 
-async function buildSessionContext(query, sessionId) {
-  if (!embedding.isAvailable() || !qdrant.isAvailable()) return '';
+async function buildSessionContext(query, sessionId, emitter) {
+  const em = emitter || NULL_EMITTER;
+  if (!embedding.isAvailable() || !qdrant.isAvailable()) return { ctx: '', signalCount: 0 };
   try {
+    em.emit('Embedding your query with Qwen3-Embedding-4B\u2026');
     const queryVector = await embedding.embedSafe(query);
-    if (!queryVector) return '';
+    if (!queryVector) return { ctx: '', signalCount: 0 };
 
+    em.emit('Searching your session history in Qdrant\u2026');
     const filter = sessionId
       ? { must_not: [{ key: 'sessionId', match: { value: sessionId } }] }
       : null;
 
     const hits = await qdrant.search(COLLECTIONS.MEMBER_SESSIONS, queryVector, SESSION_RETRIEVE_LIMIT, filter);
-    if (!hits || hits.length === 0) return '';
+    if (!hits || hits.length === 0) return { ctx: '', signalCount: 0, queryVector };
 
     const candidates = hits.map(hit => {
       const p = hit.payload || {};
       if (p.stage === 'qualify') return p.refinedQuery || p.query || '';
-      if (p.stage === 'search')  return [p.query, (p.topProducts || []).slice(0,3).map(pr => pr.name).join(', ')].filter(Boolean).join(' — ');
+      if (p.stage === 'search')  return [p.query, (p.topProducts || []).slice(0,3).map(pr => pr.name).join(', ')].filter(Boolean).join(' \u2014 ');
       if (p.stage === 'refine')  return p.refinementMessage || '';
       if (p.stage === 'cart')    return [p.productName, p.productBrand, p.originalQuery].filter(Boolean).join(' ');
       return '';
     }).filter(Boolean);
 
-    if (candidates.length === 0) return '';
+    if (candidates.length === 0) return { ctx: '', signalCount: 0, queryVector };
 
+    em.emit('Reranking ' + candidates.length + ' session candidates with bge-reranker-v2-m3\u2026');
     const ranked = await reranker.rerankSafe(query, candidates);
     const topHits = ranked
       .filter(r => r.score === null || r.score >= MIN_SCORE)
       .slice(0, SESSION_TOP_K);
-    if (topHits.length === 0) return '';
+    if (topHits.length === 0) return { ctx: '', signalCount: 0, queryVector };
 
     const topPayloads = topHits.map(r => hits[r.originalIndex]?.payload).filter(Boolean);
 
     const lines = [];
     for (const p of topPayloads) {
-      if (p.stage === 'qualify' && p.refinedQuery)   lines.push('Past refined search: "' + p.refinedQuery + '"');
-      else if (p.stage === 'search' && p.query)      { const prods = (p.topProducts || []).slice(0,2).map(pr => pr.name).join(', '); lines.push('Past search: "' + p.query + '"' + (prods ? ' — results included: ' + prods : '')); }
-      else if (p.stage === 'cart' && p.productName)  lines.push('Previously added to cart: ' + p.productName + (p.productBrand ? ' by ' + p.productBrand : ''));
-      else if (p.stage === 'refine' && p.refinementMessage) lines.push('Past refinement: "' + p.refinementMessage + '"');
+      if (p.stage === 'qualify' && p.refinedQuery)           lines.push('Past refined search: "' + p.refinedQuery + '"');
+      else if (p.stage === 'search' && p.query)              { const prods = (p.topProducts || []).slice(0,2).map(pr => pr.name).join(', '); lines.push('Past search: "' + p.query + '"' + (prods ? ' \u2014 results: ' + prods : '')); }
+      else if (p.stage === 'cart' && p.productName)          lines.push('Added to cart: ' + p.productName + (p.productBrand ? ' by ' + p.productBrand : ''));
+      else if (p.stage === 'refine' && p.refinementMessage)  lines.push('Past refinement: "' + p.refinementMessage + '"');
     }
-    if (lines.length === 0) return '';
+    if (lines.length === 0) return { ctx: '', signalCount: 0, queryVector };
 
-    return [
-      '\n\nPAST BEHAVIOUR CONTEXT (from similar buyer sessions — use to inform smarter questions, do NOT repeat back verbatim):',
+    const ctx = [
+      '\n\nPAST BEHAVIOUR CONTEXT (from similar buyer sessions \u2014 use to inform smarter questions, do NOT repeat back verbatim):',
       ...lines.map(l => '- ' + l)
     ].join('\n');
 
+    return { ctx, signalCount: lines.length, queryVector };
+
   } catch (e) {
     console.error('[RAG] buildSessionContext error:', e.message);
-    return '';
+    return { ctx: '', signalCount: 0 };
   }
 }
 
 // ─── Population corpus context ───────────────────────────────────────────────
 
-async function buildPopulationContext(query) {
-  if (!embedding.isAvailable() || !qdrant.isAvailable()) return '';
+async function buildPopulationContext(query, queryVector, emitter) {
+  const em = emitter || NULL_EMITTER;
+  if (!embedding.isAvailable() || !qdrant.isAvailable()) return { ctx: '', signalCount: 0 };
   try {
-    const queryVector = await embedding.embedSafe(query);
-    if (!queryVector) return '';
+    const vector = queryVector || await embedding.embedSafe(query);
+    if (!vector) return { ctx: '', signalCount: 0 };
 
-    const hits = await qdrant.search(COLLECTIONS.POPULATION_CORPUS, queryVector, POPULATION_RETRIEVE_LIMIT, null);
-    if (!hits || hits.length === 0) return '';
+    em.emit('Searching population corpus for similar buyer outcomes\u2026');
+    const hits = await qdrant.search(COLLECTIONS.POPULATION_CORPUS, vector, POPULATION_RETRIEVE_LIMIT, null);
+    if (!hits || hits.length === 0) return { ctx: '', signalCount: 0 };
 
-    // Build candidate text for reranking: "query — brand productName (priceBand)"
     const candidates = hits.map(hit => {
       const p = hit.payload || {};
       return [p.query, p.productBrand, p.productName, p.priceBand ? '(' + p.priceBand + ')' : ''].filter(Boolean).join(' ');
     }).filter(Boolean);
 
-    if (candidates.length === 0) return '';
+    if (candidates.length === 0) return { ctx: '', signalCount: 0 };
 
+    em.emit('Reranking ' + candidates.length + ' population candidates\u2026');
     const ranked = await reranker.rerankSafe(query, candidates);
     const topHits = ranked
       .filter(r => r.score === null || r.score >= MIN_SCORE)
       .slice(0, POPULATION_TOP_K);
-    if (topHits.length === 0) return '';
+    if (topHits.length === 0) return { ctx: '', signalCount: 0 };
 
     const topPayloads = topHits.map(r => hits[r.originalIndex]?.payload).filter(Boolean);
 
@@ -128,73 +127,56 @@ async function buildPopulationContext(query) {
       if (tags.length > 0) line += ' (' + tags.join(', ') + ')';
       lines.push(line);
     }
-    if (lines.length === 0) return '';
+    if (lines.length === 0) return { ctx: '', signalCount: 0 };
 
-    return [
-      '\n\nPOPULAR OUTCOMES CONTEXT (what buyers typically select after similar searches — use as a signal, do NOT present these as recommendations):',
+    const ctx = [
+      '\n\nPOPULAR OUTCOMES CONTEXT (what buyers typically select after similar searches \u2014 signal only, do NOT present as recommendations):',
       ...lines.map(l => '- ' + l)
     ].join('\n');
 
+    return { ctx, signalCount: lines.length };
+
   } catch (e) {
     console.error('[RAG] buildPopulationContext error:', e.message);
-    return '';
+    return { ctx: '', signalCount: 0 };
   }
 }
 
 // ─── Combined context entry point ────────────────────────────────────────────
 
-/**
- * Build combined RAG context for the qualify route.
- * Runs both pipelines concurrently. Returns combined string (may be empty).
- *
- * @param {string} query
- * @param {string} sessionId
- * @returns {string}
- */
-async function buildContext(query, sessionId) {
-  const [sessionCtx, populationCtx] = await Promise.all([
-    buildSessionContext(query, sessionId),
-    buildPopulationContext(query)
-  ]);
-  return sessionCtx + populationCtx;
+async function buildContext(query, sessionId, emitter) {
+  const sessionResult    = await buildSessionContext(query, sessionId, emitter);
+  const populationResult = await buildPopulationContext(query, sessionResult.queryVector, emitter);
+
+  const totalSignals = sessionResult.signalCount + populationResult.signalCount;
+  if (totalSignals > 0 && emitter) {
+    emitter.emit(totalSignals + ' personalised signal' + (totalSignals !== 1 ? 's' : '') + ' injected into agent context');
+  }
+
+  return sessionResult.ctx + populationResult.ctx;
 }
 
-// Preserve the Phase C export name for compatibility
-async function buildQualifyContext(query, sessionId) {
-  return buildContext(query, sessionId);
+async function buildQualifyContext(query, sessionId, emitter) {
+  return buildContext(query, sessionId, emitter);
 }
-
 
 // ─── Member learning history context ─────────────────────────────────────────
-//
-// Reads avatar_preferences.searchLearnings (written by the feedback pipeline)
-// and formats it into a structured LLM context block.
-// Called from the qualify route for authenticated members only.
-// Pure formatter — no I/O. Degrades gracefully on missing/empty data.
 
 function buildLearningsContext(searchLearnings) {
   if (!searchLearnings || typeof searchLearnings !== 'object') return '';
 
   const lines = [];
 
-  // ── Compressed preference profile (post-compression) ─────────────────────
-  // If a profile exists, it carries the distilled signal from all past events.
-  // We use it as the primary context block and skip the raw event log.
   if (searchLearnings.preferenceProfile) {
     lines.push('MEMBER PREFERENCE PROFILE (distilled from all past sessions):');
     lines.push(searchLearnings.preferenceProfile);
-
-    // Still surface the signal arrays even after compression — they are updated
-    // on every session and are more current than the profile narrative.
     const preferred = searchLearnings.preferredBrands || [];
     const excluded  = searchLearnings.excludedBrands  || [];
     if (preferred.length > 0) lines.push('Current preferred brands: ' + preferred.join(', '));
     if (excluded.length  > 0) lines.push('Current excluded brands: '  + excluded.join(', '));
-
     return '\n\nMEMBER LEARNING HISTORY (apply silently, do NOT repeat back verbatim):\n' + lines.join('\n');
   }
 
-  // ── No compressed profile yet — use raw signals ──────────────────────────
   const preferred = searchLearnings.preferredBrands || [];
   const excluded  = searchLearnings.excludedBrands  || [];
   const price     = searchLearnings.priceSignals    || [];
@@ -219,7 +201,7 @@ function buildLearningsContext(searchLearnings) {
   if (lines.length === 0) return '';
 
   return [
-    '\n\nMEMBER LEARNING HISTORY (accumulated from past searches — apply silently, do NOT repeat back verbatim):',
+    '\n\nMEMBER LEARNING HISTORY (accumulated from past searches \u2014 apply silently, do NOT repeat back verbatim):',
     ...lines
   ].join('\n');
 }

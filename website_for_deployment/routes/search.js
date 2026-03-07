@@ -16,6 +16,7 @@ const { captureQualify, captureSearch, captureRefine, captureCartAdd } = require
 const { captureOutcome } = require('../services/PopulationCaptureService');
 const { captureConfirm, captureReject } = require('../services/FeedbackCaptureService');
 const { buildQualifyContext, buildLearningsContext } = require('../services/RAGService');
+const progressEmitter = require('../services/SearchProgressEmitter');
 
 module.exports = function searchRoutes(deps) {
   const {
@@ -143,6 +144,31 @@ module.exports = function searchRoutes(deps) {
     return ctx;
   }
 
+  // ─── GET /api/search/progress/:key  (Server-Sent Events) ────────────────────
+  // Client opens this before firing any search/qualify request.
+  // The server holds the connection and emits pipeline stage events as they fire.
+
+  router.get('/search/progress/:key', (req, res) => {
+    const key = req.params.key;
+    if (!key || key.length > 128) return res.status(400).end();
+
+    res.setHeader('Content-Type',  'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection',    'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // disable nginx buffering on Railway
+    res.flushHeaders();
+
+    // Send a heartbeat immediately so the client knows the connection is live
+    res.write('data: ' + JSON.stringify({ stage: 'connected', ts: Date.now() }) + '\n\n');
+
+    progressEmitter.register(key, res);
+
+    req.on('close', () => {
+      // Client disconnected — remove from registry silently
+      try { progressEmitter.close(key); } catch (_) {}
+    });
+  });
+
   // ─── POST /api/search ────────────────────────────────────────────────────────
 
   router.post('/search', async (req, res) => {
@@ -159,17 +185,25 @@ module.exports = function searchRoutes(deps) {
     if (!AFFILIATE_COM_API_KEY && !CHANNEL3_API_KEY && availableProviders.length === 0) {
       return res.status(500).json({ error: 'no_providers', message: 'No search providers configured.' });
     }
+
+    const searchKey = req.headers['x-search-key'] || null;
+    const em = progressEmitter.getEmitter(searchKey);
+
     try {
+      em.emit('Searching product catalogue across providers\u2026');
       const result = await messageBus.dispatch(RUN_SEARCH, { query, options });
       const sourceAttribution = result.providers || [];
       const isPharmaQuery = result.isPharmaQuery || false;
       const searchDurationMs = parseInt(String(result.searchDuration || '0'), 10) || 0;
+      const productCount = (result.products || []).length;
+      if (productCount > 0) em.emit('Applying your Avatar preferences to score ' + productCount + ' result' + (productCount !== 1 ? 's' : '') + '\u2026');
       resolveSessionId(req).then(sessionId => {
         captureSearch(sessionId, query, result.products || [], sourceAttribution);
       });
       getVisitorCountry(req.visitorHash).then(country => {
         recordSearchEvent(query, country, 'standard', { isPharma: isPharmaQuery, providers: sourceAttribution, resultCount: result.productCount || 0, durationMs: searchDurationMs, hadError: false });
       });
+      em.close();
       return res.json(result);
     } catch (error) {
       console.error('[API] Search error:', error);
@@ -185,24 +219,32 @@ module.exports = function searchRoutes(deps) {
       query,
       conversationHistory = [],
       avatarData          = null,
-      isRefinedSearch     = false,   // Phase E: skip questions, synthesise directly
-      originalQuery       = null,    // Phase E: the buyer's initial unmodified query
+      isRefinedSearch     = false,
+      originalQuery       = null,
     } = req.body;
+
+    // searchKey ties this request to an open SSE progress stream
+    const searchKey = req.headers['x-search-key'] || null;
+    const em = progressEmitter.getEmitter(searchKey);
+
     if (!query || typeof query !== 'string' || query.trim().length === 0) {
       return res.status(400).json({ success: false, error: 'Query is required' });
     }
     const llm = selectChatLLM();
     if (!llm.provider) {
+      em.close();
       return res.json({ success: true, readyToSearch: true, searchParams: { query: query.trim() }, message: 'Searching for: "' + query.trim() + '"', skipReason: 'no_llm_available' });
     }
     try {
       console.log('[Qualify] Using provider:', llm.provider, '| query:', query.substring(0, 60));
 
       const sessionIdPromise = resolveSessionId(req);
+
+      // Run RAG pipeline with live SSE instrumentation
       const [sessionId, ragContext] = await Promise.all([
         sessionIdPromise,
         conversationHistory.length <= 1
-          ? sessionIdPromise.then(sid => buildQualifyContext(query, sid))
+          ? sessionIdPromise.then(sid => buildQualifyContext(query, sid, em))
           : Promise.resolve('')
       ]);
 
@@ -219,7 +261,10 @@ module.exports = function searchRoutes(deps) {
           const sl = avatar && avatar.avatar_preferences && avatar.avatar_preferences.searchLearnings;
           if (sl) {
             learningsContext = buildLearningsContext(sl);
-            if (learningsContext) console.log('[Qualify] Learnings context injected (' + learningsContext.length + ' chars)');
+            if (learningsContext) {
+              em.emit('Avatar learning history fetched and injected\u2026');
+              console.log('[Qualify] Learnings context injected (' + learningsContext.length + ' chars)');
+            }
           }
         }
       } catch (e) {
@@ -248,6 +293,7 @@ module.exports = function searchRoutes(deps) {
         ? conversationHistory.map(m => ({ role: m.role, content: m.content }))
         : [{ role: 'user', content: query }];
 
+      em.emit('Qwen 2.5\u201132B reasoning across your requirements\u2026');
       const responseText = await callChatLLM(llm, systemPrompt, messages);
 
       let parsed;

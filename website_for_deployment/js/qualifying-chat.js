@@ -114,7 +114,10 @@ const QualifyingChat = (function() {
         try {
             const response = await fetch('/api/chat/qualify', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: Object.assign(
+                    { 'Content-Type': 'application/json' },
+                    window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}
+                ),
                 body: JSON.stringify({
                     query,
                     conversationHistory: [{ role: 'user', content: query }],
@@ -203,7 +206,10 @@ const QualifyingChat = (function() {
 
             const response = await fetch('/api/chat/qualify', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: Object.assign(
+                    { 'Content-Type': 'application/json' },
+                    window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}
+                ),
                 body: JSON.stringify({
                     query: originalQuery,
                     conversationHistory,

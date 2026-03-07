@@ -110,6 +110,10 @@ function handleSearch(e) {
     currentSearchQuery = searchQuery.value.trim();
     if (!currentSearchQuery) return;
 
+    // Generate a fresh searchKey and open the SSE progress stream
+    window.vxSearchKey = 'sk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    VXTicker.open(window.vxSearchKey);
+
     // Gather per-search rules from search controls panel
     if (typeof BuyerPolicies !== 'undefined' && BuyerPolicies.getSearchRules) {
         window.currentSearchRules = BuyerPolicies.getSearchRules();
@@ -171,94 +175,27 @@ function showSearchProgress() {
 
 // Perform the real AI search via backend API
 async function performSearch() {
-    const steps = document.querySelectorAll('.progress-step');
-    let currentStep = 0;
-    let searchComplete = false;
-    let searchResult = null;
-    let searchError = null;
-
-    // Start the API call immediately
-    const searchPromise = USE_REAL_API ? callSearchAPI(currentSearchQuery) : null;
-
-    // Animate progress steps while waiting for API
-    const stepDuration = 1200; // Slightly longer to allow API time
     const searchStartTime = Date.now();
-    let elapsedTimerId = null;
+    let searchResult = null;
+    let searchError  = null;
 
-    function animateStep() {
-        if (currentStep > 0) {
-            steps[currentStep - 1].classList.remove('active');
-            steps[currentStep - 1].classList.add('completed');
-            steps[currentStep - 1].querySelector('.step-icon').innerHTML = '&#x2713;';
-        }
-
-        if (currentStep < steps.length - 1) {
-            // Don't complete the last step until search is done
-            steps[currentStep].classList.add('active');
-            currentStep++;
-            setTimeout(animateStep, stepDuration);
-        } else if (currentStep === steps.length - 1) {
-            // Last step - wait for search to complete
-            steps[currentStep].classList.add('active');
-            currentStep++;
-            waitForSearch();
+    if (USE_REAL_API) {
+        try {
+            searchResult = await callSearchAPI(currentSearchQuery);
+        } catch (err) {
+            console.error('Search API error:', err);
+            searchError = err;
         }
     }
 
-    async function waitForSearch() {
-        // Show "Still searching" indicator after all steps finish but before results arrive
-        var stillSearchingEl = document.getElementById('stillSearchingIndicator');
-        if (!stillSearchingEl) {
-            stillSearchingEl = document.createElement('div');
-            stillSearchingEl.id = 'stillSearchingIndicator';
-            stillSearchingEl.className = 'still-searching-indicator';
-            stillSearchingEl.innerHTML = '<span class="still-searching__dot-pulse"></span>'
-                + '<span class="still-searching__text">Searching across providers</span>'
-                + '<span class="still-searching__elapsed" id="searchElapsed"></span>';
-            var progressSteps = document.querySelector('.progress-steps');
-            if (progressSteps) progressSteps.parentNode.insertBefore(stillSearchingEl, progressSteps.nextSibling);
-        }
-        stillSearchingEl.style.display = '';
+    // Store duration for results header
+    window._lastSearchDuration = Math.round((Date.now() - searchStartTime) / 1000);
 
-        // Start elapsed timer
-        var elapsedEl = document.getElementById('searchElapsed');
-        elapsedTimerId = setInterval(function() {
-            var secs = Math.round((Date.now() - searchStartTime) / 1000);
-            if (elapsedEl) elapsedEl.textContent = secs + 's';
-        }, 1000);
+    // Brief pause so the last ticker line is readable before results arrive
+    await new Promise(resolve => setTimeout(resolve, 350));
+    showResults(searchResult, searchError);
+}
 
-        if (USE_REAL_API && searchPromise) {
-            try {
-                searchResult = await searchPromise;
-                searchComplete = true;
-            } catch (error) {
-                console.error('Search API error:', error);
-                searchError = error;
-                searchComplete = true;
-            }
-        } else {
-            // Demo mode - simulate delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-            searchComplete = true;
-        }
-
-        // Clear elapsed timer and hide indicator
-        if (elapsedTimerId) clearInterval(elapsedTimerId);
-        if (stillSearchingEl) stillSearchingEl.style.display = 'none';
-
-        // Store search duration for display in results header
-        window._lastSearchDuration = Math.round((Date.now() - searchStartTime) / 1000);
-
-        // Complete the last step
-        steps[steps.length - 1].classList.remove('active');
-        steps[steps.length - 1].classList.add('completed');
-        steps[steps.length - 1].querySelector('.step-icon').innerHTML = '&#x2713;';
-
-        // Show results after a brief pause
-        setTimeout(() => showResults(searchResult, searchError), 400);
-    }
-
-    animateStep();
 }
 
 // Call the backend search API - ALWAYS uses multi-provider search
@@ -283,9 +220,10 @@ async function callMultiProviderSearch(query) {
     // Use /api/search for both local and Railway (Express server handles multi-provider)
     const response = await fetch(`${API_BASE_URL}/api/search`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: Object.assign(
+            { 'Content-Type': 'application/json' },
+            window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}
+        ),
         body: JSON.stringify({ query, options })
     });
 
@@ -418,8 +356,18 @@ function detectCategory(query) {
 
 // Show results
 function showResults(apiResponse = null, error = null) {
+    // Hide the ticker search panel, show results
+    var progressEl = document.getElementById('searchProgress');
+    if (progressEl) progressEl.style.display = 'none';
     searchProgress.classList.remove('active');
     resultsSection.classList.add('active');
+
+    // Move the collapsed ticker summary bar into the results section header area
+    var tickerPanel = document.getElementById('vxTickerPanel');
+    var resultsHeader = resultsSection.querySelector('.results-header');
+    if (tickerPanel && resultsHeader && resultsHeader.parentNode) {
+        resultsHeader.parentNode.insertBefore(tickerPanel, resultsHeader);
+    }
 
     // Signal ACP handshake that search results have arrived
     if (typeof ACPHandshake !== 'undefined' && ACPHandshake.resolveAwaitingResults) {
@@ -2712,7 +2660,11 @@ function truncateText(text, maxLength) {
         try {
             var resp = await fetch('/api/chat/qualify', {
                 method: 'POST',
-                headers: headers,
+                headers: Object.assign(
+                    { 'Content-Type': 'application/json' },
+                    token ? { 'Authorization': 'Bearer ' + token } : {},
+                    window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}
+                ),
                 body: JSON.stringify({
                     query:            enrichedQuery,
                     conversationHistory: [],
@@ -2740,6 +2692,8 @@ function truncateText(text, maxLength) {
         }
 
         // ── Fire the search ─────────────────────────────────────────────────
+        window.vxSearchKey = 'sk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        VXTicker.open(window.vxSearchKey);
         showSearchProgress();
         simulateSearch();
     };
