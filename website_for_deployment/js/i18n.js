@@ -283,8 +283,10 @@
   function applyTranslations(lang) {
     var dict = STRINGS[lang] || STRINGS['en'];
 
-    // Text content
+    // Text content — skip elements marked data-i18n-dynamic or that carry live search state
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      if (el.hasAttribute('data-i18n-dynamic')) return;
+      if (el.id === 'searchQueryDisplay') return;
       var key = el.getAttribute('data-i18n');
       if (dict[key] !== undefined) {
         el.innerHTML = dict[key];
