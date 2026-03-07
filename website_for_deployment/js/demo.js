@@ -2682,6 +2682,8 @@ function truncateText(text, maxLength) {
             enrichedAvatar.standingInstructions     = PreferenceReader.getStandingInstructions();
             enrichedAvatar.jurisdiction             = PreferenceReader.getJurisdiction();
             enrichedAvatar.currency                 = PreferenceReader.getCurrency();
+            var _rsp = PreferenceReader.getSourcingPreference ? PreferenceReader.getSourcingPreference() : null;
+            if (_rsp) enrichedAvatar.sourcingPreference = _rsp;
         } else {
             try { var vr2 = localStorage.getItem('vendeeX_valueRanking'); if (vr2) enrichedAvatar.valueRanking = JSON.parse(vr2); } catch(e) {}
             enrichedAvatar.prefFreeReturns    = localStorage.getItem('vendeeX_prefFreeReturns') === 'true';
@@ -2690,6 +2692,8 @@ function truncateText(text, maxLength) {
             enrichedAvatar.jurisdiction       = localStorage.getItem('vendeeX_jurisdiction') || '';
             enrichedAvatar.currency           = localStorage.getItem('vendeeX_currency') || '';
         }
+        var _rsp2 = (typeof PreferenceReader !== 'undefined' && PreferenceReader.getSourcingPreference) ? PreferenceReader.getSourcingPreference() : null;
+        if (_rsp2) enrichedAvatar.sourcingPreference = _rsp2;
         if (window.currentSearchRules) enrichedAvatar.searchRules = window.currentSearchRules;
 
         // ── Clean up stale state ────────────────────────────────────────────
