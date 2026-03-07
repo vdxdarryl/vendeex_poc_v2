@@ -408,14 +408,14 @@ const Orchestration = {
         html += '<div class="orchestration__product-meta">';
         if (product.brand) html += '<span>' + this._escapeHtml(product.brand) + '</span>';
         if (prefOverall >= 0) {
-            // Show blended overall match + individual scores
+            // Overall Match is the blended score (relevance + avatar). No need to repeat components.
             var matchColor = blendedScore >= 75 ? '#166534' : (blendedScore >= 50 ? '#92400e' : '#991b1b');
             html += '<span style="color:' + matchColor + ';font-weight:600;">' + blendedScore + '% Overall Match</span>';
-            html += '<span>' + matchScore + '% Relevance</span>';
             var prefColor = prefOverall >= 75 ? '#166534' : (prefOverall >= 40 ? '#92400e' : '#991b1b');
             html += '<span style="color:' + prefColor + ';">' + prefOverall + '% Avatar</span>';
-        } else {
-            html += '<span>' + matchScore + '% Relevance</span>';
+        } else if (matchScore > 0) {
+            var matchColor2 = matchScore >= 75 ? '#166534' : (matchScore >= 50 ? '#92400e' : '#991b1b');
+            html += '<span style="color:' + matchColor2 + ';font-weight:600;">' + matchScore + '% Match</span>';
         }
         if (product.rating) html += '<span>&#x2605; ' + product.rating + '</span>';
         html += '</div>';
@@ -471,6 +471,57 @@ const Orchestration = {
         }
 
         return reasoning;
+    },
+
+
+    /**
+     * Synchronise a product rejection from All Products into Curated Recommendations.
+     * Called by demo.js when buyer dismisses a product card.
+     */
+    syncRejection(productName, productBrand) {
+        var self = this;
+        if (!this.containerEl) return;
+        var rows = this.containerEl.querySelectorAll('.orchestration__product');
+        rows.forEach(function(row) {
+            var nameEl = row.querySelector('.orchestration__product-name');
+            if (!nameEl) return;
+            if (nameEl.textContent.trim() === productName) {
+                row.style.transition = 'opacity 0.35s ease, max-height 0.4s ease, margin 0.4s ease, padding 0.4s ease';
+                row.style.overflow   = 'hidden';
+                row.style.opacity    = '0';
+                row.style.maxHeight  = row.offsetHeight + 'px';
+                requestAnimationFrame(function() {
+                    row.style.maxHeight   = '0';
+                    row.style.marginTop   = '0';
+                    row.style.marginBottom = '0';
+                    row.style.paddingTop  = '0';
+                    row.style.paddingBottom = '0';
+                });
+                setTimeout(function() { row.remove(); }, 450);
+            }
+        });
+    },
+
+    /**
+     * Synchronise a product confirmation from All Products into Curated Recommendations.
+     * Adds a subtle ✓ badge to the matching curated row.
+     */
+    syncConfirm(productName) {
+        if (!this.containerEl) return;
+        var rows = this.containerEl.querySelectorAll('.orchestration__product');
+        rows.forEach(function(row) {
+            var nameEl = row.querySelector('.orchestration__product-name');
+            if (!nameEl) return;
+            if (nameEl.textContent.trim() === productName) {
+                if (!row.querySelector('.curated-confirmed-badge')) {
+                    var badge = document.createElement('span');
+                    badge.className = 'curated-confirmed-badge';
+                    badge.style.cssText = 'font-size:0.7rem;color:#166534;background:#dcfce7;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:600;';
+                    badge.textContent = '\u2713 Good fit';
+                    nameEl.appendChild(badge);
+                }
+            }
+        });
     },
 
     /**
