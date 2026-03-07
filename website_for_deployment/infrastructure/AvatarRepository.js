@@ -81,4 +81,67 @@ class AvatarRepository {
     }
 }
 
+    /**
+     * Merge search learnings into avatar_preferences.searchLearnings.
+     * Surgical update — does NOT overwrite any other avatar fields.
+     *
+     * learnings shape:
+     * {
+     *   preferredBrands:  string[],   // brands buyer confirmed
+     *   excludedBrands:   string[],   // brands buyer rejected with 'wrong_supplier'
+     *   priceSignals:     string[],   // e.g. 'lower_price_range'
+     *   styleSignals:     string[],   // e.g. 'different_style'
+     *   confirms:         { query, productName, brand, ts }[],
+     *   rejects:          { query, productName, brand, reason, ts }[],
+     * }
+     *
+     * Accumulates arrays (deduplicates brands); caps event log at 200 entries.
+     */
+    async patchLearnings(userId, learnings) {
+        this._memory.set('_learnings_' + userId, learnings);  // always update in-memory
+
+        if (!this.db.isUsingDatabase()) return;
+
+        // Load existing avatar_preferences so we can merge, not overwrite
+        const result = await this.db.query(
+            'SELECT avatar_preferences FROM avatars WHERE user_id = $1',
+            [userId]
+        );
+        if (result.rows.length === 0) return;  // no avatar record — nothing to update
+
+        const existing = result.rows[0].avatar_preferences || {};
+        const prev = existing.searchLearnings || {
+            preferredBrands: [],
+            excludedBrands:  [],
+            priceSignals:    [],
+            styleSignals:    [],
+            confirms:        [],
+            rejects:         [],
+            lastUpdated:     null,
+        };
+
+        // Merge arrays — deduplicate strings, cap event logs at 200
+        function mergeUniq(a, b) {
+            return [...new Set([...(a || []), ...(b || [])])];
+        }
+
+        const merged = {
+            preferredBrands: mergeUniq(prev.preferredBrands, learnings.preferredBrands),
+            excludedBrands:  mergeUniq(prev.excludedBrands,  learnings.excludedBrands),
+            priceSignals:    mergeUniq(prev.priceSignals,     learnings.priceSignals),
+            styleSignals:    mergeUniq(prev.styleSignals,     learnings.styleSignals),
+            confirms:        [...(prev.confirms || []), ...(learnings.confirms || [])].slice(-200),
+            rejects:         [...(prev.rejects  || []), ...(learnings.rejects  || [])].slice(-200),
+            lastUpdated:     new Date().toISOString(),
+        };
+
+        const updatedPrefs = { ...existing, searchLearnings: merged };
+
+        await this.db.query(
+            'UPDATE avatars SET avatar_preferences = $1, updated_at = NOW() WHERE user_id = $2',
+            [JSON.stringify(updatedPrefs), userId]
+        );
+    }
+
+
 module.exports = { AvatarRepository };
