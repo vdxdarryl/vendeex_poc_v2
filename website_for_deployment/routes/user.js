@@ -4,6 +4,8 @@
 
 const express = require('express');
 
+const { shouldCompress, compress } = require('../services/LearningsCompressionService');
+
 module.exports = function userRoutes(deps) {
     const { authService, db, recordEngagement } = deps;
     const router = express.Router();
@@ -329,6 +331,24 @@ module.exports = function userRoutes(deps) {
         };
 
         await authService.patchAvatarLearnings(user.id, learnings);
+
+        // Fire compression asynchronously if event log is large enough.
+        // Non-blocking — the response returns immediately regardless of outcome.
+        setImmediate(async () => {
+            try {
+                const avatar = await authService.findAvatar(user.id);
+                const sl = avatar && avatar.avatar_preferences && avatar.avatar_preferences.searchLearnings;
+                if (sl && shouldCompress(sl)) {
+                    console.log('[LEARN] Compression threshold reached for:', user.email, '— compressing');
+                    await compress(user.id, sl, deps.db, {
+                        VLLM_URL:          process.env.VLLM_URL,
+                        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+                    });
+                }
+            } catch (e) {
+                console.error('[LEARN] Compression trigger error:', e.message);
+            }
+        });
 
         console.log('[LEARN] Avatar learnings updated for:', user.email,
             '| +confirms:', learnings.confirms.length,
