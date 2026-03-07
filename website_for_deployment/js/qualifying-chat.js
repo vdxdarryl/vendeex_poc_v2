@@ -87,6 +87,8 @@ const QualifyingChat = (function() {
             enrichedData.standingInstructions = PreferenceReader.getStandingInstructions();
             enrichedData.jurisdiction = PreferenceReader.getJurisdiction();
             enrichedData.currency = PreferenceReader.getCurrency();
+            var _sp = PreferenceReader.getSourcingPreference ? PreferenceReader.getSourcingPreference() : null;
+            if (_sp) enrichedData.sourcingPreference = _sp;
         } else {
             try { var vr = localStorage.getItem('vendeeX_valueRanking'); if (vr) enrichedData.valueRanking = JSON.parse(vr); } catch(e) {}
             enrichedData.prefFreeReturns = localStorage.getItem('vendeeX_prefFreeReturns') === 'true';
@@ -96,6 +98,11 @@ const QualifyingChat = (function() {
             enrichedData.standingInstructions = localStorage.getItem('vendeeX_standingInstructions') || '';
             enrichedData.jurisdiction = localStorage.getItem('vendeeX_jurisdiction') || '';
             enrichedData.currency = localStorage.getItem('vendeeX_currency') || '';
+        }
+        // Include sourcing preference regardless of PreferenceReader availability
+        if (typeof PreferenceReader !== 'undefined' && PreferenceReader.getSourcingPreference) {
+            var sp2 = PreferenceReader.getSourcingPreference();
+            if (sp2) enrichedData.sourcingPreference = sp2;
         }
         if (window.currentSearchRules) {
             enrichedData.searchRules = window.currentSearchRules;
