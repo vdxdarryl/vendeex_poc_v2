@@ -164,4 +164,46 @@ async function buildQualifyContext(query, sessionId) {
   return buildContext(query, sessionId);
 }
 
-module.exports = { buildQualifyContext, buildContext, buildSessionContext, buildPopulationContext };
+
+// ─── Member learning history context ─────────────────────────────────────────
+//
+// Reads avatar_preferences.searchLearnings (written by the feedback pipeline)
+// and formats it into a structured LLM context block.
+// Called from the qualify route for authenticated members only.
+// Pure formatter — no I/O. Degrades gracefully on missing/empty data.
+
+function buildLearningsContext(searchLearnings) {
+  if (!searchLearnings || typeof searchLearnings !== 'object') return '';
+
+  const lines = [];
+
+  const preferred = searchLearnings.preferredBrands || [];
+  const excluded  = searchLearnings.excludedBrands  || [];
+  const price     = searchLearnings.priceSignals    || [];
+  const style     = searchLearnings.styleSignals    || [];
+  const confirms  = (searchLearnings.confirms || []).slice(-5);
+  const rejects   = (searchLearnings.rejects  || []).slice(-5);
+
+  if (preferred.length > 0) lines.push('- Preferred brands: '   + preferred.join(', '));
+  if (excluded.length  > 0) lines.push('- Excluded brands: '    + excluded.join(', '));
+  if (price.length     > 0) lines.push('- Price signals: '      + price.join(', '));
+  if (style.length     > 0) lines.push('- Style signals: '      + style.join(', '));
+
+  if (confirms.length > 0) {
+    const cl = confirms.map(c => (c.brand ? c.brand + ' ' : '') + (c.productName || '')).filter(Boolean);
+    if (cl.length > 0) lines.push('- Recently confirmed as good fit: ' + cl.join('; '));
+  }
+  if (rejects.length > 0) {
+    const rl = rejects.map(r => [(r.brand ? r.brand + ' ' : '') + (r.productName || ''), r.reason ? '(' + r.reason + ')' : ''].filter(Boolean).join(' ')).filter(Boolean);
+    if (rl.length > 0) lines.push('- Recently rejected: ' + rl.join('; '));
+  }
+
+  if (lines.length === 0) return '';
+
+  return [
+    '\n\nMEMBER LEARNING HISTORY (accumulated from past searches — apply silently, do NOT repeat back verbatim):',
+    ...lines
+  ].join('\n');
+}
+
+module.exports = { buildQualifyContext, buildContext, buildSessionContext, buildPopulationContext, buildLearningsContext };
