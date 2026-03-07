@@ -111,7 +111,7 @@ module.exports = function searchRoutes(deps) {
         ctx += line;
       }
       if (dbf && dbf.country) {
-        let line = '\n- SOURCING EXCLUSION (enforce as hard filter): do NOT buy from ' + dbf.country;
+        let line = '\n- SOURCING PREFERENCE (avoid, deprioritise in results): prefer not to buy from ' + dbf.country;
         if (dbf.regions && dbf.regions.length > 0) line += ' or ' + dbf.regions.join(' or ');
         ctx += line;
       }
