@@ -2552,58 +2552,73 @@ function truncateText(text, maxLength) {
     };
 
     // ── Refined search trigger ───────────────────────────────────────────────
+    // Pre-populates the main searchQuery textarea with a synthesised query
+    // built from the original search + confirmed/rejected feedback.
+    // Scrolls to the search section so the buyer can review and adjust before
+    // pressing Find Products. Does NOT auto-submit, does NOT restart qualify.
 
     window.triggerRefinedSearch = function() {
         var s = getState();
         if (!s) return;
 
-        // Build refinement context from feedback log
         var confirms = s.feedbackLog.filter(function(e) { return e.feedback === 'confirm'; });
         var rejects  = s.feedbackLog.filter(function(e) { return e.feedback === 'reject'; });
 
-        var contextParts = ['I searched for: "' + (s.query || 'products') + '"'];
+        // Build a plain-language refined query
+        var parts = [s.query || 'products'];
 
         if (confirms.length > 0) {
-            contextParts.push('I marked as good fit: ' + confirms.map(function(e) {
-                return e.name + (e.brand ? ' (' + e.brand + ')' : '');
-            }).join(', '));
+            var confNames = confirms.map(function(e) { return e.brand || e.name; })
+                .filter(function(v, i, a) { return a.indexOf(v) === i; }) // unique
+                .slice(0, 3);
+            parts.push('more like ' + confNames.join(' or '));
         }
 
         if (rejects.length > 0) {
-            var rejectDesc = rejects.map(function(e) {
-                var r = { too_expensive: 'too expensive', wrong_supplier: 'wrong brand/supplier', not_quite_right: 'not quite right' }[e.reason] || e.reason;
-                return e.name + ' — ' + r;
-            }).join('; ');
-            contextParts.push('I rejected: ' + rejectDesc);
-        }
+            var tooExp    = rejects.filter(function(e) { return e.reason === 'too_expensive'; });
+            var wrongSup  = rejects.filter(function(e) { return e.reason === 'wrong_supplier'; });
+            var notRight  = rejects.filter(function(e) { return e.reason === 'not_quite_right'; });
 
-        contextParts.push('Please suggest a refined search query based on this feedback.');
-
-        var refinedContext = contextParts.join('. ');
-
-        // Remove the banner
-        var banner = document.getElementById('vxPoolBanner');
-        if (banner) banner.remove();
-
-        // Re-open Chat Window 1 (qualify) with the refinement context pre-populated
-        var qualifyInput = document.getElementById('qualifyInput') || document.querySelector('.chat-input, .qualifying-chat input[type="text"]');
-        if (qualifyInput) {
-            qualifyInput.value = refinedContext;
-            qualifyInput.dispatchEvent(new Event('input', { bubbles: true }));
-            qualifyInput.focus();
-            // Scroll to the chat window
-            qualifyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            // Fallback: trigger a new search directly
-            var searchBar = document.getElementById('searchInput') || document.querySelector('.search-bar input');
-            if (searchBar) {
-                searchBar.value = s.query + ' refined';
-                searchBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                searchBar.focus();
+            if (tooExp.length > 0) parts.push('lower price range');
+            if (wrongSup.length > 0) {
+                var badBrands = wrongSup.map(function(e) { return e.brand; })
+                    .filter(Boolean)
+                    .filter(function(v, i, a) { return a.indexOf(v) === i; })
+                    .slice(0, 3);
+                if (badBrands.length > 0) parts.push('not ' + badBrands.join(' or '));
+            }
+            if (notRight.length > 0 && confirms.length === 0) {
+                parts.push('different style');
             }
         }
 
-        console.log('[Feedback] triggering refined search:', refinedContext.substring(0, 100));
+        var refinedQuery = parts.join(', ');
+
+        // Remove the pool-exhausted banner
+        var banner = document.getElementById('vxPoolBanner');
+        if (banner) banner.remove();
+
+        // Pre-populate the main search textarea and scroll to it
+        var searchTextarea = document.getElementById('searchQuery');
+        if (searchTextarea) {
+            searchTextarea.value = refinedQuery;
+            searchTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+
+            // Show a brief 'refined from feedback' hint above the textarea
+            var existing = document.getElementById('vxRefinedHint');
+            if (existing) existing.remove();
+            var hint = document.createElement('div');
+            hint.id = 'vxRefinedHint';
+            hint.style.cssText = 'font-size:0.8rem;color:#0369a1;background:#e0f2fe;border:1px solid #7dd3fc;border-radius:6px;padding:6px 12px;margin-bottom:8px;';
+            hint.textContent = '\u2713 Pre-filled from your feedback. Edit if needed, then press Find Products.';
+            searchTextarea.parentNode.insertBefore(hint, searchTextarea);
+
+            // Scroll to and focus the textarea
+            searchTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(function() { searchTextarea.focus(); }, 400);
+        }
+
+        console.log('[Feedback] refined search pre-filled:', refinedQuery);
     };
 
 })();
