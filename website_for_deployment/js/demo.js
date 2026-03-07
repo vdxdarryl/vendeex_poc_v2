@@ -199,8 +199,6 @@ async function performSearch() {
     showResults(searchResult, searchError);
 }
 
-}
-
 // Call the backend search API - ALWAYS uses multi-provider search
 async function callSearchAPI(query) {
     // Detect if this is a pharmaceutical query
