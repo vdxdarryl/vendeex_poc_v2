@@ -844,6 +844,16 @@ function renderProducts(products, category) {
     window.currentSearchCategory = category;
     lastSearchResults = products;
 
+    // Feedback pool state — tracks which products have been reviewed
+    window._vxFeedbackState = {
+        pool:      products.slice(),   // full unreduced pool
+        shownIds:  new Set(),          // product names currently in DOM
+        rejected:  new Set(),          // rejected product names
+        confirmed: new Set(),          // confirmed product names
+        feedbackLog: [],               // [{name, brand, feedback, reason, query}]
+        query:     window._lastSearchQuery || '',
+    };
+
     // Get buyer context
     const buyerLocation = localStorage.getItem('vendeeX_buyerLocation') || 'UK';
     const shippingPref = localStorage.getItem('vendeeX_shippingPreference') || 'standard';
@@ -868,6 +878,7 @@ function renderProducts(products, category) {
             var isTopPick = index === 0;
             var card = createProductCard(product, isTopPick, category, costData);
             resultsGrid.appendChild(card);
+            if (window._vxFeedbackState) window._vxFeedbackState.shownIds.add(product.name);
         } catch(cardErr) {
             renderErrors++;
             console.warn('[renderProducts] Failed to render product ' + index + ':', cardErr.message, product.name);
@@ -1169,12 +1180,13 @@ function createProductCard(product, isTopPick, category, costData) {
                 <span class="rating-count">${product.rating || 'N/A'} (${reviewCount} reviews)</span>
             </div>
             <div class="result-match-row">
-                <div class="result-match">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M5.5 7L6.5 8L8.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-                    </svg>
-                    ${matchScore}% Relevance
+                <div class="result-feedback" id="feedback-${productIndex}">
+                    <button class="feedback-btn feedback-btn--yes"
+                        onclick="event.stopPropagation(); handleProductConfirm(${productIndex}, this)"
+                        title="Good fit for me">&#x2713; Good fit</button>
+                    <button class="feedback-btn feedback-btn--no"
+                        onclick="event.stopPropagation(); handleProductReject(${productIndex}, this)"
+                        title="Not for me">&#x2717; Not for me</button>
                 </div>
                 ${prefBadgeHTML}
                 <span class="acp-verified-badge"><span class="acp-verified-badge__icon">&#x2713;</span> Connected via ACP</span>
@@ -2261,3 +2273,337 @@ function truncateText(text, maxLength) {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength - 3) + '...';
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VendeeX Feedback System — All Products card micro-feedback
+// Replaces static Relevance badge with ✓ / ✗ interaction.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+(function() {
+    'use strict';
+
+    // ── CSS injection ────────────────────────────────────────────────────────
+    var style = document.createElement('style');
+    style.textContent = `
+        .result-feedback {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .feedback-btn {
+            border: none;
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s, opacity 0.18s;
+            line-height: 1.5;
+        }
+        .feedback-btn--yes {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .feedback-btn--yes:hover { background: #dcfce7; }
+        .feedback-btn--yes.active {
+            background: #166534;
+            color: #fff;
+            border-color: #166534;
+        }
+        .feedback-btn--no {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .feedback-btn--no:hover { background: #fee2e2; }
+        .feedback-reason-chips {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-left: 4px;
+        }
+        .feedback-reason-chip {
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            color: #374151;
+            border-radius: 12px;
+            padding: 2px 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .feedback-reason-chip:hover { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+        .result-card--removing {
+            transition: opacity 0.35s ease, max-height 0.4s ease, margin 0.4s ease, padding 0.4s ease !important;
+            overflow: hidden !important;
+        }
+        .vx-pool-banner {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #7dd3fc;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .vx-pool-banner__text { font-size: 0.9rem; color: #0c4a6e; font-weight: 500; }
+        .vx-pool-banner__text strong { color: #0369a1; }
+        .vx-pool-banner__btn {
+            background: #0369a1;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.18s;
+        }
+        .vx-pool-banner__btn:hover { background: #0284c7; }
+        .vx-pool-banner__dismiss {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    function getState() { return window._vxFeedbackState || null; }
+
+    function getQuery() {
+        var s = getState();
+        return (s && s.query) || (typeof window._lastSearchQuery !== 'undefined' ? window._lastSearchQuery : '');
+    }
+
+    function getProductByIndex(idx) {
+        if (typeof lastSearchResults !== 'undefined' && lastSearchResults[idx]) {
+            return lastSearchResults[idx];
+        }
+        return null;
+    }
+
+    function postFeedback(product, feedback, reason) {
+        var query = getQuery();
+        fetch('/api/session/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product: product, originalQuery: query, feedback: feedback, reason: reason || null })
+        }).catch(function(e) { console.warn('[Feedback] capture failed:', e.message); });
+    }
+
+    function logFeedback(product, feedback, reason) {
+        var s = getState();
+        if (!s) return;
+        s.feedbackLog.push({
+            name:     product.name  || '',
+            brand:    product.brand || '',
+            feedback: feedback,
+            reason:   reason || null,
+            query:    getQuery(),
+        });
+        if (feedback === 'reject')   s.rejected.add(product.name);
+        if (feedback === 'confirm')  s.confirmed.add(product.name);
+    }
+
+    function checkPoolExhausted() {
+        var s = getState();
+        if (!s) return;
+        var grid = document.getElementById('resultsGrid');
+        if (!grid) return;
+        var remaining = grid.querySelectorAll('.result-card');
+        if (remaining.length === 0 && s.feedbackLog.length > 0) {
+            showPoolExhaustedBanner(s);
+        }
+    }
+
+    function showPoolExhaustedBanner(state) {
+        var existing = document.getElementById('vxPoolBanner');
+        if (existing) return;
+
+        var rejCount  = state.rejected.size;
+        var confCount = state.confirmed.size;
+        var totalReviewed = state.feedbackLog.length;
+
+        var banner = document.createElement('div');
+        banner.id = 'vxPoolBanner';
+        banner.className = 'vx-pool-banner';
+
+        var summary = 'You\'ve reviewed all ' + totalReviewed + ' result' + (totalReviewed !== 1 ? 's' : '') + '.';
+        if (rejCount > 0 || confCount > 0) {
+            var parts = [];
+            if (confCount > 0) parts.push(confCount + ' good fit' + (confCount !== 1 ? 's' : ''));
+            if (rejCount > 0)  parts.push(rejCount + ' dismissed');
+            summary += ' (' + parts.join(', ') + '.)';
+        }
+
+        banner.innerHTML =
+            '<div class="vx-pool-banner__text"><strong>All results reviewed.</strong> ' + summary +
+            ' Run a new search using what you\'ve told us?</div>' +
+            '<div style="display:flex;gap:8px;align-items:center;">' +
+            '<button class="vx-pool-banner__btn" onclick="triggerRefinedSearch()">Refine my search</button>' +
+            '<button class="vx-pool-banner__dismiss" onclick="document.getElementById(\'vxPoolBanner\').remove()">Dismiss</button>' +
+            '</div>';
+
+        var grid = document.getElementById('resultsGrid');
+        if (grid && grid.parentNode) {
+            grid.parentNode.insertBefore(banner, grid);
+        }
+    }
+
+    // ── Confirm handler ──────────────────────────────────────────────────────
+
+    window.handleProductConfirm = function(productIndex, btnEl) {
+        var product = getProductByIndex(productIndex);
+        if (!product) return;
+
+        // Visual state
+        var feedbackDiv = document.getElementById('feedback-' + productIndex);
+        if (feedbackDiv) {
+            feedbackDiv.querySelectorAll('.feedback-btn').forEach(function(b) {
+                b.disabled = true;
+                b.style.opacity = '0.5';
+            });
+            if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.style.opacity = '1';
+                btnEl.classList.add('active');
+            }
+        }
+
+        // Capture
+        logFeedback(product, 'confirm', null);
+        postFeedback(product, 'confirm', null);
+
+        // Sync to curated view
+        if (typeof Orchestration !== 'undefined' && Orchestration.syncConfirm) {
+            Orchestration.syncConfirm(product.name);
+        }
+
+        console.log('[Feedback] confirmed:', product.name);
+    };
+
+    // ── Reject handler ───────────────────────────────────────────────────────
+
+    window.handleProductReject = function(productIndex, btnEl) {
+        var product = getProductByIndex(productIndex);
+        if (!product) return;
+
+        var feedbackDiv = document.getElementById('feedback-' + productIndex);
+        if (!feedbackDiv) return;
+
+        // Replace the two buttons with reason chips
+        feedbackDiv.innerHTML =
+            '<span style="font-size:0.72rem;color:#6b7280;margin-right:4px;">Why?</span>' +
+            '<div class="feedback-reason-chips">' +
+            '<button class="feedback-reason-chip" onclick="window.handleRejectReason(' + productIndex + ', this, \'too_expensive\')">Too expensive</button>' +
+            '<button class="feedback-reason-chip" onclick="window.handleRejectReason(' + productIndex + ', this, \'wrong_supplier\')">Wrong brand/supplier</button>' +
+            '<button class="feedback-reason-chip" onclick="window.handleRejectReason(' + productIndex + ', this, \'not_quite_right\')">Not quite right</button>' +
+            '</div>';
+    };
+
+    window.handleRejectReason = function(productIndex, chipEl, reason) {
+        var product = getProductByIndex(productIndex);
+        if (!product) return;
+
+        // Find and animate out the card
+        var card = chipEl.closest('.result-card');
+        if (card) {
+            var h = card.offsetHeight;
+            card.classList.add('result-card--removing');
+            card.style.maxHeight = h + 'px';
+            card.style.opacity   = '0';
+            requestAnimationFrame(function() {
+                card.style.maxHeight      = '0';
+                card.style.marginTop      = '0';
+                card.style.marginBottom   = '0';
+                card.style.paddingTop     = '0';
+                card.style.paddingBottom  = '0';
+            });
+            setTimeout(function() {
+                card.remove();
+                checkPoolExhausted();
+            }, 420);
+        }
+
+        // Capture
+        logFeedback(product, 'reject', reason);
+        postFeedback(product, 'reject', reason);
+
+        // Sync to curated view
+        if (typeof Orchestration !== 'undefined' && Orchestration.syncRejection) {
+            Orchestration.syncRejection(product.name, product.brand);
+        }
+
+        console.log('[Feedback] rejected (' + reason + '):', product.name);
+    };
+
+    // ── Refined search trigger ───────────────────────────────────────────────
+
+    window.triggerRefinedSearch = function() {
+        var s = getState();
+        if (!s) return;
+
+        // Build refinement context from feedback log
+        var confirms = s.feedbackLog.filter(function(e) { return e.feedback === 'confirm'; });
+        var rejects  = s.feedbackLog.filter(function(e) { return e.feedback === 'reject'; });
+
+        var contextParts = ['I searched for: "' + (s.query || 'products') + '"'];
+
+        if (confirms.length > 0) {
+            contextParts.push('I marked as good fit: ' + confirms.map(function(e) {
+                return e.name + (e.brand ? ' (' + e.brand + ')' : '');
+            }).join(', '));
+        }
+
+        if (rejects.length > 0) {
+            var rejectDesc = rejects.map(function(e) {
+                var r = { too_expensive: 'too expensive', wrong_supplier: 'wrong brand/supplier', not_quite_right: 'not quite right' }[e.reason] || e.reason;
+                return e.name + ' — ' + r;
+            }).join('; ');
+            contextParts.push('I rejected: ' + rejectDesc);
+        }
+
+        contextParts.push('Please suggest a refined search query based on this feedback.');
+
+        var refinedContext = contextParts.join('. ');
+
+        // Remove the banner
+        var banner = document.getElementById('vxPoolBanner');
+        if (banner) banner.remove();
+
+        // Re-open Chat Window 1 (qualify) with the refinement context pre-populated
+        var qualifyInput = document.getElementById('qualifyInput') || document.querySelector('.chat-input, .qualifying-chat input[type="text"]');
+        if (qualifyInput) {
+            qualifyInput.value = refinedContext;
+            qualifyInput.dispatchEvent(new Event('input', { bubbles: true }));
+            qualifyInput.focus();
+            // Scroll to the chat window
+            qualifyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // Fallback: trigger a new search directly
+            var searchBar = document.getElementById('searchInput') || document.querySelector('.search-bar input');
+            if (searchBar) {
+                searchBar.value = s.query + ' refined';
+                searchBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                searchBar.focus();
+            }
+        }
+
+        console.log('[Feedback] triggering refined search:', refinedContext.substring(0, 100));
+    };
+
+})();
