@@ -177,6 +177,24 @@ function buildLearningsContext(searchLearnings) {
 
   const lines = [];
 
+  // ── Compressed preference profile (post-compression) ─────────────────────
+  // If a profile exists, it carries the distilled signal from all past events.
+  // We use it as the primary context block and skip the raw event log.
+  if (searchLearnings.preferenceProfile) {
+    lines.push('MEMBER PREFERENCE PROFILE (distilled from all past sessions):');
+    lines.push(searchLearnings.preferenceProfile);
+
+    // Still surface the signal arrays even after compression — they are updated
+    // on every session and are more current than the profile narrative.
+    const preferred = searchLearnings.preferredBrands || [];
+    const excluded  = searchLearnings.excludedBrands  || [];
+    if (preferred.length > 0) lines.push('Current preferred brands: ' + preferred.join(', '));
+    if (excluded.length  > 0) lines.push('Current excluded brands: '  + excluded.join(', '));
+
+    return '\n\nMEMBER LEARNING HISTORY (apply silently, do NOT repeat back verbatim):\n' + lines.join('\n');
+  }
+
+  // ── No compressed profile yet — use raw signals ──────────────────────────
   const preferred = searchLearnings.preferredBrands || [];
   const excluded  = searchLearnings.excludedBrands  || [];
   const price     = searchLearnings.priceSignals    || [];
@@ -184,10 +202,10 @@ function buildLearningsContext(searchLearnings) {
   const confirms  = (searchLearnings.confirms || []).slice(-5);
   const rejects   = (searchLearnings.rejects  || []).slice(-5);
 
-  if (preferred.length > 0) lines.push('- Preferred brands: '   + preferred.join(', '));
-  if (excluded.length  > 0) lines.push('- Excluded brands: '    + excluded.join(', '));
-  if (price.length     > 0) lines.push('- Price signals: '      + price.join(', '));
-  if (style.length     > 0) lines.push('- Style signals: '      + style.join(', '));
+  if (preferred.length > 0) lines.push('- Preferred brands: '  + preferred.join(', '));
+  if (excluded.length  > 0) lines.push('- Excluded brands: '   + excluded.join(', '));
+  if (price.length     > 0) lines.push('- Price signals: '     + price.join(', '));
+  if (style.length     > 0) lines.push('- Style signals: '     + style.join(', '));
 
   if (confirms.length > 0) {
     const cl = confirms.map(c => (c.brand ? c.brand + ' ' : '') + (c.productName || '')).filter(Boolean);
