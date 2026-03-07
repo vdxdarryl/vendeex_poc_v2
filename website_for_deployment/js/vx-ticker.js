@@ -3,24 +3,28 @@
 /**
  * VXTicker — real SSE pipeline messages in the original animated step-card UI.
  *
- * Animation: identical original — 5 step cards activating on a 1.2s timer,
- * pulsing icon, green tick on complete, elapsed counter.
+ * Key timing facts:
+ *   - open() is called during handleSearch(), BEFORE qualifying chat runs
+ *   - SSE pipeline messages fire during qualifying chat
+ *   - startAnim() is called AFTER qualifying, when the progress panel shows
  *
- * Data strategy: no queue, no drain. When an SSE message arrives it immediately
- * updates the text of whichever step is currently active (or the last activated
- * one). Because the pipeline fires 6-8 events and we have 5 cards, the last
- * active card accumulates the final messages — always showing real data.
+ * Strategy:
+ *   - open(): reset visual state (classes + icons only, NOT text), open SSE, buffer messages
+ *   - SSE messages arrive → buffered in _msgQueue
+ *   - startAnim(): start timer; do NOT reset anything
+ *   - activateStep(idx): drain next buffered message onto the step text
+ *   - Messages collected during qualifying are waiting in the buffer when steps activate
  */
 
 (function() {
 
   var _es         = null;
   var _key        = null;
-  var _stepIndex  = 0;     // index of currently active step (0-4)
+  var _msgQueue   = [];
   var _timerID    = null;
   var _elapsedID  = null;
   var _startTime  = null;
-  var _animActive = false;
+  var _stepIndex  = 0;
 
   var STEP_DURATION = 1200;
   var STEP_COUNT    = 5;
@@ -29,13 +33,13 @@
     return document.querySelectorAll('.progress-step');
   }
 
-  // Update the text of whichever step is currently active
-  function updateActiveText(msg) {
-    var all = getSteps();
-    var idx = Math.min(_stepIndex, STEP_COUNT - 1);
-    if (!all[idx]) return;
-    var text = all[idx].querySelector('.step-text');
-    if (text) text.textContent = msg;
+  // Reset only visual state — classes and icons. Never touch text here.
+  function resetVisual() {
+    getSteps().forEach(function(s, i) {
+      s.classList.remove('active', 'completed');
+      var icon = s.querySelector('.step-icon');
+      if (icon) icon.textContent = String(i + 1);
+    });
   }
 
   function activateStep(idx) {
@@ -51,6 +55,13 @@
 
     if (!all[idx]) return;
     all[idx].classList.add('active');
+
+    // Apply next buffered real message to this step's text
+    if (_msgQueue.length > 0) {
+      var msg = _msgQueue.shift();
+      var text = all[idx].querySelector('.step-text');
+      if (text) text.textContent = msg;
+    }
   }
 
   function completeAllSteps() {
@@ -59,17 +70,6 @@
       s.classList.add('completed');
       var icon = s.querySelector('.step-icon');
       if (icon) icon.innerHTML = '&#x2713;';
-    });
-  }
-
-  function resetSteps() {
-    // Reset visual state only — leave text blank so real messages fill it
-    getSteps().forEach(function(s, i) {
-      s.classList.remove('active', 'completed');
-      var icon = s.querySelector('.step-icon');
-      if (icon) icon.textContent = String(i + 1);
-      var text = s.querySelector('.step-text');
-      if (text) text.textContent = '\u2026';  // placeholder ellipsis until real message arrives
     });
   }
 
@@ -103,14 +103,18 @@
     if (_timerID) { clearTimeout(_timerID); _timerID = null; }
     completeAllSteps();
     stopElapsed();
-    _animActive = false;
   }
 
   // ─── Public API ─────────────────────────────────────────────────────────────
 
   function open(key) {
     close();
-    _key = key;
+    _key       = key;
+    _msgQueue  = [];
+    _stepIndex = 0;
+
+    // Reset visual state NOW, before SSE messages arrive
+    resetVisual();
 
     var url = '/api/search/progress/' + encodeURIComponent(key);
     _es = new EventSource(url);
@@ -119,8 +123,7 @@
       try {
         var data = JSON.parse(event.data);
         if (data.stage === 'progress' && data.msg) {
-          // Immediately write real message into whichever step card is active now
-          updateActiveText(data.msg);
+          _msgQueue.push(data.msg);
         } else if (data.stage === 'done') {
           finishAnimation();
           _closeSSE();
@@ -134,12 +137,11 @@
     };
   }
 
-  // Called from showSearchProgress() when the panel becomes visible
+  // Called from showSearchProgress() when panel becomes visible.
+  // Messages already buffered from qualifying phase drain into steps as they activate.
   function startAnim() {
-    resetSteps();
+    _stepIndex = 0;
     startElapsed();
-    _stepIndex  = 0;
-    _animActive = true;
 
     function tick() {
       if (_stepIndex < STEP_COUNT) {
@@ -159,7 +161,8 @@
     _closeSSE();
     if (_timerID) { clearTimeout(_timerID); _timerID = null; }
     stopElapsed();
-    _animActive = false;
+    _msgQueue  = [];
+    _stepIndex = 0;
   }
 
   window.VXTicker = { open: open, startAnim: startAnim, close: close };
