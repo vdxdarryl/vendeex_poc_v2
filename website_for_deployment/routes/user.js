@@ -285,5 +285,69 @@ module.exports = function userRoutes(deps) {
         }
     });
 
+
+    /**
+     * PATCH /api/user/avatar/learn
+     *
+     * Merges search session learnings into the member avatar permanently.
+     * Called by the frontend when a buyer triggers 'Refine my search' after
+     * reviewing All Products cards with the micro-feedback widget.
+     *
+     * Body: {
+     *   preferredBrands:  string[],
+     *   excludedBrands:   string[],
+     *   priceSignals:     string[],
+     *   styleSignals:     string[],
+     *   confirms:         { query, productName, brand, ts }[],
+     *   rejects:          { query, productName, brand, reason, ts }[],
+     * }
+     *
+     * Authenticated members only. Anonymous users receive 401; frontend degrades silently.
+     */
+    router.patch('/avatar/learn', async (req, res) => {
+        const auth = await authService.authenticateRequest(req);
+        if (!auth) return res.status(401).json({ error: 'unauthorized', message: 'Login required to save learnings to your avatar' });
+        const { user } = auth;
+
+        const { preferredBrands, excludedBrands, priceSignals, styleSignals, confirms, rejects } = req.body;
+
+        // Basic validation — at least one signal required
+        const hasSignal = (preferredBrands?.length || excludedBrands?.length ||
+                           priceSignals?.length || styleSignals?.length ||
+                           confirms?.length || rejects?.length);
+        if (!hasSignal) return res.status(400).json({ error: 'no_signals', message: 'No learning signals provided' });
+
+        const ts = new Date().toISOString();
+
+        const learnings = {
+            preferredBrands: (preferredBrands || []).filter(Boolean),
+            excludedBrands:  (excludedBrands  || []).filter(Boolean),
+            priceSignals:    (priceSignals    || []).filter(Boolean),
+            styleSignals:    (styleSignals    || []).filter(Boolean),
+            confirms:        (confirms || []).map(c => ({ ...c, ts: c.ts || ts })),
+            rejects:         (rejects  || []).map(r => ({ ...r, ts: r.ts || ts })),
+        };
+
+        await authService.patchAvatarLearnings(user.id, learnings);
+
+        console.log('[LEARN] Avatar learnings updated for:', user.email,
+            '| +confirms:', learnings.confirms.length,
+            '| +rejects:', learnings.rejects.length,
+            '| preferredBrands:', learnings.preferredBrands.join(',') || 'none',
+            '| excludedBrands:', learnings.excludedBrands.join(',') || 'none');
+
+        res.json({
+            success: true,
+            learned: {
+                preferredBrands: learnings.preferredBrands,
+                excludedBrands:  learnings.excludedBrands,
+                priceSignals:    learnings.priceSignals,
+                styleSignals:    learnings.styleSignals,
+                confirmsAdded:   learnings.confirms.length,
+                rejectsAdded:    learnings.rejects.length,
+            }
+        });
+    });
+
     return router;
 };
