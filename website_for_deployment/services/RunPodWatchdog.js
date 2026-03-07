@@ -62,13 +62,23 @@ PODS.forEach(p => { _failures[p.id] = 0; });
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function httpGet(url, timeoutMs) {
-  return new Promise((resolve, reject) => {
+  const fetch = new Promise((resolve, reject) => {
     const req = https.get(url, { timeout: timeoutMs }, res => {
+      // Drain response body so socket is released
+      res.resume();
       resolve(res.statusCode);
     });
-    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+    req.on('timeout', () => { req.destroy(); reject(new Error('socket timeout')); });
     req.on('error',   err => reject(err));
   });
+
+  // Hard deadline via Promise.race — guards against TCP hangs where
+  // the socket never establishes and the 'timeout' event never fires.
+  const deadline = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('deadline exceeded')), timeoutMs + 2000)
+  );
+
+  return Promise.race([fetch, deadline]);
 }
 
 function runpodGraphQL(query) {
