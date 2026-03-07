@@ -144,6 +144,9 @@ function showSearchProgress() {
     resultsSection.classList.remove('active');
     searchProgress.classList.add('active');
 
+    // Start the step-card animation (uses real SSE messages buffered since open())
+    if (typeof VXTicker !== 'undefined') VXTicker.startAnim();
+
     // Hide buyer policies panel during search
     var policiesPanel = document.getElementById('buyerPoliciesPanel');
     if (policiesPanel) policiesPanel.style.display = 'none';
