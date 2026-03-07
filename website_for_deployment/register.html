@@ -907,15 +907,16 @@
             }
         }
     </style>
+    <script src="js/i18n.js?v=1.0"></script>
 </head>
 <body>
     <!-- Persistent Demo Banner -->
     <div class="demo-platform-banner">
         <div class="demo-platform-banner__inner">
             <span class="demo-platform-banner__icon">&#x1F50D;</span>
-            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__text" data-i18n="banner.poc">Agentic Commerce Proof of Concept</span>
             <span class="demo-platform-banner__separator">|</span>
-            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+            <span class="demo-platform-banner__subtext" data-i18n="banner.sub">Experience an AI buying agent that works exclusively for you</span>
         </div>
     </div>
 
@@ -927,8 +928,8 @@
                 <span class="logo-version">2.0</span>
             </a>
             <div class="nav-links">
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="pages/demo.html" class="nav-link">Try Demo</a>
+                <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="pages/demo.html" class="nav-link" data-i18n="nav.tryDemo">Try Demo</a>
             </div>
             <button class="mobile-menu-btn" aria-label="Toggle menu">
                 <span></span>
@@ -942,16 +943,16 @@
     <div class="page-info-banner">
         <div class="page-info-banner__inner">
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">What is happening</span>
-                <p>You are creating your Vendee Avatar &mdash; a persistent digital identity that shapes how your autonomous agent shops for you.</p>
+                <span class="page-info-banner__label" data-i18n="info.happening">What is happening</span>
+                <p data-i18n="reg.info.happening">You are creating your Vendee Avatar — a persistent digital identity that shapes how your autonomous agent shops for you.</p>
             </div>
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">Why it matters</span>
-                <p>Your avatar tells your agent who you are, what you value, and how you like to shop. It enforces your preferences automatically.</p>
+                <span class="page-info-banner__label" data-i18n="info.matters">Why it matters</span>
+                <p data-i18n="reg.info.matters">Your avatar tells your agent who you are, what you value, and how you like to shop. It enforces your preferences automatically.</p>
             </div>
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">What you can do</span>
-                <p>Complete two short steps: identify yourself, then set your values and preferences. Takes under a minute.</p>
+                <span class="page-info-banner__label" data-i18n="info.canDo">What you can do</span>
+                <p data-i18n="reg.info.canDo">Complete two short steps: identify yourself, then set your values and preferences. Takes under a minute.</p>
             </div>
         </div>
     </div>
@@ -961,7 +962,7 @@
         <div class="avatar-form-card">
             <!-- Header -->
             <div class="avatar-form-header">
-                <h1>Create Your Vendee Avatar</h1>
+                <h1 data-i18n="reg.title">Create Your Vendee Avatar</h1>
             </div>
 
             <!-- Form -->
@@ -972,9 +973,9 @@
                     <div id="avatarStep1" class="avatar-step-content avatar-step-content--active">
                         <!-- Credential Notice -->
                         <div class="credential-notice">
-                            <p>VendeeX never stores your personal documents or payment methods. Your Avatar carries a W3C Verifiable Credential, signed with Ed25519, that proves who you are without needing to keep copies of any personally identifying documents or payment credentials.</p>
+                            <p data-i18n="reg.credential">VendeeX never stores your personal documents or payment methods. Your Avatar carries a W3C Verifiable Credential, signed with Ed25519, that proves who you are without needing to keep copies of any personally identifying documents or payment credentials.</p>
                         </div>
-                        <h2 class="step-heading">Who is your Avatar representing?</h2>
+                        <h2 class="step-heading" data-i18n="reg.step1.heading">Who is your Avatar representing?</h2>
 
                         <div class="form-row">
                             <div class="form-group">
@@ -993,18 +994,18 @@
                         <div class="account-cards" id="accountCards">
                             <div class="account-card selected" data-type="personal">
                                 <span class="account-card__icon">&#x1F464;</span>
-                                <span class="account-card__label">Personal Shopper</span>
-                                <span class="account-card__desc">Your agent shops for you personally</span>
+                                <span class="account-card__label" data-i18n="reg.step1.personal.label">Personal Shopper</span>
+                                <span class="account-card__desc" data-i18n="reg.step1.personal.desc">Your agent shops for you personally</span>
                             </div>
                             <div class="account-card" data-type="business">
                                 <span class="account-card__icon">&#x1F4BC;</span>
-                                <span class="account-card__label">Business Entity</span>
-                                <span class="account-card__desc">Your agent acts on behalf of your organisation</span>
+                                <span class="account-card__label" data-i18n="reg.step1.business.label">Business Entity</span>
+                                <span class="account-card__desc" data-i18n="reg.step1.business.desc">Your agent acts on behalf of your organisation</span>
                             </div>
                             <div class="account-card" data-type="government">
                                 <span class="account-card__icon">&#x1F3DB;</span>
-                                <span class="account-card__label">Government Agency</span>
-                                <span class="account-card__desc">Your agent operates within public procurement rules</span>
+                                <span class="account-card__label" data-i18n="reg.step1.gov.label">Government Agency</span>
+                                <span class="account-card__desc" data-i18n="reg.step1.gov.desc">Your agent operates within public procurement rules</span>
                             </div>
                         </div>
 
@@ -1083,13 +1084,13 @@
 
                         </div>
 
-                        <button type="button" id="step1Next" class="avatar-submit-btn">Continue to Preferences</button>
+                        <button type="button" id="step1Next" class="avatar-submit-btn" data-i18n="reg.step1.continue">Continue to Preferences</button>
                     </div>
 
                     <!-- ======================== STEP 2: VALUES & PREFERENCES ======================== -->
                     <div id="avatarStep2" class="avatar-step-content">
-                        <p class="step-description">Your Avatar is your persistent digital identity. It tells your agent what values need to be applied to every purchase decision. You set these global preferences on setup only. Although you can tweak them at any time. Once set they are applied against all your product searches.</p>
-                        <h2 class="step-heading">Set your preferences</h2>
+                        <p class="step-description" data-i18n="reg.step2.desc">Your Avatar is your persistent digital identity. It tells your agent what values need to be applied to every purchase decision. You set these global preferences on setup only. Although you can tweak them at any time. Once set they are applied against all your product searches.</p>
+                        <h2 class="step-heading" data-i18n="reg.step2.title">Set your preferences</h2>
                         <p class="step-subheading" style="margin-top:0; margin-bottom:1rem;">Configure how your agent evaluates products, handles transactions, and communicates. Click any category to customise &mdash; smart defaults are pre-set.</p>
 
                         <!-- Category 1: Values and Ethics -->
@@ -1421,8 +1422,8 @@
                         </div>
 
                         <div class="step-buttons">
-                            <button type="button" id="step2Back" class="avatar-submit-btn avatar-submit-btn--outline">Back</button>
-                            <button type="submit" id="submitBtn" class="avatar-submit-btn">Create My Avatar</button>
+                            <button type="button" id="step2Back" class="avatar-submit-btn avatar-submit-btn--outline" data-i18n="reg.step2.back">Back</button>
+                            <button type="submit" id="submitBtn" class="avatar-submit-btn" data-i18n="reg.step2.create">Create My Avatar</button>
                         </div>
                     </div>
                 </form>
@@ -1431,9 +1432,9 @@
             <!-- Success State -->
             <div id="avatarSuccess" class="avatar-success">
                 <div class="avatar-success-icon">&#x2705;</div>
-                <h2>Avatar Created</h2>
+                <h2 data-i18n="reg.success.title">Avatar Created</h2>
                 <p id="successMessage">Your agent now knows your preferences and will apply them to every search.</p>
-                <a href="pages/demo.html" class="avatar-submit-btn" style="display:inline-block;text-decoration:none;text-align:center;">Start Searching</a>
+                <a href="pages/demo.html" class="avatar-submit-btn" style="display:inline-block;text-decoration:none;text-align:center;" data-i18n="reg.success.search">Start Searching</a>
             </div>
         </div>
     </main>
@@ -1442,11 +1443,11 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-bottom">
-                <p>&copy; 2026 Vendee Labs Limited. All rights reserved.
+                <p><span data-i18n="reg.footer.copyright">&copy; 2026 Vendee Labs Limited. All rights reserved.</span>
                     <span class="footer-jurisdiction">Registered in the States of Jersey</span>
                 </p>
                 <div class="footer-links">
-                    <a href="pages/privacy.html">Privacy Notice</a>
+                    <a href="pages/privacy.html" data-i18n="reg.footer.privacy">Privacy Notice</a>
                 </div>
             </div>
         </div>
