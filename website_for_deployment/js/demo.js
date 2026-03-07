@@ -2405,6 +2405,70 @@ function truncateText(text, maxLength) {
         }).catch(function(e) { console.warn('[Feedback] capture failed:', e.message); });
     }
 
+    // ── Persist learnings to avatar (authenticated members only) ─────────────
+    // Called when buyer triggers 'Refine my search'. Sends accumulated signals
+    // to PATCH /api/user/avatar/learn for permanent PostgreSQL storage.
+    // Anonymous users: 401 is returned and silently ignored — no error shown.
+
+    function persistLearningsToAvatar(feedbackLog, query) {
+        var token = localStorage.getItem('vendeeX_sessionToken');
+        if (!token) return;  // not logged in — skip silently
+
+        var confirms = feedbackLog.filter(function(e) { return e.feedback === 'confirm'; });
+        var rejects  = feedbackLog.filter(function(e) { return e.feedback === 'reject'; });
+
+        var preferredBrands = confirms
+            .map(function(e) { return e.brand; }).filter(Boolean)
+            .filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+        var excludedBrands = rejects
+            .filter(function(e) { return e.reason === 'wrong_supplier'; })
+            .map(function(e) { return e.brand; }).filter(Boolean)
+            .filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+        var priceSignals = rejects.some(function(e) { return e.reason === 'too_expensive'; })
+            ? ['lower_price_range'] : [];
+
+        var styleSignals = (rejects.some(function(e) { return e.reason === 'not_quite_right'; }) && confirms.length === 0)
+            ? ['different_style'] : [];
+
+        var ts = new Date().toISOString();
+
+        var payload = {
+            preferredBrands: preferredBrands,
+            excludedBrands:  excludedBrands,
+            priceSignals:    priceSignals,
+            styleSignals:    styleSignals,
+            confirms: confirms.map(function(e) {
+                return { query: e.query || query, productName: e.name, brand: e.brand || '', ts: ts };
+            }),
+            rejects: rejects.map(function(e) {
+                return { query: e.query || query, productName: e.name, brand: e.brand || '', reason: e.reason, ts: ts };
+            }),
+        };
+
+        fetch('/api/user/avatar/learn', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token,
+            },
+            body: JSON.stringify(payload),
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                console.log('[Learn] Avatar learnings persisted:',
+                    '+' + data.learned.confirmsAdded + ' confirms,',
+                    '+' + data.learned.rejectsAdded + ' rejects,',
+                    'preferred:', (data.learned.preferredBrands || []).join(',') || 'none',
+                    'excluded:', (data.learned.excludedBrands || []).join(',') || 'none'
+                );
+            }
+        })
+        .catch(function(e) { console.warn('[Learn] avatar persist failed:', e.message); });
+    }
+
     function logFeedback(product, feedback, reason) {
         var s = getState();
         if (!s) return;
@@ -2593,6 +2657,9 @@ function truncateText(text, maxLength) {
         }
 
         var refinedQuery = parts.join(', ');
+
+        // Persist learnings to avatar (logged-in members only, fire-and-forget)
+        persistLearningsToAvatar(s.feedbackLog, s.query);
 
         // Remove the pool-exhausted banner
         var banner = document.getElementById('vxPoolBanner');
