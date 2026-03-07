@@ -97,6 +97,25 @@ module.exports = function searchRoutes(deps) {
     if (avatarData.prefFreeReturns)     ctx += '\n- Free returns preferred: yes';
     if (avatarData.prefSustainability)  ctx += '\n- Sustainability preference: weight ' + (avatarData.prefSustainabilityWeight || 3) + '/5';
     if (avatarData.standingInstructions) ctx += '\n- Standing instructions: ' + avatarData.standingInstructions;
+
+    // Sourcing preferences (two-row buy-from / don't-buy-from)
+    const sp = avatarData.sourcingPreference ||
+               (avatarData.ethical && avatarData.ethical.sourcingPreference) ||
+               (avatarData.avatarPreferences && avatarData.avatarPreferences.ethical && avatarData.avatarPreferences.ethical.sourcingPreference);
+    if (sp) {
+      const bf = sp.buyFrom;
+      const dbf = sp.dontBuyFrom;
+      if (bf && bf.country) {
+        let line = '\n- PREFERRED SOURCING (enforce as hard preference): buy from ' + bf.country;
+        if (bf.regions && bf.regions.length > 0) line += ', especially ' + bf.regions.join(' and ');
+        ctx += line;
+      }
+      if (dbf && dbf.country) {
+        let line = '\n- SOURCING EXCLUSION (enforce as hard filter): do NOT buy from ' + dbf.country;
+        if (dbf.regions && dbf.regions.length > 0) line += ' or ' + dbf.regions.join(' or ');
+        ctx += line;
+      }
+    }
     if (avatarData.searchRules) {
       const sr = avatarData.searchRules;
       if (sr.budget)         ctx += '\n- BUDGET SET BY BUYER: ' + sr.budget + ' (do NOT ask about budget)';
