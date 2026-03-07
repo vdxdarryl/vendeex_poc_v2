@@ -1,14 +1,15 @@
 /**
  * Search, qualifying conversation, and refinement routes.
- * POST /api/search uses message bus; qualify and refine use LLM directly.
  *
  * LLM priority for chat windows (qualify + refine):
  *   1. Qwen (self-hosted vLLM at VLLM_URL)
  *   2. Claude (ANTHROPIC_API_KEY)
  *   3. OpenAI (OPENAI_API_KEY)
  *
- * Phase B: session capture wired at four stages via SessionCaptureService (fire-and-forget).
- * Product search providers unchanged (Channel3, Affiliate.com, Claude, ChatGPT, Perplexity).
+ * Phase B: session capture wired at four stages (fire-and-forget).
+ * Phase C: RAG context injected into qualify system prompt.
+ *          buildQualifyContext() runs concurrently with avatar context assembly.
+ *          On failure it returns '' and qualify proceeds unaffected.
  */
 
 'use strict';
@@ -16,6 +17,7 @@
 const express = require('express');
 const QwenProvider = require('../services/providers/QwenProvider');
 const { captureQualify, captureSearch, captureRefine, captureCartAdd } = require('../services/SessionCaptureService');
+const { buildQualifyContext } = require('../services/RAGService');
 
 module.exports = function searchRoutes(deps) {
   const {
@@ -64,7 +66,7 @@ module.exports = function searchRoutes(deps) {
   }
 
   // ─── Session ID helper ───────────────────────────────────────────────────────
-  // Priority: authenticated userId > visitorHash > anonymous fallback
+
   async function resolveSessionId(req) {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (token) {
@@ -74,6 +76,48 @@ module.exports = function searchRoutes(deps) {
       } catch (_) {}
     }
     return req.visitorHash || 'anon-' + Date.now();
+  }
+
+  // ─── Avatar context builder ──────────────────────────────────────────────────
+
+  function buildAvatarContext(avatarData) {
+    if (!avatarData) return '';
+    let ctx = '\n\nBUYER AVATAR DATA — This is ALREADY KNOWN. NEVER re-ask any of this information:';
+    if (avatarData.fullName) ctx += '\n- Name: ' + avatarData.fullName;
+    if (avatarData.location) { ctx += '\n- Location: ' + [avatarData.location.townCity, avatarData.location.stateProvince, avatarData.location.country].filter(Boolean).join(', '); }
+    if (avatarData.jurisdiction) ctx += '\n- Jurisdiction: ' + avatarData.jurisdiction;
+    if (avatarData.currency) ctx += '\n- Currency: ' + avatarData.currency;
+    if (avatarData.buyLocal) ctx += '\n- Buy-local preference: ON (radius: ' + (avatarData.buyLocalRadius || 15) + 'km)';
+    if (avatarData.preferences && avatarData.preferences.length > 0) { ctx += '\n- Product preferences: ' + avatarData.preferences.join(', '); }
+    if (avatarData.valueRanking) {
+      const labels = { 1: 'Not Important', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Mandatory' };
+      const vr = avatarData.valueRanking;
+      const parts = ['cost', 'quality', 'speed', 'ethics'].filter(k => vr[k]).map(k => k + ': ' + (labels[vr[k]] || vr[k]));
+      if (parts.length > 0) ctx += '\n- Value priorities: ' + parts.join(', ');
+    }
+    if (avatarData.prefDeliverySpeed) ctx += '\n- Shipping speed preference: ' + avatarData.prefDeliverySpeed;
+    if (avatarData.prefFreeReturns) ctx += '\n- Free returns preferred: yes';
+    if (avatarData.prefSustainability) ctx += '\n- Sustainability preference: weight ' + (avatarData.prefSustainabilityWeight || 3) + '/5';
+    if (avatarData.standingInstructions) ctx += '\n- Standing instructions: ' + avatarData.standingInstructions;
+    if (avatarData.searchRules) {
+      const sr = avatarData.searchRules;
+      if (sr.budget) ctx += '\n- BUDGET SET BY BUYER: ' + sr.budget + ' (do NOT ask about budget)';
+      if (sr.freeReturns) ctx += '\n- Free returns: required for this search';
+      if (sr.maxDeliveryDays) ctx += '\n- Max delivery: ' + sr.maxDeliveryDays + ' days';
+      if (sr.customRule) ctx += '\n- Custom rule: ' + sr.customRule;
+    }
+    if (avatarData.avatarPreferences) {
+      const ap = avatarData.avatarPreferences;
+      ctx += '\n\nFULL AVATAR PREFERENCES (7 categories):';
+      if (ap.valuesEthics) { const ve = ap.valuesEthics; const p = []; if (ve.carbonSensitivity) p.push('Carbon sensitivity: ' + ve.carbonSensitivity); if (ve.fairTrade) p.push('Prefers fair trade'); if (ve.bCorpPreference) p.push('Prefers B-Corp certified'); if (ve.circularEconomy) p.push('Values circular economy'); if (ve.supplierDiversity) p.push('Values supplier diversity'); if (ve.animalWelfare && ve.animalWelfare !== 'none') p.push('Animal welfare: ' + ve.animalWelfare); if (ve.packagingPreference && ve.packagingPreference !== 'any') p.push('Packaging: ' + ve.packagingPreference); if (ve.labourStandards && ve.labourStandards !== 'medium') p.push('Labour standards: ' + ve.labourStandards); if (ve.localEconomy && ve.localEconomy !== 'medium') p.push('Local economy: ' + ve.localEconomy); if (p.length > 0) ctx += '\n[Values & Ethics] ' + p.join('. ') + '.'; }
+      if (ap.trustRisk) { const tr = ap.trustRisk; const p = []; if (tr.minSellerRating && tr.minSellerRating !== 'any') p.push('Min seller rating: ' + tr.minSellerRating + ' stars'); if (tr.minWarrantyMonths > 0) p.push('Min warranty: ' + tr.minWarrantyMonths + ' months'); if (tr.minReturnWindowDays > 0) p.push('Min return window: ' + tr.minReturnWindowDays + ' days'); if (tr.disputeResolution && tr.disputeResolution !== 'either') p.push('Dispute resolution: ' + tr.disputeResolution); if (p.length > 0) ctx += '\n[Trust & Risk] ' + p.join('. ') + '.'; }
+      if (ap.dataPrivacy) { const dp = ap.dataPrivacy; const p = []; if (!dp.shareName) p.push('Does NOT share name with sellers'); if (!dp.shareEmail) p.push('Does NOT share email with sellers'); if (!dp.shareLocation) p.push('Does NOT share location'); if (!dp.consentBeyondTransaction) p.push('No post-transaction data use'); if (p.length > 0) ctx += '\n[Data & Privacy] ' + p.join('. ') + '.'; }
+      if (ap.communication) { const c = ap.communication; const p = []; if (c.preferredChannel) p.push('Preferred channel: ' + c.preferredChannel); if (c.contactWindow && c.contactWindow !== 'anytime') p.push('Contact window: ' + c.contactWindow); if (c.language && c.language !== 'en') p.push('Language: ' + c.language); if (c.notifications && c.notifications !== 'all') p.push('Notifications: ' + c.notifications); if (p.length > 0) ctx += '\n[Communication] ' + p.join('. ') + '.'; }
+      if (ap.paymentDefaults) { const pd = ap.paymentDefaults; const p = []; if (pd.preferredMethods && pd.preferredMethods.length > 0) p.push('Payment methods: ' + pd.preferredMethods.join(', ')); if (pd.instalmentsAcceptable) p.push('Accepts instalment payments'); if (p.length > 0) ctx += '\n[Payment] ' + p.join('. ') + '.'; }
+      if (ap.deliveryLogistics) { const dl = ap.deliveryLogistics; const p = []; if (dl.speedPreference) p.push('Speed: ' + dl.speedPreference); if (dl.deliveryMethod && dl.deliveryMethod !== 'delivery') p.push('Method: ' + dl.deliveryMethod); if (dl.packagingPreference && dl.packagingPreference !== 'standard') p.push('Packaging: ' + dl.packagingPreference); if (p.length > 0) ctx += '\n[Delivery] ' + p.join('. ') + '.'; }
+      if (ap.qualityDefaults) { const qd = ap.qualityDefaults; const p = []; if (qd.conditionTolerance) p.push('Condition: ' + qd.conditionTolerance); if (qd.brandExclusions && qd.brandExclusions.length > 0) p.push('EXCLUDED brands: ' + qd.brandExclusions.join(', ') + '. NEVER suggest products from these brands'); if (qd.countryPreferences && qd.countryPreferences.length > 0) p.push('Prefers origin: ' + qd.countryPreferences.join(', ')); if (p.length > 0) ctx += '\n[Quality] ' + p.join('. ') + '.'; }
+    }
+    return ctx;
   }
 
   // ─── POST /api/search ────────────────────────────────────────────────────────
@@ -130,49 +174,30 @@ module.exports = function searchRoutes(deps) {
     }
 
     try {
-      console.log('[Qualify] Avatar data received:', JSON.stringify(avatarData ? { name: avatarData.fullName, jurisdiction: avatarData.jurisdiction, valueRanking: avatarData.valueRanking, searchRules: avatarData.searchRules, prefDeliverySpeed: avatarData.prefDeliverySpeed } : null));
-      console.log('[Qualify] Using provider:', llm.provider);
+      console.log('[Qualify] Using provider:', llm.provider, '| query:', query.substring(0, 60));
 
-      let avatarContext = '';
-      if (avatarData) {
-        avatarContext = '\n\nBUYER AVATAR DATA — This is ALREADY KNOWN. NEVER re-ask any of this information:';
-        if (avatarData.fullName) avatarContext += '\n- Name: ' + avatarData.fullName;
-        if (avatarData.location) { avatarContext += '\n- Location: ' + [avatarData.location.townCity, avatarData.location.stateProvince, avatarData.location.country].filter(Boolean).join(', '); }
-        if (avatarData.jurisdiction) avatarContext += '\n- Jurisdiction: ' + avatarData.jurisdiction;
-        if (avatarData.currency) avatarContext += '\n- Currency: ' + avatarData.currency;
-        if (avatarData.buyLocal) avatarContext += '\n- Buy-local preference: ON (radius: ' + (avatarData.buyLocalRadius || 15) + 'km)';
-        if (avatarData.preferences && avatarData.preferences.length > 0) { avatarContext += '\n- Product preferences: ' + avatarData.preferences.join(', '); }
-        if (avatarData.valueRanking) {
-          const likertLabels = { 1: 'Not Important', 2: 'Low', 3: 'Medium', 4: 'High', 5: 'Mandatory' };
-          const vr = avatarData.valueRanking;
-          const parts = ['cost', 'quality', 'speed', 'ethics'].filter(k => vr[k]).map(k => k + ': ' + (likertLabels[vr[k]] || vr[k]));
-          if (parts.length > 0) avatarContext += '\n- Value priorities: ' + parts.join(', ');
-        }
-        if (avatarData.prefDeliverySpeed) avatarContext += '\n- Shipping speed preference: ' + avatarData.prefDeliverySpeed;
-        if (avatarData.prefFreeReturns) avatarContext += '\n- Free returns preferred: yes';
-        if (avatarData.prefSustainability) avatarContext += '\n- Sustainability preference: weight ' + (avatarData.prefSustainabilityWeight || 3) + '/5';
-        if (avatarData.standingInstructions) avatarContext += '\n- Standing instructions: ' + avatarData.standingInstructions;
-        if (avatarData.searchRules) {
-          const sr = avatarData.searchRules;
-          if (sr.budget) avatarContext += '\n- BUDGET SET BY BUYER: ' + sr.budget + ' (do NOT ask about budget)';
-          if (sr.freeReturns) avatarContext += '\n- Free returns: required for this search';
-          if (sr.maxDeliveryDays) avatarContext += '\n- Max delivery: ' + sr.maxDeliveryDays + ' days';
-          if (sr.customRule) avatarContext += '\n- Custom rule: ' + sr.customRule;
-        }
-        if (avatarData.avatarPreferences) {
-          const ap = avatarData.avatarPreferences;
-          avatarContext += '\n\nFULL AVATAR PREFERENCES (7 categories):';
-          if (ap.valuesEthics) { const ve = ap.valuesEthics; const p = []; if (ve.carbonSensitivity) p.push('Carbon sensitivity: ' + ve.carbonSensitivity); if (ve.fairTrade) p.push('Prefers fair trade'); if (ve.bCorpPreference) p.push('Prefers B-Corp certified'); if (ve.circularEconomy) p.push('Values circular economy'); if (ve.supplierDiversity) p.push('Values supplier diversity'); if (ve.animalWelfare && ve.animalWelfare !== 'none') p.push('Animal welfare: ' + ve.animalWelfare); if (ve.packagingPreference && ve.packagingPreference !== 'any') p.push('Packaging: ' + ve.packagingPreference); if (ve.labourStandards && ve.labourStandards !== 'medium') p.push('Labour standards: ' + ve.labourStandards); if (ve.localEconomy && ve.localEconomy !== 'medium') p.push('Local economy: ' + ve.localEconomy); if (p.length > 0) avatarContext += '\n[Values & Ethics] ' + p.join('. ') + '.'; }
-          if (ap.trustRisk) { const tr = ap.trustRisk; const p = []; if (tr.minSellerRating && tr.minSellerRating !== 'any') p.push('Min seller rating: ' + tr.minSellerRating + ' stars'); if (tr.minWarrantyMonths > 0) p.push('Min warranty: ' + tr.minWarrantyMonths + ' months'); if (tr.minReturnWindowDays > 0) p.push('Min return window: ' + tr.minReturnWindowDays + ' days'); if (tr.disputeResolution && tr.disputeResolution !== 'either') p.push('Dispute resolution: ' + tr.disputeResolution); if (p.length > 0) avatarContext += '\n[Trust & Risk] ' + p.join('. ') + '.'; }
-          if (ap.dataPrivacy) { const dp = ap.dataPrivacy; const p = []; if (!dp.shareName) p.push('Does NOT share name with sellers'); if (!dp.shareEmail) p.push('Does NOT share email with sellers'); if (!dp.shareLocation) p.push('Does NOT share location'); if (!dp.consentBeyondTransaction) p.push('No post-transaction data use'); if (p.length > 0) avatarContext += '\n[Data & Privacy] ' + p.join('. ') + '.'; }
-          if (ap.communication) { const c = ap.communication; const p = []; if (c.preferredChannel) p.push('Preferred channel: ' + c.preferredChannel); if (c.contactWindow && c.contactWindow !== 'anytime') p.push('Contact window: ' + c.contactWindow); if (c.language && c.language !== 'en') p.push('Language: ' + c.language); if (c.notifications && c.notifications !== 'all') p.push('Notifications: ' + c.notifications); if (p.length > 0) avatarContext += '\n[Communication] ' + p.join('. ') + '.'; }
-          if (ap.paymentDefaults) { const pd = ap.paymentDefaults; const p = []; if (pd.preferredMethods && pd.preferredMethods.length > 0) p.push('Payment methods: ' + pd.preferredMethods.join(', ')); if (pd.instalmentsAcceptable) p.push('Accepts instalment payments'); if (p.length > 0) avatarContext += '\n[Payment] ' + p.join('. ') + '.'; }
-          if (ap.deliveryLogistics) { const dl = ap.deliveryLogistics; const p = []; if (dl.speedPreference) p.push('Speed: ' + dl.speedPreference); if (dl.deliveryMethod && dl.deliveryMethod !== 'delivery') p.push('Method: ' + dl.deliveryMethod); if (dl.packagingPreference && dl.packagingPreference !== 'standard') p.push('Packaging: ' + dl.packagingPreference); if (p.length > 0) avatarContext += '\n[Delivery] ' + p.join('. ') + '.'; }
-          if (ap.qualityDefaults) { const qd = ap.qualityDefaults; const p = []; if (qd.conditionTolerance) p.push('Condition: ' + qd.conditionTolerance); if (qd.brandExclusions && qd.brandExclusions.length > 0) p.push('EXCLUDED brands: ' + qd.brandExclusions.join(', ') + '. NEVER suggest products from these brands'); if (qd.countryPreferences && qd.countryPreferences.length > 0) p.push('Prefers origin: ' + qd.countryPreferences.join(', ')); if (p.length > 0) avatarContext += '\n[Quality] ' + p.join('. ') + '.'; }
-        }
+      // Phase C: resolve session ID and fetch RAG context concurrently with avatar build
+      const sessionIdPromise = resolveSessionId(req);
+      const [sessionId, ragContext] = await Promise.all([
+        sessionIdPromise,
+        // Only run RAG on the first turn (no prior conversation) to avoid redundancy
+        conversationHistory.length <= 1
+          ? sessionIdPromise.then(sid => buildQualifyContext(query, sid))
+          : Promise.resolve('')
+      ]);
+
+      if (ragContext) {
+        console.log('[Qualify] RAG context injected (' + ragContext.length + ' chars)');
       }
 
-      const systemPrompt = 'You are the VendeeX buying agent. You work EXCLUSIVELY for the buyer — you have no seller incentives, no commissions, and no advertising relationships. Your job is to understand exactly what the buyer needs before searching. ' + avatarContext + ' CRITICAL RULE — NEVER RE-ASK KNOWN INFORMATION: The BUYER AVATAR DATA above contains everything the buyer has ALREADY told you. You MUST treat ALL of this as already answered. Only ask about things that are genuinely unknown. CONVERSATION RULES: 1. Check what you ALREADY KNOW from the avatar data. Assess what REMAINING details are needed. 2. If the query is underspecified AND there are unknowns NOT covered by avatar data, ask 1-3 SHORT qualifying questions about ONLY the missing information. 3. If the query combined with avatar data provides enough detail, confirm and proceed immediately. 4. Keep questions concise — one line each, as a numbered list. 5. Do NOT search for products yet. Only gather information. 6. When you have enough context, output a SEARCH CONFIRMATION. RESPONSE FORMAT: You must respond with ONLY valid JSON. If asking questions: { "readyToSearch": false, "message": "Your natural language response to the buyer", "questions": ["Question 1?", "Question 2?"] } If ready to search: { "readyToSearch": true, "message": "Based on your answers, I\'m searching for [summary]. Shall I go ahead?", "searchParams": { "query": "The refined, detailed search query to execute", "budget": "budget range if specified", "features": ["key feature 1"] }, "confirmationSummary": "One-line summary of what will be searched" }';
+      const avatarContext = buildAvatarContext(avatarData);
+
+      const systemPrompt = 'You are the VendeeX buying agent. You work EXCLUSIVELY for the buyer — you have no seller incentives, no commissions, and no advertising relationships. Your job is to understand exactly what the buyer needs before searching.' +
+        avatarContext +
+        ragContext +
+        ' CRITICAL RULE — NEVER RE-ASK KNOWN INFORMATION: The BUYER AVATAR DATA above contains everything the buyer has ALREADY told you. You MUST treat ALL of this as already answered. Only ask about things that are genuinely unknown. The PAST BEHAVIOUR CONTEXT (if present) is from similar buyer sessions — use it to inform smarter questions, not to repeat back to the buyer.' +
+        ' CONVERSATION RULES: 1. Check what you ALREADY KNOW from the avatar data. Assess what REMAINING details are needed. 2. If the query is underspecified AND there are unknowns NOT covered by avatar data, ask 1-3 SHORT qualifying questions about ONLY the missing information. 3. If the query combined with avatar data provides enough detail, confirm and proceed immediately. 4. Keep questions concise — one line each, as a numbered list. 5. Do NOT search for products yet. Only gather information. 6. When you have enough context, output a SEARCH CONFIRMATION.' +
+        ' RESPONSE FORMAT: You must respond with ONLY valid JSON. If asking questions: { "readyToSearch": false, "message": "Your natural language response to the buyer", "questions": ["Question 1?", "Question 2?"] } If ready to search: { "readyToSearch": true, "message": "Based on your answers, I\'m searching for [summary]. Shall I go ahead?", "searchParams": { "query": "The refined, detailed search query to execute", "budget": "budget range if specified", "features": ["key feature 1"] }, "confirmationSummary": "One-line summary of what will be searched" }';
 
       const messages = conversationHistory.length > 0
         ? conversationHistory.map(m => ({ role: m.role, content: m.content }))
@@ -191,13 +216,11 @@ module.exports = function searchRoutes(deps) {
 
       // Stage 1 capture — fire-and-forget, only when qualify is complete
       if (parsed.readyToSearch) {
-        resolveSessionId(req).then(sessionId => {
-          captureQualify(sessionId, query, parsed.searchParams?.query || query, conversationHistory, avatarData);
-        });
+        captureQualify(sessionId, query, parsed.searchParams?.query || query, conversationHistory, avatarData);
       }
 
-      recordEngagement('qualify_chat', null, req.deviceType, { readyToSearch: parsed.readyToSearch || false, queryLength: query.length, llmProvider: llm.provider });
-      res.json({ success: true, ...parsed, llmProvider: llm.provider, timestamp: new Date().toISOString() });
+      recordEngagement('qualify_chat', null, req.deviceType, { readyToSearch: parsed.readyToSearch || false, queryLength: query.length, llmProvider: llm.provider, ragInjected: !!ragContext });
+      res.json({ success: true, ...parsed, llmProvider: llm.provider, ragInjected: !!ragContext, timestamp: new Date().toISOString() });
 
     } catch (error) {
       console.error('[Qualify] Error:', error.message);
@@ -248,8 +271,7 @@ module.exports = function searchRoutes(deps) {
       messages.push({ role: 'user', content: message });
 
       const maxRetries = 2;
-      let responseText;
-      let lastError;
+      let responseText, lastError;
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
           responseText = await callChatLLM(llm, systemPrompt, messages);
@@ -258,7 +280,7 @@ module.exports = function searchRoutes(deps) {
           lastError = err;
           if (attempt < maxRetries) {
             const waitMs = (attempt + 1) * 2000;
-            console.log('[Refine] ' + llm.provider + ' error - retrying in ' + waitMs + 'ms (attempt ' + (attempt + 1) + '/' + maxRetries + ')');
+            console.log('[Refine] ' + llm.provider + ' error - retrying in ' + waitMs + 'ms');
             await new Promise(r => setTimeout(r, waitMs));
           }
         }
@@ -304,7 +326,6 @@ module.exports = function searchRoutes(deps) {
   });
 
   // ─── POST /api/session/cart-add ───────────────────────────────────────────────
-  // Stage 4 capture endpoint — called by client when buyer adds a product to cart.
 
   router.post('/session/cart-add', async (req, res) => {
     const { product, originalQuery } = req.body;
