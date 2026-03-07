@@ -97,9 +97,11 @@ class AvatarRepository {
      * Accumulates arrays (deduplicates brands); caps event log at 200 entries.
      */
     async patchLearnings(userId, learnings) {
-        this._memory.set('_learnings_' + userId, learnings);  // always update in-memory
-
-        if (!this.db.isUsingDatabase()) return;
+        // In-memory fallback for no-DB environments only
+        if (!this.db.isUsingDatabase()) {
+            this._memory.set('_learnings_' + userId, learnings);
+            return;
+        }
 
         // Load existing avatar_preferences so we can merge, not overwrite
         const result = await this.db.query(
