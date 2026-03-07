@@ -15,7 +15,7 @@ const QwenProvider = require('../services/providers/QwenProvider');
 const { captureQualify, captureSearch, captureRefine, captureCartAdd } = require('../services/SessionCaptureService');
 const { captureOutcome } = require('../services/PopulationCaptureService');
 const { captureConfirm, captureReject } = require('../services/FeedbackCaptureService');
-const { buildQualifyContext } = require('../services/RAGService');
+const { buildQualifyContext, buildLearningsContext } = require('../services/RAGService');
 
 module.exports = function searchRoutes(deps) {
   const {
@@ -156,7 +156,13 @@ module.exports = function searchRoutes(deps) {
   // ─── POST /api/chat/qualify ───────────────────────────────────────────────────
 
   router.post('/chat/qualify', async (req, res) => {
-    const { query, conversationHistory = [], avatarData = null } = req.body;
+    const {
+      query,
+      conversationHistory = [],
+      avatarData          = null,
+      isRefinedSearch     = false,   // Phase E: skip questions, synthesise directly
+      originalQuery       = null,    // Phase E: the buyer's initial unmodified query
+    } = req.body;
     if (!query || typeof query !== 'string' || query.trim().length === 0) {
       return res.status(400).json({ success: false, error: 'Query is required' });
     }
@@ -179,6 +185,23 @@ module.exports = function searchRoutes(deps) {
 
       const avatarContext = buildAvatarContext(avatarData);
 
+      // Phase E: fetch avatar searchLearnings for authenticated members
+      let learningsContext = '';
+      try {
+        const auth = await authService.authenticateRequest(req).catch(() => null);
+        if (auth && auth.user) {
+          const avatar = await authService.findAvatar(auth.user.id);
+          const sl = avatar && avatar.avatar_preferences && avatar.avatar_preferences.searchLearnings;
+          if (sl) {
+            learningsContext = buildLearningsContext(sl);
+            if (learningsContext) console.log('[Qualify] Learnings context injected (' + learningsContext.length + ' chars)');
+          }
+        }
+      } catch (e) {
+        // Non-fatal: anonymous users and auth failures proceed without learnings
+        console.log('[Qualify] Learnings fetch skipped:', e.message);
+      }
+
       const systemPrompt =
         'You are the VendeeX buying agent. You work EXCLUSIVELY for the buyer — you have no seller incentives, no commissions, and no advertising relationships. Your job is to understand exactly what the buyer needs before searching.' +
         avatarContext +
@@ -187,7 +210,14 @@ module.exports = function searchRoutes(deps) {
         ' The PAST BEHAVIOUR CONTEXT (if present) is from similar buyer sessions — use it to ask smarter questions, not to repeat back verbatim.' +
         ' The POPULAR OUTCOMES CONTEXT (if present) shows what buyers typically select after similar searches — use it as a relevance signal, never present it as your recommendation.' +
         ' CONVERSATION RULES: 1. Check what you already know from avatar data. 2. If the query is underspecified AND there are unknowns NOT in avatar data, ask 1-3 SHORT qualifying questions about ONLY the missing information. 3. If query + avatar data provides enough detail, confirm and proceed immediately. 4. Keep questions concise — one line each, numbered list. 5. Do NOT search for products yet. 6. When you have enough context, output a SEARCH CONFIRMATION.' +
-        ' RESPONSE FORMAT — ONLY valid JSON. If asking questions: { "readyToSearch": false, "message": "Your response", "questions": ["Q1?", "Q2?"] } If ready: { "readyToSearch": true, "message": "I\'m searching for [summary]. Shall I go ahead?", "searchParams": { "query": "refined query", "budget": "if specified", "features": ["feature"] }, "confirmationSummary": "one-line summary" }';
+        ' RESPONSE FORMAT — ONLY valid JSON. If asking questions: { "readyToSearch": false, "message": "Your response", "questions": ["Q1?", "Q2?"] } If ready: { "readyToSearch": true, "message": "I\'m searching for [summary]. Shall I go ahead?", "searchParams": { "query": "refined query", "budget": "if specified", "features": ["feature"] }, "confirmationSummary": "one-line summary" }' +
+        learningsContext +
+        (isRefinedSearch
+          ? ' REFINED SEARCH MODE: The buyer has already qualified their search and provided feedback. ' +
+            'The ORIGINAL QUERY was: "' + (originalQuery || query) + '". ' +
+            'The MEMBER LEARNING HISTORY and PAST BEHAVIOUR CONTEXT above encode exactly what they liked and rejected. ' +
+            'Do NOT ask any questions. Synthesise the original query + avatar preferences + all learnings into the single best possible search query and return readyToSearch: true immediately.'
+          : '');
 
       const messages = conversationHistory.length > 0
         ? conversationHistory.map(m => ({ role: m.role, content: m.content }))
