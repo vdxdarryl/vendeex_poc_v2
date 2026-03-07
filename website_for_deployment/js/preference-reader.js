@@ -113,6 +113,24 @@
         /** Jurisdiction (identity key, not part of 7 categories) */
         getJurisdiction: function() {
             return localStorage.getItem('vendeeX_jurisdiction') || '';
+        },
+
+        getSourcingPreference: function() {
+            // Read from avatarPreferences blob (server-saved) first,
+            // then fall back to the per-email preferences key (local only)
+            try {
+                var ap = JSON.parse(localStorage.getItem('vendeeX_avatarPreferences') || 'null');
+                if (ap && ap.ethical && ap.ethical.sourcingPreference) return ap.ethical.sourcingPreference;
+            } catch(e) {}
+            try {
+                var email = localStorage.getItem('vendeeX_userEmail');
+                if (email) {
+                    var key = 'vendeeX_prefs_' + email;
+                    var saved = JSON.parse(localStorage.getItem(key) || 'null');
+                    if (saved && saved.ethical && saved.ethical.sourcingPreference) return saved.ethical.sourcingPreference;
+                }
+            } catch(e) {}
+            return null;
         }
     };
 
