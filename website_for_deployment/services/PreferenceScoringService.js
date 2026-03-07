@@ -51,42 +51,51 @@ function scoreValuesEthics(product, merchant, prefs) {
   if (ve.bCorpPreference) { max+=15; const bc=has(creds,BCORP_KW)||(merchant&&merchant.sustainability&&merchant.sustainability.certified); if(bc){pts+=15;details.push({label:'BCorp',passed:'pass'});}else{details.push({label:'BCorp',passed:'fail'});} }
   if (ve.animalWelfare!=='none') { max+=20; if(ve.animalWelfare==='vegan'){const v=has(desc,VEGAN_KW)||has(creds,VEGAN_KW);if(v){pts+=20;details.push({label:'Vegan',passed:'pass'});}else{const cf=has(desc,CRUELTY_FREE_KW)||has(creds,CRUELTY_FREE_KW);if(cf){pts+=10;details.push({label:'CrueltyFree',passed:'partial'});}else{details.push({label:'Animal',passed:'fail'});}}}else{const cf=has(desc,CRUELTY_FREE_KW)||has(desc,VEGAN_KW)||has(creds,CRUELTY_FREE_KW);if(cf){pts+=20;details.push({label:'CrueltyFree',passed:'pass'});}else{details.push({label:'Animal',passed:'fail'});}} }
   // Sourcing preference scoring — both rows are preferences, neither is a hard filter.
-  // buyFrom: +20 bonus if product matches preferred country/region.
-  // dontBuyFrom: -15 penalty if product matches unpreferred country/region.
+  // buyFrom: +20 bonus if product matches any preferred entry (country or region).
+  // dontBuyFrom: -15 penalty if product matches any unpreferred entry.
   // Products are never excluded; sourcing preferences shift rank only.
   const sp2 = prefs.sourcingPreference;
   if (sp2) {
     const hay = [product.country||'', product.origin||'', product.brand||'', product.description||''].join(' ').toLowerCase();
 
-    if (sp2.buyFrom && sp2.buyFrom.country) {
+    // Normalise to entries array — supports both new { entries[] } and legacy { country, regions[] } formats
+    function toEntries(side) {
+      if (!side) return [];
+      if (side.entries && side.entries.length) return side.entries;
+      if (side.country) return [{ country: side.country, region: (side.regions || [])[0] || '' }];
+      return [];
+    }
+
+    const buyEntries = toEntries(sp2.buyFrom);
+    if (buyEntries.length) {
       max += 20;
-      const pref    = sp2.buyFrom.country.toLowerCase();
-      const regions = (sp2.buyFrom.regions || []).map(r => r.toLowerCase());
-      const cMatch  = hay.includes(pref);
-      const rMatch  = regions.some(r => r && hay.includes(r));
-      if (cMatch || rMatch) {
+      const matched = buyEntries.find(function(e) {
+        const c = (e.country || '').toLowerCase();
+        const r = (e.region  || '').toLowerCase();
+        return (c && hay.includes(c)) || (r && hay.includes(r));
+      });
+      if (matched) {
+        const note = matched.country + (matched.region ? ' (' + matched.region + ')' : '');
         pts += 20;
-        const note = sp2.buyFrom.country + (rMatch ? ' (' + sp2.buyFrom.regions.find(r => hay.includes(r.toLowerCase())) + ')' : '');
         details.push({label:'BuyFrom', passed:'pass', note});
       } else {
         details.push({label:'BuyFrom', passed:'fail'});
       }
     }
 
-    if (sp2.dontBuyFrom && sp2.dontBuyFrom.country) {
-      // Treat as a 15-point scoring band: products NOT from the unpreferred
-      // country earn full points; products from it earn zero.
+    const dontEntries = toEntries(sp2.dontBuyFrom);
+    if (dontEntries.length) {
       max += 15;
-      const excl    = sp2.dontBuyFrom.country.toLowerCase();
-      const eRegions = (sp2.dontBuyFrom.regions || []).map(r => r.toLowerCase());
-      const cMatch  = hay.includes(excl);
-      const rMatch  = eRegions.some(r => r && hay.includes(r));
-      if (!cMatch && !rMatch) {
+      const matched = dontEntries.find(function(e) {
+        const c = (e.country || '').toLowerCase();
+        const r = (e.region  || '').toLowerCase();
+        return (c && hay.includes(c)) || (r && hay.includes(r));
+      });
+      if (!matched) {
         pts += 15;
         details.push({label:'DontBuyFrom', passed:'pass'});
       } else {
-        // Product appears to match the unpreferred origin — score zero for this band
-        details.push({label:'DontBuyFrom', passed:'fail', note: sp2.dontBuyFrom.country});
+        details.push({label:'DontBuyFrom', passed:'fail', note: matched.country});
       }
     }
   }

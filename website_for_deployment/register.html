@@ -204,13 +204,22 @@
             line-height: 1.3;
         }
 
-        /* Buy Local Toggle */
         /* ── Sourcing preferences panel ─────────────────────── */
         .sourcing-panel {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
             margin-bottom: 1rem;
+        }
+
+        .sourcing-context {
+            font-size: 0.78rem;
+            color: #4b5563;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 7px;
+            padding: 0.6rem 0.75rem;
+            line-height: 1.5;
         }
 
         .sourcing-row {
@@ -235,8 +244,15 @@
             gap: 0.5rem;
             font-weight: 600;
             font-size: 0.875rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             color: #111827;
+        }
+
+        .sourcing-row-sublabel {
+            font-size: 0.72rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+            font-style: italic;
         }
 
         .sourcing-icon {
@@ -254,10 +270,54 @@
         .sourcing-icon-positive { background: #d1fae5; color: #065f46; }
         .sourcing-icon-negative { background: #fee2e2; color: #991b1b; }
 
-        .sourcing-fields {
+        .sourcing-tags {
             display: flex;
-            gap: 0.5rem;
             flex-wrap: wrap;
+            gap: 0.375rem;
+            margin-bottom: 0.5rem;
+            min-height: 0;
+        }
+
+        .sourcing-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.775rem;
+            font-weight: 500;
+        }
+
+        .sourcing-buy-from .sourcing-tag {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .sourcing-dont-buy-from .sourcing-tag {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .sourcing-tag-remove {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            line-height: 1;
+            padding: 0;
+            opacity: 0.6;
+            color: inherit;
+        }
+
+        .sourcing-tag-remove:hover { opacity: 1; }
+
+        .sourcing-add-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .sourcing-input {
@@ -272,8 +332,32 @@
 
         .sourcing-input:focus { border-color: #215274; }
 
-        .sourcing-input-country { width: 160px; }
-        .sourcing-input-region  { width: 150px; }
+        .sourcing-input-country { width: 155px; }
+        .sourcing-input-region  { width: 140px; }
+
+        .sourcing-add-btn {
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.775rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .sourcing-buy-from .sourcing-add-btn {
+            background: #059669;
+            color: white;
+        }
+
+        .sourcing-buy-from .sourcing-add-btn:hover { background: #047857; }
+
+        .sourcing-dont-buy-from .sourcing-add-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .sourcing-dont-buy-from .sourcing-add-btn:hover { background: #b91c1c; }
 
         .sourcing-hint {
             font-size: 0.7rem;
@@ -954,38 +1038,47 @@
 
                         <!-- Sourcing Preferences (replaces old km-radius toggle) -->
                         <div class="form-section-label">Sourcing Preferences</div>
+
+                        <div class="sourcing-context">
+                            These preferences influence how your results are ranked — they do not block products.
+                            Add as many locations as you like: a country, a state, a region, or a local area.
+                            Think about where <em>you</em> want your money to go.
+                        </div>
+
                         <div class="sourcing-panel">
 
                             <div class="sourcing-row sourcing-buy-from">
                                 <div class="sourcing-row-label">
                                     <span class="sourcing-icon sourcing-icon-positive">&#10003;</span>
-                                    <span>Buy from</span>
+                                    <span>Prioritise</span>
                                 </div>
-                                <div class="sourcing-fields">
+                                <div class="sourcing-row-sublabel">Do you want to prioritise your local community? Support the places that matter to you.</div>
+                                <div class="sourcing-tags" id="buyFromTags"></div>
+                                <div class="sourcing-add-row">
                                     <input type="text" id="sourcingBuyCountry" list="vx-country-list" class="sourcing-input sourcing-input-country"
                                            placeholder="Country (e.g. Ireland)" autocomplete="off">
-                                    <input type="text" id="sourcingBuyRegion1" class="sourcing-input sourcing-input-region"
-                                           placeholder="Region or city (optional)" autocomplete="off">
-                                    <input type="text" id="sourcingBuyRegion2" class="sourcing-input sourcing-input-region"
-                                           placeholder="Region or city (optional)" autocomplete="off">
+                                    <input type="text" id="sourcingBuyRegion" class="sourcing-input sourcing-input-region"
+                                           placeholder="State or region (optional)" autocomplete="off">
+                                    <button type="button" class="sourcing-add-btn" id="sourcingBuyAdd">+ Add</button>
                                 </div>
-                                <div class="sourcing-hint">Country is a strong preference signal. Regions add detail (e.g. West Midlands, Boulder CO).</div>
+                                <div class="sourcing-hint">Products from these locations will rank higher in your results.</div>
                             </div>
 
                             <div class="sourcing-row sourcing-dont-buy-from">
                                 <div class="sourcing-row-label">
                                     <span class="sourcing-icon sourcing-icon-negative">&#10007;</span>
-                                    <span>Don&#39;t buy from</span>
+                                    <span>Deprioritise</span>
                                 </div>
-                                <div class="sourcing-fields">
+                                <div class="sourcing-row-sublabel">Locations you would rather avoid — but not exclude entirely.</div>
+                                <div class="sourcing-tags" id="dontBuyFromTags"></div>
+                                <div class="sourcing-add-row">
                                     <input type="text" id="sourcingDontCountry" list="vx-country-list" class="sourcing-input sourcing-input-country"
-                                           placeholder="Country (e.g. China)" autocomplete="off">
-                                    <input type="text" id="sourcingDontRegion1" class="sourcing-input sourcing-input-region"
-                                           placeholder="Region or city (optional)" autocomplete="off">
-                                    <input type="text" id="sourcingDontRegion2" class="sourcing-input sourcing-input-region"
-                                           placeholder="Region or city (optional)" autocomplete="off">
+                                           placeholder="Country (e.g. Latveria)" autocomplete="off">
+                                    <input type="text" id="sourcingDontRegion" class="sourcing-input sourcing-input-region"
+                                           placeholder="State or region (optional)" autocomplete="off">
+                                    <button type="button" class="sourcing-add-btn" id="sourcingDontAdd">+ Add</button>
                                 </div>
-                                <div class="sourcing-hint">Products from this origin will rank lower, not be excluded entirely.</div>
+                                <div class="sourcing-hint">Products from these locations will rank lower, not be excluded entirely.</div>
                             </div>
 
                         </div>
@@ -1376,13 +1469,47 @@
         var successSection = document.getElementById('avatarSuccess');
         var step1 = document.getElementById('avatarStep1');
         var step2 = document.getElementById('avatarStep2');
-        // Sourcing preference field refs
-        var srcBuyCountry  = document.getElementById('sourcingBuyCountry');
-        var srcBuyRegion1  = document.getElementById('sourcingBuyRegion1');
-        var srcBuyRegion2  = document.getElementById('sourcingBuyRegion2');
-        var srcDontCountry = document.getElementById('sourcingDontCountry');
-        var srcDontRegion1 = document.getElementById('sourcingDontRegion1');
-        var srcDontRegion2 = document.getElementById('sourcingDontRegion2');
+        // Sourcing preference — multi-entry arrays
+        var buyFromEntries     = [];
+        var dontBuyFromEntries = [];
+
+        function renderSourcingTags(entries, containerId, cardClass) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            entries.forEach(function(entry, idx) {
+                var label = entry.country + (entry.region ? ' (' + entry.region + ')' : '');
+                var tag = document.createElement('span');
+                tag.className = 'sourcing-tag';
+                tag.innerHTML = label + ' <button type="button" class="sourcing-tag-remove" aria-label="Remove">&times;</button>';
+                tag.querySelector('.sourcing-tag-remove').addEventListener('click', function() {
+                    entries.splice(idx, 1);
+                    renderSourcingTags(entries, containerId, cardClass);
+                });
+                container.appendChild(tag);
+            });
+        }
+
+        function setupSourcingAdd(btnId, countryInputId, regionInputId, entries, containerId) {
+            var btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.addEventListener('click', function() {
+                var country = (document.getElementById(countryInputId).value || '').trim();
+                if (!country) return;
+                var region  = (document.getElementById(regionInputId).value  || '').trim();
+                entries.push({ country: country, region: region });
+                document.getElementById(countryInputId).value = '';
+                document.getElementById(regionInputId).value  = '';
+                renderSourcingTags(entries, containerId, '');
+            });
+            // Allow Enter key in country field to add
+            document.getElementById(countryInputId).addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); btn.click(); }
+            });
+        }
+
+        setupSourcingAdd('sourcingBuyAdd',  'sourcingBuyCountry',  'sourcingBuyRegion',  buyFromEntries,     'buyFromTags');
+        setupSourcingAdd('sourcingDontAdd', 'sourcingDontCountry', 'sourcingDontRegion', dontBuyFromEntries, 'dontBuyFromTags');
         var currentStep = 1;
         var selectedAccountType = 'personal';
 
@@ -1641,8 +1768,8 @@
             localStorage.setItem('vendeeX_currency', currency);
             // Save sourcing preference to localStorage
             var sourcingPref = {
-                buyFrom:     { country: (srcBuyCountry.value  || '').trim(), regions: [(srcBuyRegion1.value || '').trim(), (srcBuyRegion2.value || '').trim()].filter(Boolean) },
-                dontBuyFrom: { country: (srcDontCountry.value || '').trim(), regions: [(srcDontRegion1.value || '').trim(), (srcDontRegion2.value || '').trim()].filter(Boolean) }
+                buyFrom:     { entries: buyFromEntries.slice() },
+                dontBuyFrom: { entries: dontBuyFromEntries.slice() }
             };
             localStorage.setItem('vendeeX_sourcingPreference', JSON.stringify(sourcingPref));
             localStorage.setItem('vendeeX_isLoggedIn', 'true');
@@ -1896,8 +2023,23 @@
             if (savedSourcing) {
                 try {
                     var sp = JSON.parse(savedSourcing);
-                    if (sp.buyFrom)     { srcBuyCountry.value  = sp.buyFrom.country     || ''; srcBuyRegion1.value  = (sp.buyFrom.regions  || [])[0] || ''; srcBuyRegion2.value  = (sp.buyFrom.regions  || [])[1] || ''; }
-                    if (sp.dontBuyFrom) { srcDontCountry.value = sp.dontBuyFrom.country  || ''; srcDontRegion1.value = (sp.dontBuyFrom.regions || [])[0] || ''; srcDontRegion2.value = (sp.dontBuyFrom.regions || [])[1] || ''; }
+                    // Support both new entries[] format and legacy country/regions format
+                    if (sp.buyFrom) {
+                        if (sp.buyFrom.entries) {
+                            buyFromEntries = sp.buyFrom.entries.slice();
+                        } else if (sp.buyFrom.country) {
+                            buyFromEntries = [{ country: sp.buyFrom.country, region: (sp.buyFrom.regions || [])[0] || '' }];
+                        }
+                        renderSourcingTags(buyFromEntries, 'buyFromTags', '');
+                    }
+                    if (sp.dontBuyFrom) {
+                        if (sp.dontBuyFrom.entries) {
+                            dontBuyFromEntries = sp.dontBuyFrom.entries.slice();
+                        } else if (sp.dontBuyFrom.country) {
+                            dontBuyFromEntries = [{ country: sp.dontBuyFrom.country, region: (sp.dontBuyFrom.regions || [])[0] || '' }];
+                        }
+                        renderSourcingTags(dontBuyFromEntries, 'dontBuyFromTags', '');
+                    }
                 } catch(e) {}
             }
 
@@ -2150,8 +2292,7 @@
   }
 
   function init() {
-    ['sourcingBuyCountry','sourcingDontCountry',
-     'buyFromCountry','dontBuyFromCountry'].forEach(attachCountryValidator);
+    ['sourcingBuyCountry','sourcingDontCountry'].forEach(attachCountryValidator);
   }
 
   if (document.readyState === 'loading') {
