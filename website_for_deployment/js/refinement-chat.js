@@ -160,7 +160,11 @@ const RefinementChat = {
 
         // Input area
         html += '<div class="refinement-chat__input-area">';
-        html += '<input type="text" class="refinement-chat__input" id="refinementInput" placeholder="e.g. &quot;only under $150&quot; or &quot;best rated&quot;..." />';
+        var phCurrencyCode = (typeof localStorage !== 'undefined' && localStorage.getItem('vendeeX_currency')) || 'USD';
+        var phCurrencySym = (typeof PricingEngine !== 'undefined' && PricingEngine.getCurrencySymbol)
+            ? PricingEngine.getCurrencySymbol(phCurrencyCode)
+            : '$';
+        html += '<input type="text" class="refinement-chat__input" id="refinementInput" placeholder="e.g. &quot;only under ' + phCurrencySym + '150&quot; or &quot;best rated&quot;..." />';
         html += '<button class="refinement-chat__send" id="refinementSendBtn" disabled>';
         html += '<svg viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         html += '</button>';
@@ -529,7 +533,11 @@ const RefinementChat = {
                 threshold = Math.round(median / 10) * 10;
             }
             if (threshold > 0) {
-                chips.push('Show me only items under $' + threshold);
+                var currencyCode = (typeof localStorage !== 'undefined' && localStorage.getItem('vendeeX_currency')) || 'USD';
+                var currencySym = (typeof PricingEngine !== 'undefined' && PricingEngine.getCurrencySymbol)
+                    ? PricingEngine.getCurrencySymbol(currencyCode)
+                    : '$';
+                chips.push('Show me only items under ' + currencySym + threshold);
             }
         }
 
