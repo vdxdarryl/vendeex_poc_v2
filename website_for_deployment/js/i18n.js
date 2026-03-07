@@ -92,6 +92,7 @@
       'demo.express':       'Express',
       'demo.refineBtn':     'Refine My Search',
       'qualify.inputPH':    'Type your answer...',
+      'qualify.searchNow':  'Search Now',
 
       // ── pages/login.html ────────────────────────────────────────────────────
       'login.happening.p': 'Sign in to restore your Vendee Avatar and continue your personalised buying experience.',
@@ -217,6 +218,7 @@
       'demo.express':       '快速配送',
       'demo.refineBtn':     '精细化我的搜索',
       'qualify.inputPH':    '请输入您的回答...',
+      'qualify.searchNow':  '立即搜索',
 
       // ── pages/login.html ────────────────────────────────────────────────────
       'login.happening.p': '登录以恢复您的Vendee数字分身并继续个性化购物体验。',
