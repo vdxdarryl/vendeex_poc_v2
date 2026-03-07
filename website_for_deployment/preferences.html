@@ -587,20 +587,33 @@
                     </div>
 
                     <div class="pref-group">
-                        <label class="pref-label">Local Seller Preference</label>
-                        <div class="radio-group" id="localPrefGroup">
-                            <label class="radio-pill selected">
-                                <input type="radio" name="localPref" value="no_preference" checked>
-                                No preference
-                            </label>
-                            <label class="radio-pill">
-                                <input type="radio" name="localPref" value="prefer_local">
-                                Prefer local sellers
-                            </label>
-                            <label class="radio-pill">
-                                <input type="radio" name="localPref" value="local_only">
-                                Local only
-                            </label>
+                        <label class="pref-label">Sourcing Preferences</label>
+                        <p style="font-size:0.8rem;color:#6b7280;margin:0 0 10px;">
+                            Country is enforced as a hard filter. Region/city is a strong preference signal (e.g. &ldquo;Michigan&rdquo;, &ldquo;Boulder CO&rdquo;, &ldquo;West Midlands&rdquo;).
+                        </p>
+                        <div class="sourcing-row" style="margin-bottom:10px;">
+                            <span class="sourcing-label" style="display:inline-block;width:100px;font-size:0.82rem;font-weight:600;color:#059669;">&#10003; Buy from</span>
+                            <input type="text" class="pref-input sourcing-input" id="buyFromCountry"
+                                placeholder="Country (e.g. Ireland, USA, Germany)"
+                                style="width:200px;margin-right:8px;">
+                            <input type="text" class="pref-input sourcing-input" id="buyFromRegion1"
+                                placeholder="Region / city (optional)"
+                                style="width:160px;margin-right:8px;">
+                            <input type="text" class="pref-input sourcing-input" id="buyFromRegion2"
+                                placeholder="Region / city (optional)"
+                                style="width:160px;">
+                        </div>
+                        <div class="sourcing-row">
+                            <span class="sourcing-label" style="display:inline-block;width:100px;font-size:0.82rem;font-weight:600;color:#dc2626;">&#10007; Don&rsquo;t buy from</span>
+                            <input type="text" class="pref-input sourcing-input" id="dontBuyFromCountry"
+                                placeholder="Country (e.g. China, Russia)"
+                                style="width:200px;margin-right:8px;">
+                            <input type="text" class="pref-input sourcing-input" id="dontBuyFromRegion1"
+                                placeholder="Region / city (optional)"
+                                style="width:160px;margin-right:8px;">
+                            <input type="text" class="pref-input sourcing-input" id="dontBuyFromRegion2"
+                                placeholder="Region / city (optional)"
+                                style="width:160px;">
                         </div>
                     </div>
                 </div>
@@ -831,7 +844,22 @@
                 ethical: {
                     sustainability: document.querySelector('input[name="sustainability"]:checked').value,
                     ethicalSourcing: document.getElementById('ethicalSourcing').checked,
-                    localPreference: document.querySelector('input[name="localPref"]:checked').value
+                    sourcingPreference: {
+                        buyFrom: {
+                            country: (document.getElementById('buyFromCountry').value || '').trim(),
+                            regions: [
+                                (document.getElementById('buyFromRegion1').value || '').trim(),
+                                (document.getElementById('buyFromRegion2').value || '').trim()
+                            ].filter(Boolean)
+                        },
+                        dontBuyFrom: {
+                            country: (document.getElementById('dontBuyFromCountry').value || '').trim(),
+                            regions: [
+                                (document.getElementById('dontBuyFromRegion1').value || '').trim(),
+                                (document.getElementById('dontBuyFromRegion2').value || '').trim()
+                            ].filter(Boolean)
+                        }
+                    }
                 },
                 convenience: {
                     deliverySpeed: document.querySelector('input[name="deliverySpeed"]:checked').value,
@@ -855,6 +883,21 @@
                 if (prefs.economic.budgetComfort) document.getElementById('budgetComfort').value = prefs.economic.budgetComfort;
                 if (prefs.economic.priceSensitivity) document.getElementById('priceSensitivity').value = prefs.economic.priceSensitivity;
                 if (prefs.economic.currency) document.getElementById('currencyPref').value = prefs.economic.currency;
+            }
+
+            // Sourcing preferences
+            if (prefs.ethical && prefs.ethical.sourcingPreference) {
+                var sp = prefs.ethical.sourcingPreference;
+                if (sp.buyFrom) {
+                    document.getElementById('buyFromCountry').value = sp.buyFrom.country || '';
+                    document.getElementById('buyFromRegion1').value = (sp.buyFrom.regions && sp.buyFrom.regions[0]) || '';
+                    document.getElementById('buyFromRegion2').value = (sp.buyFrom.regions && sp.buyFrom.regions[1]) || '';
+                }
+                if (sp.dontBuyFrom) {
+                    document.getElementById('dontBuyFromCountry').value = sp.dontBuyFrom.country || '';
+                    document.getElementById('dontBuyFromRegion1').value = (sp.dontBuyFrom.regions && sp.dontBuyFrom.regions[0]) || '';
+                    document.getElementById('dontBuyFromRegion2').value = (sp.dontBuyFrom.regions && sp.dontBuyFrom.regions[1]) || '';
+                }
             }
 
             // If currency wasn't loaded from the old prefs, try the canonical sources
