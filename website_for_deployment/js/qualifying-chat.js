@@ -116,7 +116,7 @@ const QualifyingChat = (function() {
                 method: 'POST',
                 headers: Object.assign(
                     { 'Content-Type': 'application/json' },
-                    window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}
+                    Object.assign({}, window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}, { 'x-lang': (typeof window.getLang === 'function' ? window.getLang() : localStorage.getItem('vx-lang') || 'en') })
                 ),
                 body: JSON.stringify({
                     query,
@@ -208,7 +208,7 @@ const QualifyingChat = (function() {
                 method: 'POST',
                 headers: Object.assign(
                     { 'Content-Type': 'application/json' },
-                    window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}
+                    Object.assign({}, window.vxSearchKey ? { 'x-search-key': window.vxSearchKey } : {}, { 'x-lang': (typeof window.getLang === 'function' ? window.getLang() : localStorage.getItem('vx-lang') || 'en') })
                 ),
                 body: JSON.stringify({
                     query: originalQuery,
@@ -261,7 +261,7 @@ const QualifyingChat = (function() {
 
         const msg = document.createElement('div');
         msg.className = 'qualify-msg qualify-msg--confirm';
-        msg.innerHTML = `<div>${escapeHtml(message)}</div><button class="confirm-btn" id="confirmSearchBtn">Search Now</button>`;
+        msg.innerHTML = `<div>${escapeHtml(message)}</div><button class="confirm-btn" id="confirmSearchBtn">${typeof window.t === 'function' ? window.t('qualify.searchNow') : 'Search Now'}</button>`;
         messagesDiv.appendChild(msg);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
 

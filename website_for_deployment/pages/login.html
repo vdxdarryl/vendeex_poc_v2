@@ -7,15 +7,16 @@
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/demo-banner.css">
     <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
+    <script src="../js/i18n.js?v=1.0"></script>
 </head>
 <body>
     <!-- Persistent Demo Banner - appears on every page -->
     <div class="demo-platform-banner">
         <div class="demo-platform-banner__inner">
             <span class="demo-platform-banner__icon">&#x1F50D;</span>
-            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__text" data-i18n="banner.poc">Agentic Commerce Proof of Concept</span>
             <span class="demo-platform-banner__separator">|</span>
-            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+            <span class="demo-platform-banner__subtext" data-i18n="banner.sub">Experience an AI buying agent that works exclusively for you</span>
         </div>
     </div>
 
@@ -27,11 +28,11 @@
                 <span class="logo-version">2.0</span>
             </a>
             <div class="nav-links">
-                <a href="../index.html" class="nav-link">Home</a>
-                <a href="how-it-works.html" class="nav-link">How It Works</a>
-                <a href="demo.html" class="nav-link">Try Demo</a>
-                <a href="login.html" class="nav-btn btn-outline">Login</a>
-                <a href="register.html" class="nav-btn btn-primary">Get Started</a>
+                <a href="../index.html" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="how-it-works.html" class="nav-link" data-i18n="nav.howItWorks">How It Works</a>
+                <a href="demo.html" class="nav-link" data-i18n="nav.tryDemo">Try Demo</a>
+                <a href="login.html" class="nav-btn btn-outline" data-i18n="nav.login">Login</a>
+                <a href="register.html" class="nav-btn btn-primary" data-i18n="nav.getStarted">Get Started</a>
             </div>
             <button class="mobile-menu-btn" aria-label="Toggle menu">
                 <span></span>
@@ -45,16 +46,16 @@
     <div class="page-info-banner">
         <div class="page-info-banner__inner">
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">What is happening</span>
-                <p>Sign in to restore your Vendee Avatar and continue your personalised buying experience.</p>
+                <span class="page-info-banner__label" data-i18n="info.happening">What is happening</span>
+                <p data-i18n="login.happening.p">Sign in to restore your Vendee Avatar and continue your personalised buying experience.</p>
             </div>
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">Why it matters</span>
-                <p>Your avatar remembers your preferences, location, and buy-local settings so your agent can work smarter.</p>
+                <span class="page-info-banner__label" data-i18n="info.matters">Why it matters</span>
+                <p data-i18n="login.matters.p">Your avatar remembers your preferences, location, and buy-local settings so your agent can work smarter.</p>
             </div>
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">What you can do</span>
-                <p>Enter your email to restore your avatar, or start searching without signing in.</p>
+                <span class="page-info-banner__label" data-i18n="info.cando">What you can do</span>
+                <p data-i18n="login.cando.p">Enter your email to restore your avatar, or start searching without signing in.</p>
             </div>
         </div>
     </div>
@@ -64,8 +65,8 @@
         <div class="auth-container">
             <div class="auth-card">
                 <div class="auth-header">
-                    <h1>Welcome Back</h1>
-                    <p>Sign in to continue your smart buying journey</p>
+                    <h1 data-i18n="login.title">Welcome Back</h1>
+                    <p data-i18n="login.sub">Sign in to continue your smart buying journey</p>
                 </div>
 
                 <!-- Social Sign In -->
@@ -87,13 +88,13 @@
                 </button>
 
                 <div class="auth-divider">
-                    <span>or sign in with email</span>
+                    <span data-i18n="login.orEmail">or sign in with email</span>
                 </div>
 
                 <!-- Login Form - email only, retrieves avatar -->
                 <form id="loginForm">
                     <div class="form-group">
-                        <label class="form-label" for="email">Email Address</label>
+                        <label class="form-label" for="email" data-i18n="login.emailPH">Email Address</label>
                         <input type="email" id="email" class="form-input" placeholder="Enter the email you registered with" required>
                     </div>
 
@@ -103,7 +104,7 @@
                 </form>
 
                 <div class="auth-footer">
-                    Don't have an account? <a href="register.html">Sign up for free</a>
+                    Don't have an account? <a href="register.html" data-i18n="login.signup">Sign up for free</a>
                 </div>
             </div>
 
@@ -228,10 +229,10 @@
     <footer class="footer" style="margin-top: 60px;">
         <div class="container">
             <div class="footer-bottom" style="border-top: none; padding-top: 0;">
-                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge" data-i18n="footer.demo">DEMONSTRATION VERSION</span></p>
                 <div class="demo-site-links">
                     <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
-                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; <span data-i18n="footer.contact">Contact Us</span></a>
                 </div>
             </div>
         </div>

@@ -71,8 +71,9 @@ const BuyerPolicies = {
         html += '<div class="search-controls__header" onclick="BuyerPolicies.togglePanel()">';
         html += '<div class="search-controls__header-left">';
         html += '<span class="search-controls__icon">&#x2699;</span>';
-        html += '<span class="search-controls__title">Search Controls</span>';
-        html += '<span class="search-controls__hint">Per-search rules</span>';
+        var _t = (typeof window.t === 'function') ? window.t : function(k){ return k; };
+        html += '<span class="search-controls__title">' + _t('demo.ctrlTitle') + '</span>';
+        html += '<span class="search-controls__hint">' + _t('demo.ctrlBadge') + '</span>';
         html += '</div>';
         html += '<button class="search-controls__toggle" aria-label="Toggle panel">';
         html += '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -83,10 +84,10 @@ const BuyerPolicies = {
 
         // Budget
         html += '<div class="search-controls__field">';
-        html += '<label class="search-controls__label" for="searchBudget">Budget for this search</label>';
+        html += '<label class="search-controls__label" for="searchBudget">' + _t('demo.budget') + '</label>';
         html += '<div class="search-controls__budget-wrap">';
         html += '<span class="search-controls__currency" id="budgetCurrency">' + currencySymbol + '</span>';
-        html += '<input type="number" id="searchBudget" class="search-controls__input" placeholder="No limit" min="0" step="1">';
+        html += '<input type="number" id="searchBudget" class="search-controls__input" placeholder="' + _t('demo.budgetPH') + '" min="0" step="1">';
         html += '</div>';
         html += '</div>';
 
@@ -94,9 +95,9 @@ const BuyerPolicies = {
         html += '<div class="search-controls__field">';
         html += '<div class="search-controls__field-row">';
         html += '<div class="search-controls__field-text">';
-        html += '<label class="search-controls__label">Require free returns</label>';
+        html += '<label class="search-controls__label">' + _t('demo.freeReturns') + '</label>';
         if (prefFreeReturns) {
-            html += '<span class="search-controls__avatar-hint">Based on your avatar preference</span>';
+            html += '<span class="search-controls__avatar-hint">' + _t('demo.avatarPref') + '</span>';
         }
         html += '</div>';
         html += '<label class="search-controls__switch">';
@@ -108,7 +109,7 @@ const BuyerPolicies = {
 
         // Max delivery days
         html += '<div class="search-controls__field">';
-        html += '<label class="search-controls__label" for="searchMaxDelivery">Maximum delivery time</label>';
+        html += '<label class="search-controls__label" for="searchMaxDelivery">' + _t('demo.maxDelivery') + '</label>';
         html += '<select id="searchMaxDelivery" class="search-controls__select">';
         html += '<option value=""' + (defaultMaxDays === '' ? ' selected' : '') + '>No limit</option>';
         html += '<option value="3"' + (defaultMaxDays === '3' ? ' selected' : '') + '>3 days</option>';
@@ -120,8 +121,8 @@ const BuyerPolicies = {
 
         // Custom rules
         html += '<div class="search-controls__field">';
-        html += '<label class="search-controls__label" for="searchCustomRule">Any specific rules for this search?</label>';
-        html += '<input type="text" id="searchCustomRule" class="search-controls__input" placeholder="e.g. \'Only UK sellers\' or \'Must include warranty\'">';
+        html += '<label class="search-controls__label" for="searchCustomRule">' + _t('demo.customRule') + '</label>';
+        html += '<input type="text" id="searchCustomRule" class="search-controls__input" placeholder="' + _t('demo.customRulePH') + '">';
         html += '</div>';
 
         html += '</div>';

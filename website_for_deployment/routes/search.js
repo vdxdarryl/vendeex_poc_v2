@@ -273,7 +273,12 @@ module.exports = function searchRoutes(deps) {
         console.log('[Qualify] Learnings fetch skipped:', e.message);
       }
 
-      const systemPrompt =
+      const langHeader = req.headers['x-lang'] || 'en';
+      const langInstruction = langHeader === 'zh'
+        ? 'LANGUAGE RULE — MANDATORY: You must communicate with the buyer in Simplified Chinese (简体中文) only. Every message you send to the buyer must be in Chinese. Do not use English in any buyer-facing message.\n\n'
+        : '';
+
+      const systemPrompt = langInstruction +
         'You are the VendeeX buying agent. You work EXCLUSIVELY for the buyer — no seller incentives, no commissions, no advertising relationships. Your job is to understand what the buyer needs, then search.' +
         avatarContext +
         ragContext +

@@ -15,15 +15,15 @@
     <link rel="stylesheet" href="../css/preference-match.css?v=2.1">
     <link rel="stylesheet" href="../css/demo-banner.css?v=4.1">
     <script defer data-domain="vendeex.ai" src="https://plausible.io/js/script.js"></script>
-</head>
+    <script src="../js/i18n.js?v=1.0"></script>
 <body>
     <!-- Persistent Demo Banner - appears on every page -->
     <div class="demo-platform-banner">
         <div class="demo-platform-banner__inner">
             <span class="demo-platform-banner__icon">&#x1F50D;</span>
-            <span class="demo-platform-banner__text">Agentic Commerce Proof of Concept</span>
+            <span class="demo-platform-banner__text" data-i18n="banner.poc">Agentic Commerce Proof of Concept</span>
             <span class="demo-platform-banner__separator">|</span>
-            <span class="demo-platform-banner__subtext">Experience an AI buying agent that works exclusively for you</span>
+            <span class="demo-platform-banner__subtext" data-i18n="banner.sub">Experience an AI buying agent that works exclusively for you</span>
         </div>
     </div>
 
@@ -35,13 +35,13 @@
                 <span class="logo-version">2.0</span>
             </a>
             <div class="nav-links">
-                <a href="../index.html" class="nav-link">Home</a>
-                <a href="how-it-works.html" class="nav-link">How It Works</a>
-                <a href="demo.html" class="nav-link active">Try Demo</a>
-                <a href="merchants.html" class="nav-link">Merchants</a>
-                <a href="login.html" class="nav-btn btn-outline" id="navLoginBtn">Login</a>
-                <button id="navNewSearchBtn" class="nav-btn btn-primary" style="display:none;" onclick="if(typeof resetDemo==='function') resetDemo();">New Search</button>
-                <a href="register.html" class="nav-btn btn-primary" id="navGetStartedBtn">Get Started</a>
+                <a href="../index.html" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="how-it-works.html" class="nav-link" data-i18n="nav.howItWorks">How It Works</a>
+                <a href="demo.html" class="nav-link active" data-i18n="nav.tryDemo">Try Demo</a>
+                <a href="merchants.html" class="nav-link" data-i18n="nav.merchants">Merchants</a>
+                <a href="login.html" class="nav-btn btn-outline" id="navLoginBtn" data-i18n="nav.login">Login</a>
+                <button id="navNewSearchBtn" class="nav-btn btn-primary" style="display:none;" onclick="if(typeof resetDemo==='function') resetDemo();" data-i18n="nav.newSearch">New Search</button>
+                <a href="register.html" class="nav-btn btn-primary" id="navGetStartedBtn" data-i18n="nav.getStarted">Get Started</a>
             </div>
             <button class="mobile-menu-btn" aria-label="Toggle menu">
                 <span></span>
@@ -55,16 +55,16 @@
     <div class="page-info-banner">
         <div class="page-info-banner__inner">
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">What is happening</span>
-                <p>Your agent is listening. It will search across a billion products to find the best matches for your needs.</p>
+                <span class="page-info-banner__label" data-i18n="info.happening">What is happening</span>
+                <p data-i18n="demo.happening.p">Your agent is listening. It will search across a billion products to find the best matches for your needs.</p>
             </div>
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">Why it matters</span>
-                <p>A smarter conversation now means better results later. The agent reasons about your request before acting.</p>
+                <span class="page-info-banner__label" data-i18n="info.matters">Why it matters</span>
+                <p data-i18n="demo.matters.p">A smarter conversation now means better results later. The agent reasons about your request before acting.</p>
             </div>
             <div class="page-info-banner__item">
-                <span class="page-info-banner__label">What you can do</span>
-                <p>Describe what you want to buy in natural language. Refine results through the chat after searching.</p>
+                <span class="page-info-banner__label" data-i18n="info.cando">What you can do</span>
+                <p data-i18n="demo.cando.p">Describe what you want to buy in natural language. Refine results through the chat after searching.</p>
             </div>
         </div>
     </div>
@@ -75,17 +75,17 @@
         <div class="demo-container">
             <!-- Demo Header -->
             <div class="demo-header">
-                <h1>Experience VendeeX AI</h1>
-                <p>Describe what you're looking for, and watch our AI find the perfect matches</p>
+                <h1 data-i18n="demo.heroTitle">Experience VendeeX AI</h1>
+                <p data-i18n="demo.heroSub">Describe what you're looking for, and watch our AI find the perfect matches</p>
             </div>
 
             <!-- Step 1: Request Input -->
             <div id="requestSection" class="request-card">
                 <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem;">
-                    <h2>What are you looking for?</h2>
-                    <a href="../register.html?edit=true" id="editAvatarLink" class="edit-avatar-link" style="display:none; font-size:0.8125rem; color:#215274; text-decoration:none; font-weight:600; white-space:nowrap;">&#x2699; Edit Avatar</a>
+                    <h2 data-i18n="demo.searchLabel">What are you looking for?</h2>
+                    <a href="../register.html?edit=true" id="editAvatarLink" class="edit-avatar-link" style="display:none; font-size:0.8125rem; color:#215274; text-decoration:none; font-weight:600; white-space:nowrap;" data-i18n="demo.editAvatar">&#x2699; Edit Avatar</a>
                 </div>
-                <p>Describe your ideal product in natural language. Include details like budget, features, and preferences.</p>
+                <p data-i18n="demo.searchDesc">Describe your ideal product in natural language. Include details like budget, features, and preferences.</p>
 
                 <form id="searchForm">
                     <div class="form-group">
@@ -98,7 +98,7 @@
                         ></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <span>Find Products</span>
+                        <span data-i18n="demo.findBtn">Find Products</span>
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -106,13 +106,13 @@
                 </form>
 
                 <div class="example-requests">
-                    <h3>Try these examples</h3>
+                    <h3 data-i18n="demo.examples">Try these examples</h3>
                     <div class="example-chips">
-                        <button class="example-chip" data-query="Refresh my workout wardrobe for under $500 — I need training leggings, running shoes, and a few basics">Workout Wardrobe Refresh</button>
-                        <button class="example-chip" data-query="I need a lightweight laptop for travel, under $1000, with good battery life and a comfortable keyboard for writing">Laptop for Travel</button>
-                        <button class="example-chip" data-query="Looking for sustainable fashion basics and comfortable everyday shoes, budget around $400">Sustainable Basics</button>
-                        <button class="example-chip" data-query="Setting up a new bedroom — need quality sheets, pillows, and a good mattress, budget $1500">New Bedroom Setup</button>
-                        <button class="example-chip" data-query="Looking for a robot vacuum that can handle pet hair, works with smart home systems, budget under $600">Robot Vacuum</button>
+                        <button class="example-chip" data-query="Refresh my workout wardrobe for under $500 — I need training leggings, running shoes, and a few basics" data-i18n="demo.ex1">Workout Wardrobe Refresh</button>
+                        <button class="example-chip" data-query="I need a lightweight laptop for travel, under $1000, with good battery life and a comfortable keyboard for writing" data-i18n="demo.ex2">Laptop for Travel</button>
+                        <button class="example-chip" data-query="Looking for sustainable fashion basics and comfortable everyday shoes, budget around $400" data-i18n="demo.ex3">Sustainable Basics</button>
+                        <button class="example-chip" data-query="Setting up a new bedroom — need quality sheets, pillows, and a good mattress, budget $1500" data-i18n="demo.ex4">New Bedroom Setup</button>
+                        <button class="example-chip" data-query="Looking for a robot vacuum that can handle pet hair, works with smart home systems, budget under $600" data-i18n="demo.ex5">Robot Vacuum</button>
                     </div>
                 </div>
             </div>
@@ -120,16 +120,16 @@
             <!-- Pre-Search Qualifying Chat -->
             <div id="qualifyingChat" class="qualifying-chat" style="display:none;">
                 <div class="qualifying-chat__header">
-                    <h2>Your Agent is Listening</h2>
-                    <p>Answer a few quick questions so your agent can find exactly what you need.</p>
+                    <h2 data-i18n="demo.agentTitle">Your Agent is Listening</h2>
+                    <p data-i18n="demo.agentSub">Answer a few quick questions so your agent can find exactly what you need.</p>
                 </div>
                 <div class="qualifying-chat__messages" id="qualifyMessages"></div>
                 <div class="qualifying-chat__input">
-                    <input type="text" id="qualifyInput" class="form-input" placeholder="Type your answer...">
-                    <button id="qualifySend" class="btn btn-primary">Send</button>
+                    <input type="text" id="qualifyInput" class="form-input" data-i18n-placeholder="qualify.inputPH" placeholder="Type your answer...">
+                    <button id="qualifySend" class="btn btn-primary" data-i18n="demo.sendBtn">Send</button>
                 </div>
                 <div class="qualifying-chat__actions">
-                    <button id="qualifySkip" class="btn btn-outline" style="font-size:0.8125rem;">Skip &mdash; search now</button>
+                    <button id="qualifySkip" class="btn btn-outline" style="font-size:0.8125rem;" data-i18n="demo.skipBtn">Skip &mdash; search now</button>
                 </div>
             </div>
 
@@ -146,8 +146,8 @@
                             <div class="progress-circle"></div>
                             <span class="progress-icon">&#x1F916;</span>
                         </div>
-                        <h2>AI Agents are Searching...</h2>
-                        <p id="searchQueryDisplay">Finding the perfect match for your request</p>
+                        <h2 data-i18n="demo.searchingTitle">AI Agents are Searching...</h2>
+                        <p id="searchQueryDisplay" data-i18n="demo.searchingSub">Finding the perfect match for your request</p>
 
                         <div class="progress-steps">
                             <div class="progress-step" data-step="1">
@@ -177,8 +177,8 @@
                     <div id="resultsSection" class="results-section">
                         <div class="results-header">
                             <div>
-                                <h2>Your Curated Recommendations</h2>
-                                <p class="results-count">Found <span id="resultCount">5</span> products matching your criteria</p>
+                                <h2 data-i18n="demo.resultsTitle">Your Curated Recommendations</h2>
+                                <p class="results-count">Found <span id="resultCount">5</span> <span data-i18n="demo.resultsSuffix">products matching your criteria</span></p>
                             </div>
                         </div>
 
@@ -186,7 +186,7 @@
                         <div class="ai-analysis">
                             <div class="ai-analysis-header">
                                 <div class="ai-analysis-icon">V</div>
-                                <h3>VendeeX AI Analysis</h3>
+                                <h3 data-i18n="demo.aiAnalysis">VendeeX AI Analysis</h3>
                             </div>
                             <p id="aiSummary">Based on your requirements for a lightweight travel laptop under $1000 with excellent battery life, I've identified 5 products that best match your needs. The top pick offers the best balance of portability, battery life, and value. All recommendations have been verified for availability and current pricing.</p>
                         </div>
@@ -196,10 +196,10 @@
 
                         <!-- Global Shipping Toggle -->
                         <div class="global-shipping-toggle" id="globalShippingToggle" style="display: none;">
-                            <span class="global-shipping-toggle__label">Shipping:</span>
+                            <span class="global-shipping-toggle__label" data-i18n="demo.shipping">Shipping:</span>
                             <div class="shipping-toggle">
-                                <button class="shipping-toggle__option shipping-toggle__option--active" data-shipping="standard" onclick="toggleGlobalShipping('standard')">Standard</button>
-                                <button class="shipping-toggle__option" data-shipping="express" onclick="toggleGlobalShipping('express')">Express</button>
+                                <button class="shipping-toggle__option shipping-toggle__option--active" data-shipping="standard" onclick="toggleGlobalShipping('standard')" data-i18n="demo.standard">Standard</button>
+                                <button class="shipping-toggle__option" data-shipping="express" onclick="toggleGlobalShipping('express')" data-i18n="demo.express">Express</button>
                             </div>
                         </div>
 
@@ -228,10 +228,10 @@
     <footer class="footer" style="margin-top: 60px;">
         <div class="container">
             <div class="footer-bottom" style="border-top: none; padding-top: 0;">
-                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge">DEMONSTRATION VERSION</span></p>
+                <p>&copy; 2025 VendeeX. All rights reserved. <span class="demo-badge" data-i18n="footer.demo">DEMONSTRATION VERSION</span></p>
                 <div class="demo-site-links">
                     <a href="https://vendeelabs.com" target="_blank" class="demo-link-website">&#127760; vendeelabs.com</a>
-                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; Contact Us</a>
+                    <a href="mailto:ross@vendeelabs.com" class="demo-link-contact">&#9993; <span data-i18n="footer.contact">Contact Us</span></a>
                 </div>
             </div>
         </div>
