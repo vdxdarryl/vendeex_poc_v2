@@ -205,75 +205,80 @@
         }
 
         /* Buy Local Toggle */
-        .buy-local-toggle {
+        /* ── Sourcing preferences panel ─────────────────────── */
+        .sourcing-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .sourcing-row {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+
+        .sourcing-buy-from {
+            background: rgba(43, 182, 115, 0.06);
+            border-color: rgba(43, 182, 115, 0.25);
+        }
+
+        .sourcing-dont-buy-from {
+            background: rgba(239, 68, 68, 0.04);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .sourcing-row-label {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            background: rgba(43, 182, 115, 0.06);
-            border: 1px solid rgba(43, 182, 115, 0.15);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .buy-local-toggle label {
-            margin: 0;
-            font-weight: 500;
-            color: #111827;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .buy-local-toggle .toggle-desc {
-            display: block;
-            font-size: 0.75rem;
-            color: #6b7280;
-            font-weight: 400;
-            margin-top: 2px;
-        }
-
-        .radius-selector {
-            display: none;
-            margin-bottom: 1rem;
-        }
-
-        .radius-selector.visible {
-            display: block;
-        }
-
-        .radius-selector > label {
-            display: block;
-            font-size: 0.8125rem;
+            gap: 0.5rem;
             font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.375rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: #111827;
         }
 
-        .radius-options {
+        .sourcing-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .sourcing-icon-positive { background: #d1fae5; color: #065f46; }
+        .sourcing-icon-negative { background: #fee2e2; color: #991b1b; }
+
+        .sourcing-fields {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
         }
 
-        .radius-option {
-            padding: 0.375rem 0.75rem;
+        .sourcing-input {
             border: 1px solid #d1d5db;
-            border-radius: 20px;
+            border-radius: 6px;
+            padding: 0.375rem 0.625rem;
             font-size: 0.8125rem;
-            cursor: pointer;
+            color: #111827;
             background: white;
-            color: #374151;
-            transition: all 0.2s;
+            outline: none;
         }
 
-        .radius-option:hover {
-            border-color: #215274;
-        }
+        .sourcing-input:focus { border-color: #215274; }
 
-        .radius-option.selected {
-            background: #215274;
-            color: white;
-            border-color: #215274;
+        .sourcing-input-country { width: 160px; }
+        .sourcing-input-region  { width: 150px; }
+
+        .sourcing-hint {
+            font-size: 0.7rem;
+            color: #9ca3af;
+            margin-top: 0.375rem;
         }
 
         /* Jurisdiction note */
@@ -947,29 +952,42 @@
                             </div>
                         </div>
 
-                        <!-- Buy Local -->
-                        <div class="form-section-label">Shop Local Preference</div>
+                        <!-- Sourcing Preferences (replaces old km-radius toggle) -->
+                        <div class="form-section-label">Sourcing Preferences</div>
+                        <div class="sourcing-panel">
 
-                        <div class="buy-local-toggle">
-                            <label for="buyLocal">
-                                Prioritise local sellers
-                                <span class="toggle-desc">Your agent will favour sellers near your location</span>
-                            </label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="buyLocal" name="buyLocal">
-                                <span class="toggle-slider"></span>
+                            <div class="sourcing-row sourcing-buy-from">
+                                <div class="sourcing-row-label">
+                                    <span class="sourcing-icon sourcing-icon-positive">&#10003;</span>
+                                    <span>Buy from</span>
+                                </div>
+                                <div class="sourcing-fields">
+                                    <input type="text" id="sourcingBuyCountry" class="sourcing-input sourcing-input-country"
+                                           placeholder="Country (e.g. Ireland)" autocomplete="off">
+                                    <input type="text" id="sourcingBuyRegion1" class="sourcing-input sourcing-input-region"
+                                           placeholder="Region or city (optional)" autocomplete="off">
+                                    <input type="text" id="sourcingBuyRegion2" class="sourcing-input sourcing-input-region"
+                                           placeholder="Region or city (optional)" autocomplete="off">
+                                </div>
+                                <div class="sourcing-hint">Country is a strong preference signal. Regions add detail (e.g. West Midlands, Boulder CO).</div>
                             </div>
-                        </div>
 
-                        <div class="radius-selector" id="radiusSelector">
-                            <label>Search radius</label>
-                            <div class="radius-options">
-                                <span class="radius-option" data-value="5">5 km</span>
-                                <span class="radius-option" data-value="10">10 km</span>
-                                <span class="radius-option selected" data-value="25">25 km</span>
-                                <span class="radius-option" data-value="50">50 km</span>
-                                <span class="radius-option" data-value="100">100 km</span>
+                            <div class="sourcing-row sourcing-dont-buy-from">
+                                <div class="sourcing-row-label">
+                                    <span class="sourcing-icon sourcing-icon-negative">&#10007;</span>
+                                    <span>Don&#39;t buy from</span>
+                                </div>
+                                <div class="sourcing-fields">
+                                    <input type="text" id="sourcingDontCountry" class="sourcing-input sourcing-input-country"
+                                           placeholder="Country (e.g. China)" autocomplete="off">
+                                    <input type="text" id="sourcingDontRegion1" class="sourcing-input sourcing-input-region"
+                                           placeholder="Region or city (optional)" autocomplete="off">
+                                    <input type="text" id="sourcingDontRegion2" class="sourcing-input sourcing-input-region"
+                                           placeholder="Region or city (optional)" autocomplete="off">
+                                </div>
+                                <div class="sourcing-hint">Products from this origin will rank lower, not be excluded entirely.</div>
                             </div>
+
                         </div>
 
                         <button type="button" id="step1Next" class="avatar-submit-btn">Continue to Preferences</button>
@@ -1358,9 +1376,13 @@
         var successSection = document.getElementById('avatarSuccess');
         var step1 = document.getElementById('avatarStep1');
         var step2 = document.getElementById('avatarStep2');
-        var buyLocalToggle = document.getElementById('buyLocal');
-        var radiusSelector = document.getElementById('radiusSelector');
-        var selectedRadius = '25';
+        // Sourcing preference field refs
+        var srcBuyCountry  = document.getElementById('sourcingBuyCountry');
+        var srcBuyRegion1  = document.getElementById('sourcingBuyRegion1');
+        var srcBuyRegion2  = document.getElementById('sourcingBuyRegion2');
+        var srcDontCountry = document.getElementById('sourcingDontCountry');
+        var srcDontRegion1 = document.getElementById('sourcingDontRegion1');
+        var srcDontRegion2 = document.getElementById('sourcingDontRegion2');
         var currentStep = 1;
         var selectedAccountType = 'personal';
 
@@ -1433,18 +1455,7 @@
             note.classList.toggle('visible', this.value !== '');
         });
 
-        // ---- Buy Local Toggle ----
-        buyLocalToggle.addEventListener('change', function() {
-            radiusSelector.classList.toggle('visible', this.checked);
-        });
-
-        // ---- Radius Option Selection ----
-        document.querySelectorAll('.radius-option').forEach(function(option) {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.radius-option').forEach(function(o) { o.classList.remove('selected'); });
-                this.classList.add('selected');
-                selectedRadius = this.getAttribute('data-value');
-            });
+        // Sourcing inputs are plain text fields);
         });
 
         // ---- Preference Category Accordions ----
@@ -1629,8 +1640,12 @@
             localStorage.setItem('vendeeX_jurisdiction', jurisdiction);
             localStorage.setItem('vendeeX_buyerLocation', jurisdiction);
             localStorage.setItem('vendeeX_currency', currency);
-            localStorage.setItem('vendeeX_buyLocal', String(buyLocalToggle.checked));
-            localStorage.setItem('vendeeX_buyLocalRadius', buyLocalToggle.checked ? selectedRadius : '');
+            // Save sourcing preference to localStorage
+            var sourcingPref = {
+                buyFrom:     { country: (srcBuyCountry.value  || '').trim(), regions: [(srcBuyRegion1.value || '').trim(), (srcBuyRegion2.value || '').trim()].filter(Boolean) },
+                dontBuyFrom: { country: (srcDontCountry.value || '').trim(), regions: [(srcDontRegion1.value || '').trim(), (srcDontRegion2.value || '').trim()].filter(Boolean) }
+            };
+            localStorage.setItem('vendeeX_sourcingPreference', JSON.stringify(sourcingPref));
             localStorage.setItem('vendeeX_isLoggedIn', 'true');
             localStorage.setItem('vendeeX_avatarCreated', new Date().toISOString());
             localStorage.setItem('vendeeX_shippingPreference', 'standard');
@@ -1665,8 +1680,8 @@
                         jurisdiction: jurisdiction,
                         avatarPreferences: avatarPreferences,
                         standingInstructions: standingInstructions,
-                        buyLocal: buyLocalToggle.checked,
-                        buyLocalRadius: buyLocalToggle.checked ? parseInt(selectedRadius) : null,
+                        buyLocal: false,
+                        buyLocalRadius: null,
                         currency: (document.getElementById('currencyPref') || document.getElementById('prefCurrencySelect')).value,
                         // Backward compat fields derived from new prefs
                         valueRanking: JSON.parse(localStorage.getItem('vendeeX_valueRanking')),
@@ -1717,7 +1732,7 @@
             } else {
                 document.getElementById('successMessage').textContent =
                     'Welcome, ' + firstName + '! Your agent now knows your preferences and will apply them to every search.' +
-                    (buyLocalToggle.checked ? ' Local sellers within ' + selectedRadius + ' km will be prioritised.' : '');
+                    (sourcingPref && sourcingPref.buyFrom && sourcingPref.buyFrom.country ? ' Preference: buy from ' + sourcingPref.buyFrom.country + '.' : '');
             }
             formSection.style.display = 'none';
             successSection.classList.add('visible');
@@ -1877,17 +1892,14 @@
             if (instructions) document.getElementById('standingInstructions').value = instructions;
 
             // Buy Local toggle + radius
-            var buyLocal = localStorage.getItem('vendeeX_buyLocal');
-            if (buyLocal === 'true') {
-                buyLocalToggle.checked = true;
-                radiusSelector.classList.add('visible');
-                var savedRadius = localStorage.getItem('vendeeX_buyLocalRadius');
-                if (savedRadius) {
-                    document.querySelectorAll('.radius-option').forEach(function(o) { o.classList.remove('selected'); });
-                    var opt = document.querySelector('.radius-option[data-value="' + savedRadius + '"]');
-                    if (opt) opt.classList.add('selected');
-                    selectedRadius = savedRadius;
-                }
+            // Load sourcing preference if previously saved
+            var savedSourcing = localStorage.getItem('vendeeX_sourcingPreference');
+            if (savedSourcing) {
+                try {
+                    var sp = JSON.parse(savedSourcing);
+                    if (sp.buyFrom)     { srcBuyCountry.value  = sp.buyFrom.country     || ''; srcBuyRegion1.value  = (sp.buyFrom.regions  || [])[0] || ''; srcBuyRegion2.value  = (sp.buyFrom.regions  || [])[1] || ''; }
+                    if (sp.dontBuyFrom) { srcDontCountry.value = sp.dontBuyFrom.country  || ''; srcDontRegion1.value = (sp.dontBuyFrom.regions || [])[0] || ''; srcDontRegion2.value = (sp.dontBuyFrom.regions || [])[1] || ''; }
+                } catch(e) {}
             }
 
             // Auto-skip to Step 2 (preferences) in edit mode
