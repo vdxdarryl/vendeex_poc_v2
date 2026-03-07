@@ -17,6 +17,7 @@
 
 const crypto = require('crypto');
 const qdrant = require('./QdrantService');
+const { deadLetter } = require('../infrastructure/DeadLetterService');
 const embedding = require('./EmbeddingService');
 const { COLLECTIONS } = require('./QdrantService');
 
@@ -75,7 +76,11 @@ function captureQualify(sessionId, query, refinedQuery, conversation, avatarSnap
       avatarBuyLocal: avatarSnapshot?.buyLocal || false,
       capturedAt: nowISO()
     };
-    await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload, dlErr.message);
+    }
     console.log('[SessionCapture] qualify captured:', sessionId.substring(0, 8));
   });
 }
@@ -111,7 +116,11 @@ function captureSearch(sessionId, query, products, providers) {
       providers: providers || [],
       capturedAt: nowISO()
     };
-    await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload, dlErr.message);
+    }
     console.log('[SessionCapture] search captured:', sessionId.substring(0, 8), '—', topProducts.length, 'products');
   });
 }
@@ -142,7 +151,11 @@ function captureRefine(sessionId, refinementMessage, refinedIndices, originalCou
       explanation: (explanation || '').substring(0, 300),
       capturedAt: nowISO()
     };
-    await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload, dlErr.message);
+    }
     console.log('[SessionCapture] refine captured:', sessionId.substring(0, 8));
   });
 }
@@ -172,7 +185,11 @@ function captureCartAdd(sessionId, product, originalQuery) {
       originalQuery: originalQuery || null,
       capturedAt: nowISO()
     };
-    await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    try {
+        await qdrant.upsertPoint(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload);
+    } catch (dlErr) {
+        await deadLetter.record(COLLECTIONS.MEMBER_SESSIONS, pointId, vector, payload, dlErr.message);
+    }
     console.log('[SessionCapture] cart captured:', sessionId.substring(0, 8), '—', product.name);
   });
 }
