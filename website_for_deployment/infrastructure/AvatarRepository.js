@@ -79,7 +79,6 @@ class AvatarRepository {
             currency: row.currency || 'USD'
         };
     }
-}
 
     /**
      * Merge search learnings into avatar_preferences.searchLearnings.
@@ -142,6 +141,6 @@ class AvatarRepository {
             [JSON.stringify(updatedPrefs), userId]
         );
     }
-
+}
 
 module.exports = { AvatarRepository };
