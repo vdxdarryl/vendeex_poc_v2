@@ -26,6 +26,7 @@ class VisitorTracker {
         this.reportEmail = options.reportEmail || 'darryl.carlton@me.com';
         this.gmailUser = options.gmailUser || process.env.GMAIL_USER;
         this.gmailAppPassword = options.gmailAppPassword || process.env.GMAIL_APP_PASSWORD;
+        this.operatorInsights = options.operatorInsights || null;  // OperatorInsightsService (optional)
 
         // In-memory state for current day
         this.todayKey = this._dateKey();
@@ -1233,7 +1234,16 @@ class VisitorTracker {
             return { sent: false, reason: 'already_sent', reportDate: data.reportDate };
         }
 
-        const html = this._buildEmailHTML(data);
+        // Prepend operator narrative if OperatorInsightsService is configured
+        let insightsHTML = '';
+        if (this.operatorInsights) {
+            try {
+                insightsHTML = await this.operatorInsights.generateInsightsHTML();
+            } catch (insightsErr) {
+                console.error('[VisitorTracker] Operator insights failed:', insightsErr.message);
+            }
+        }
+        const html = insightsHTML + this._buildEmailHTML(data);
         const parts = [`${data.uniqueVisitors} visitors`];
         if (data.searchCount > 0) parts.push(`${data.searchCount} searches`);
         if (data.registrations > 0) parts.push(`${data.registrations} signups`);

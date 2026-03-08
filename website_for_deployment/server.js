@@ -15,6 +15,7 @@ const path = require('path');
 require('dotenv').config({ override: true });
 
 const VisitorTracker = require('./services/VisitorTracker');
+const OperatorInsightsService = require('./services/OperatorInsightsService');
 const { deadLetter } = require('./infrastructure/DeadLetterService');
 const db = require('./db');
 const RunPodWatchdog = require('./services/RunPodWatchdog');
@@ -52,7 +53,8 @@ app.use((req, res, next) => {
 });
 
 // Visitor tracking (before static files so page views are counted)
-const visitorTracker = new VisitorTracker({ reportEmail: 'ross@vendeelabs.com, darryl.carlton@me.com' });
+const operatorInsights = new OperatorInsightsService({ db });
+const visitorTracker = new VisitorTracker({ reportEmail: 'ross@vendeelabs.com, darryl.carlton@me.com', operatorInsights });
 
 // Analytics helpers (fire-and-forget; no-ops when DATABASE_URL not set)
 const { createAnalytics } = require('./lib/analytics');
