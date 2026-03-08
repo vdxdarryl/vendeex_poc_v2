@@ -25,9 +25,7 @@ async function init() {
     try {
         pool = new Pool({
             connectionString: url,
-            ssl: (url.includes('railway.app') || url.includes('neon.tech') || url.includes('rlwy.net'))
-                ? { rejectUnauthorized: false }
-                : false,
+            ssl: { rejectUnauthorized: false },
             max: 10,
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 5000
