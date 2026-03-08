@@ -8,14 +8,12 @@ module.exports = function adminRoutes(deps) {
     const { db, visitorTracker } = deps;
     const router = express.Router();
 
-    /** Admin: trigger daily report manually (for testing) */
+    /** Admin: trigger daily report manually — responds immediately, runs in background */
     router.post('/send-report', async (req, res) => {
-        try {
-            const result = await visitorTracker.sendDailyReport();
-            res.json({ success: true, ...result });
-        } catch (err) {
-            res.status(500).json({ success: false, error: err.message });
-        }
+        res.json({ success: true, message: 'Report generation started. Email will arrive within 60 seconds.' });
+        visitorTracker.sendDailyReport()
+            .then(() => console.log('[Admin] Manual report sent successfully.'))
+            .catch(err => console.error('[Admin] Manual report failed:', err.message));
     });
 
     /** Admin: get visitor stats */
