@@ -1215,6 +1215,22 @@ class VisitorTracker {
     }
 
     /** Send the daily report email */
+
+    /** Build full report HTML without sending — for browser preview */
+    async _buildFullReportHTML() {
+        this.flush();
+        const data = await this.getReportData();
+        let insightsHTML = '';
+        if (this.operatorInsights) {
+            try {
+                insightsHTML = await this.operatorInsights.generateInsightsHTML();
+            } catch (err) {
+                insightsHTML = '<p style="color:orange">Narrative unavailable: ' + err.message + '</p>';
+            }
+        }
+        return insightsHTML + this._buildEmailHTML(data);
+    }
+
     async sendDailyReport() {
         if (!this.transporter) {
             console.log('[VisitorTracker] Cannot send report - Gmail not configured');

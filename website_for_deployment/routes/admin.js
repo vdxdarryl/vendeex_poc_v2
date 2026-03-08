@@ -16,6 +16,18 @@ module.exports = function adminRoutes(deps) {
             .catch(err => console.error('[Admin] Manual report failed:', err.message));
     });
 
+
+    /** Admin: preview report HTML in browser — no email sent */
+    router.get('/preview-report', async (req, res) => {
+        try {
+            const html = await visitorTracker._buildFullReportHTML();
+            res.setHeader('Content-Type', 'text/html');
+            res.send(html);
+        } catch (err) {
+            res.status(500).send('<pre>Error: ' + err.message + '</pre>');
+        }
+    });
+
     /** Admin: get visitor stats */
     router.get('/visitor-stats', async (req, res) => {
         visitorTracker.flush();
