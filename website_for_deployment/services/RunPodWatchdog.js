@@ -27,6 +27,7 @@ const ALERT_TO       = 'darryl.carlton@me.com';
 const CHECK_INTERVAL_MS  = 3 * 60 * 1000;   // 3 minutes
 const FAIL_THRESHOLD     = 2;                // restarts after 2 consecutive failures
 const HEALTH_TIMEOUT_MS  = 10_000;          // 10s per health check
+const STARTUP_GRACE_MS   = 10 * 60 * 1000; // 10 minutes grace after any restart
 
 const PODS = [
   {
@@ -56,28 +57,25 @@ const PODS = [
 ];
 
 // Consecutive failure counters, keyed by pod id
-const _failures = {};
-PODS.forEach(p => { _failures[p.id] = 0; });
+const _failures    = {};
+// Timestamp of last watchdog-initiated restart, keyed by pod id (null = not restarted)
+const _restartedAt = {};
+PODS.forEach(p => { _failures[p.id] = 0; _restartedAt[p.id] = null; });
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function httpGet(url, timeoutMs) {
   const fetch = new Promise((resolve, reject) => {
     const req = https.get(url, { timeout: timeoutMs }, res => {
-      // Drain response body so socket is released
       res.resume();
       resolve(res.statusCode);
     });
     req.on('timeout', () => { req.destroy(); reject(new Error('socket timeout')); });
     req.on('error',   err => reject(err));
   });
-
-  // Hard deadline via Promise.race — guards against TCP hangs where
-  // the socket never establishes and the 'timeout' event never fires.
   const deadline = new Promise((_, reject) =>
     setTimeout(() => reject(new Error('deadline exceeded')), timeoutMs + 2000)
   );
-
   return Promise.race([fetch, deadline]);
 }
 
@@ -106,7 +104,7 @@ function runpodGraphQL(query) {
 
 async function sendAlert(subject, text) {
   if (!GMAIL_USER || !GMAIL_PASS) {
-    console.warn('[Watchdog] Email not configured — alert not sent:', subject);
+    console.warn('[Watchdog] Email not configured -- alert not sent:', subject);
     return;
   }
   try {
@@ -129,29 +127,27 @@ async function sendAlert(subject, text) {
 async function restartPod(pod) {
   console.log(`[Watchdog] Restarting ${pod.name} (${pod.id})...`);
   try {
-    // Stop first (in case it is in a crashed/unhealthy state)
     await runpodGraphQL(
       `mutation { podStop(input: { podId: "${pod.id}" }) { id desiredStatus } }`
     );
-    // Wait 15s for stop to propagate
     await new Promise(r => setTimeout(r, 15_000));
-    // Resume
     const result = await runpodGraphQL(
       `mutation { podResume(input: { podId: "${pod.id}", gpuCount: ${pod.gpuCount} }) { id desiredStatus } }`
     );
     const status = result?.data?.podResume?.desiredStatus || 'unknown';
-    console.log(`[Watchdog] ${pod.name} restart issued — desiredStatus: ${status}`);
+    console.log(`[Watchdog] ${pod.name} restart issued -- desiredStatus: ${status}`);
     await sendAlert(
       `${pod.name} restarted`,
-      `Pod ${pod.name} (${pod.id}) failed ${FAIL_THRESHOLD} consecutive health checks.\n\nRestart has been issued. desiredStatus = ${status}.\n\nThe pod typically takes 2–5 minutes to become healthy again.\n\nTime: ${new Date().toISOString()}`
+      `Pod ${pod.name} (${pod.id}) failed ${FAIL_THRESHOLD} consecutive health checks.\n\nRestart issued. desiredStatus = ${status}.\n\nTime: ${new Date().toISOString()}`
     );
-    // Reset counter so we don't restart again immediately during boot
-    _failures[pod.id] = 0;
+    // Reset counter and record restart time so grace period starts now
+    _failures[pod.id]    = 0;
+    _restartedAt[pod.id] = Date.now();
   } catch (err) {
     console.error(`[Watchdog] Restart failed for ${pod.name}:`, err.message);
     await sendAlert(
       `${pod.name} restart FAILED`,
-      `Pod ${pod.name} (${pod.id}) health checks failed AND the automatic restart attempt threw an error.\n\nError: ${err.message}\n\nManual intervention required at https://console.runpod.io\n\nTime: ${new Date().toISOString()}`
+      `Pod ${pod.name} (${pod.id}) health checks failed AND restart threw an error.\n\nError: ${err.message}\n\nManual intervention required at https://console.runpod.io\n\nTime: ${new Date().toISOString()}`
     );
   }
 }
@@ -160,17 +156,32 @@ async function restartPod(pod) {
 
 async function checkAll() {
   if (!RUNPOD_API_KEY) {
-    console.warn('[Watchdog] RUNPOD_API_KEY not set — skipping health checks');
+    console.warn('[Watchdog] RUNPOD_API_KEY not set -- skipping health checks');
     return;
   }
 
   for (const pod of PODS) {
+    // Skip health checks while pod is within its post-restart grace window
+    if (_restartedAt[pod.id]) {
+      const elapsed = Date.now() - _restartedAt[pod.id];
+      if (elapsed < STARTUP_GRACE_MS) {
+        const remaining = Math.ceil((STARTUP_GRACE_MS - elapsed) / 60000);
+        console.log(`[Watchdog] ${pod.name} in startup grace -- skipping check (${remaining} min remaining)`);
+        continue;
+      }
+    }
+
     try {
       const status = await httpGet(pod.url, HEALTH_TIMEOUT_MS);
       if (status >= 200 && status < 300) {
         if (_failures[pod.id] > 0) {
           console.log(`[Watchdog] ${pod.name} recovered (was ${_failures[pod.id]} failures)`);
           _failures[pod.id] = 0;
+        }
+        // Clear restart timestamp once pod is confirmed healthy
+        if (_restartedAt[pod.id]) {
+          console.log(`[Watchdog] ${pod.name} healthy after restart -- grace period cleared`);
+          _restartedAt[pod.id] = null;
         }
       } else {
         throw new Error(`HTTP ${status}`);
@@ -189,11 +200,10 @@ async function checkAll() {
 
 function start() {
   if (!RUNPOD_API_KEY) {
-    console.warn('[Watchdog] RUNPOD_API_KEY not set — watchdog disabled');
+    console.warn('[Watchdog] RUNPOD_API_KEY not set -- watchdog disabled');
     return;
   }
-  console.log(`[Watchdog] Started — checking ${PODS.length} pods every ${CHECK_INTERVAL_MS / 60000} min`);
-  // Initial check after 60s to let pods stabilise at startup
+  console.log(`[Watchdog] Started -- checking ${PODS.length} pods every ${CHECK_INTERVAL_MS / 60000} min`);
   setTimeout(() => {
     checkAll();
     setInterval(checkAll, CHECK_INTERVAL_MS);
