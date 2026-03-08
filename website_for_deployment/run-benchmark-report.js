@@ -14,7 +14,9 @@
 
 require('dotenv').config({ override: true });
 const https  = require('https');
-const db     = require('./db');
+const { Pool } = require('pg');
+const _pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 10000 });
+const db = { query: (t, p) => _pool.query(t, p) };
 const nodemailer = require('nodemailer');
 
 const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
@@ -444,6 +446,7 @@ async function sendReport(html, data) {
 async function main() {
   try {
     console.log('[Benchmark] Starting all-time platform intelligence report...');
+
 
     const data       = await gatherAllTimeData();
     console.log(`[Benchmark] Data gathered: ${data.visitors.raw} visitor records, ${data.searches.total} searches`);
