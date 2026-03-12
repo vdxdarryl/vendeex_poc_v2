@@ -24,7 +24,7 @@ const GMAIL_USER     = process.env.GMAIL_USER;
 const GMAIL_PASS     = process.env.GMAIL_APP_PASSWORD;
 const ALERT_TO       = 'darryl.carlton@me.com';
 
-const CHECK_INTERVAL_MS  = 3 * 60 * 1000;   // 3 minutes
+const CHECK_INTERVAL_MS  = 10 * 60 * 1000;  // 10 minutes
 const FAIL_THRESHOLD     = 2;                // restarts after 2 consecutive failures
 const HEALTH_TIMEOUT_MS  = 10_000;          // 10s per health check
 const STARTUP_GRACE_MS   = 10 * 60 * 1000; // 10 minutes grace after any restart
