@@ -12,7 +12,7 @@ const { isQualifiedProduct, filterByQueryRelevance } = require('../../domain/Pro
 const { isProductSearch, deduplicateProducts } = require('../../domain/SearchLogic');
 
 const MIN_RESULTS = 10;
-const PRODUCT_CAP = 40;
+const PRODUCT_CAP = 30;
 
 /**
  * @param {object} deps - { config, multiProviderSearch }
@@ -41,7 +41,7 @@ function createRunSearchHandler(deps) {
         const searchPromises = {};
 
         if (channel3ApiKey && !isPharmaQuery) {
-            const body = { query };
+            const body = { query, limit: 30 };
             if (options.minPrice) body.min_price = options.minPrice;
             if (options.maxPrice) body.max_price = options.maxPrice;
             if (options.brand) body.brand = options.brand;
@@ -106,7 +106,12 @@ function createRunSearchHandler(deps) {
         });
         aiProducts.forEach(p => { if (!p.source) p.source = 'ai_provider'; });
 
-        let allProducts = [...channel3Products, ...aiProducts];
+        // Channel3-first: use AI provider products only when Channel3 returns zero results.
+        const useAiFallback = channel3Products.length === 0;
+        let allProducts = useAiFallback ? aiProducts : channel3Products;
+        if (useAiFallback && aiProducts.length > 0) {
+            console.log('[RunSearch] Channel3 returned 0 results — falling back to AI providers');
+        }
         const deduped = deduplicateProducts(allProducts);
         deduped.sort((a, b) => (b.matchScore || 85) - (a.matchScore || 85));
         const finalProducts = deduped.slice(0, PRODUCT_CAP);
@@ -118,7 +123,7 @@ function createRunSearchHandler(deps) {
 
         const postFilterCount = qualifiedProducts.length + qualifiedAffiliateProducts.length;
 
-        if (postFilterCount < MIN_RESULTS && !isPharmaQuery) {
+        if (postFilterCount < MIN_RESULTS && !isPharmaQuery && channel3Products.length === 0) {
             console.log(`[RunSearch] Primary results below threshold (${postFilterCount}/${MIN_RESULTS}) — triggering Affiliate.com last-resort backfill`);
             const backfillPromises = [];
             if (affiliateApiKey) {
