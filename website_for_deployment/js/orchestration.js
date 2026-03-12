@@ -394,12 +394,9 @@ const Orchestration = {
 
         // Image
         html += '<div class="orchestration__product-image">';
-        if (hasImage) {
-            html += '<img src="' + this._escapeHtml(imageUrl) + '" alt="' + this._escapeHtml(product.name) + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">';
-            html += '<span class="orchestration__product-emoji" style="display:none;">&#x1F4E6;</span>';
-        } else {
-            html += '<span class="orchestration__product-emoji">&#x1F4E6;</span>';
-        }
+            if (hasImage) {
+                html += '<img src="' + imageUrl + '" alt="' + this._escapeHtml(product.name) + '" onerror="this.closest(\'.orchestration__product-image\').style.display=\'none\'">';
+            }
         html += '</div>';
 
         // Info
