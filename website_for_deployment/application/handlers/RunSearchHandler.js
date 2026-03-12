@@ -118,7 +118,11 @@ function createRunSearchHandler(deps) {
 
         let qualifiedProducts = finalProducts.filter(isQualifiedProduct);
         let qualifiedAffiliateProducts = affiliateProducts.filter(isQualifiedProduct);
-        qualifiedProducts = filterByQueryRelevance(qualifiedProducts, query);
+        // Channel3 results are pre-qualified by server-side semantic search.
+        // Only apply filterByQueryRelevance to AI fallback products (non-channel3).
+        const channel3Qualified = qualifiedProducts.filter(p => p.source === 'channel3');
+        const nonChannel3Qualified = qualifiedProducts.filter(p => p.source !== 'channel3');
+        qualifiedProducts = [...channel3Qualified, ...filterByQueryRelevance(nonChannel3Qualified, query)];
         qualifiedAffiliateProducts = filterByQueryRelevance(qualifiedAffiliateProducts, query);
 
         const postFilterCount = qualifiedProducts.length + qualifiedAffiliateProducts.length;
