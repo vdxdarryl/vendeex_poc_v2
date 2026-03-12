@@ -5,7 +5,7 @@
  * Domain filters and response shape match the legacy /api/search route.
  */
 
-const { channel3Request } = require('../../infrastructure/Channel3Gateway');
+const { channel3Request, channel3Search } = require('../../infrastructure/Channel3Gateway');
 const { affiliateRequest } = require('../../infrastructure/AffiliateComGateway');
 const { transformChannel3Product, transformAffiliateProduct } = require('../../domain/ProductTransform');
 const { isQualifiedProduct, filterByQueryRelevance } = require('../../domain/ProductQuality');
@@ -45,9 +45,9 @@ function createRunSearchHandler(deps) {
             if (options.minPrice) body.min_price = options.minPrice;
             if (options.maxPrice) body.max_price = options.maxPrice;
             if (options.brand) body.brand = options.brand;
-            searchPromises.channel3 = channel3Request(channel3BaseUrl, channel3ApiKey, '/search', 'POST', body)
+            searchPromises.channel3 = channel3Search(channel3BaseUrl, channel3ApiKey, body)
                 .then(results => {
-                    const products = (results || []).map(p => transformChannel3Product(p)).filter(Boolean);
+                    const products = (results.products || []).map(p => transformChannel3Product(p)).filter(Boolean);
                     return { products, source: 'channel3' };
                 })
                 .catch(err => {
@@ -132,8 +132,8 @@ function createRunSearchHandler(deps) {
             if (channel3ApiKey) {
                 const broadQuery = query.split(' ').slice(0, 3).join(' ');
                 backfillPromises.push(
-                    channel3Request(channel3BaseUrl, channel3ApiKey, '/search', 'POST', { query: broadQuery })
-                        .then(results => (results || []).map(p => transformChannel3Product(p)).filter(isQualifiedProduct)).catch(() => [])
+                    channel3Search(channel3BaseUrl, channel3ApiKey, { query: broadQuery })
+                        .then(results => (results.products || []).map(p => transformChannel3Product(p)).filter(isQualifiedProduct)).catch(() => [])
                 );
             }
             if (backfillPromises.length > 0) {
