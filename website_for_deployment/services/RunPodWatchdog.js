@@ -48,12 +48,16 @@ const PODS = [
     url:      'https://nelw1rqop4dbt4-6333.proxy.runpod.net/collections',
     gpuCount: 1,
   },
-  {
-    id:       'gezkx97s9zc6hc',
-    name:     'vx-029-reranker-migration',
-    url:      'https://gezkx97s9zc6hc-80.proxy.runpod.net/health',
+  // Reranker pod: driven by env vars so pod migration requires only Railway config changes.
+  // RERANKER_POD_ID  — RunPod pod ID (used for stop/resume restart).
+  // RERANKER_URL     — base URL of the pod (e.g. https://<id>-80.proxy.runpod.net).
+  //                    The watchdog appends /health for the health check.
+  ...(process.env.RERANKER_POD_ID && process.env.RERANKER_URL ? [{
+    id:       process.env.RERANKER_POD_ID,
+    name:     'vx-029-reranker',
+    url:      process.env.RERANKER_URL.replace(/\/$/, '') + '/health',
     gpuCount: 1,
-  },
+  }] : []),
 ];
 
 // Consecutive failure counters, keyed by pod id
