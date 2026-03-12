@@ -100,7 +100,8 @@ function createRunSearchHandler(deps) {
 
         channel3Products.forEach(p => {
             if (!p.matchScore && p.relevanceScore != null) {
-                p.matchScore = Math.min(100, Math.round(p.relevanceScore * 100));
+                // Channel3 score is already 0-100; no multiplication needed
+                p.matchScore = Math.min(100, Math.round(p.relevanceScore));
             }
         });
         aiProducts.forEach(p => { if (!p.source) p.source = 'ai_provider'; });
