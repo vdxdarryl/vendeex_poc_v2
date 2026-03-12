@@ -25,7 +25,7 @@ const { MultiProviderSearch } = require('./services');
 
 // Channel3 API configuration
 const CHANNEL3_API_KEY = process.env.CHANNEL3_API_KEY;
-const CHANNEL3_BASE_URL = 'https://api.trychannel3.com/v0';
+const CHANNEL3_BASE_URL = 'https://api.trychannel3.com/v1';
 
 // Affiliate.com API configuration (PRIMARY product search — 1B+ products)
 const AFFILIATE_COM_API_KEY = process.env.AFFILIATE_COM_API_KEY;
@@ -228,7 +228,8 @@ async function startServer() {
     );
 
     const availableProviders = multiProviderSearch.getAvailableProviders();
-    console.log(`\n🚀 VendeeX 2.0 Server running at http://localhost:${PORT}`);
+    console.log(`
+🚀 VendeeX 2.0 Server running at http://localhost:${PORT}`);
     console.log(`💾 Storage: ${db.isUsingDatabase() ? 'PostgreSQL' : 'In-memory Maps'}`);
     console.log(`📦 Search: /api/search, /api/chat/qualify, /api/refine`);
     console.log(`🛍️  Channel3: /api/channel3/* | Affiliate: /api/affiliate/search`);
@@ -246,7 +247,8 @@ startServer().catch(err => {
 
 // ─── Graceful shutdown: flush visitor data ────────────────────
 const gracefulShutdown = (signal) => {
-  console.log(`\n[${signal}] Shutting down gracefully...`);
+  console.log(`
+[${signal}] Shutting down gracefully...`);
   visitorTracker.shutdown();
   process.exit(0);
 };
