@@ -44,6 +44,11 @@ const Orchestration = {
             return { curated: [], stats: { original: 0, curated: 0, qualityFiltered: 0, capFiltered: 0 } };
         }
 
+        // Channel3-first: curate from verified Channel3 products only.
+        // Fall back to full pool only if fewer than 3 Channel3 products exist.
+        var channel3Only = products.filter(function(p) { return p && p.source === 'channel3'; });
+        if (channel3Only.length >= 3) { products = channel3Only; }
+
         var self = this;
 
         // Step 1: Compute blended score (search relevance + avatar preferences)
