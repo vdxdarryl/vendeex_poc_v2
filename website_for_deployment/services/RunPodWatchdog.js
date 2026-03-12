@@ -9,7 +9,7 @@
  *   vx-029-poc        (77go3dqkmasd8a)  vLLM / Qwen2.5-32B     :8000/health
  *   vx-029-embedding  (glqbwdblbdi2i5)  TEI embedding          :80/health
  *   vx-029-qdrant     (nelw1rqop4dbt4)  Qdrant vector store    :6333/collections
- *   vx-029-reranker   (zgjst0w1hwjq3n)  TEI reranker           :80/health
+ *   vx-029-reranker   (gezkx97s9zc6hc)  TEI reranker           :80/health
  *
  * All pods are RESERVED (on-demand). They cannot be preempted by RunPod.
  * The only failure modes are pod crashes or RunPod infrastructure issues.
@@ -49,9 +49,9 @@ const PODS = [
     gpuCount: 1,
   },
   {
-    id:       'zgjst0w1hwjq3n',
-    name:     'vx-029-reranker',
-    url:      'https://zgjst0w1hwjq3n-80.proxy.runpod.net/health',
+    id:       'gezkx97s9zc6hc',
+    name:     'vx-029-reranker-migration',
+    url:      'https://gezkx97s9zc6hc-80.proxy.runpod.net/health',
     gpuCount: 1,
   },
 ];
