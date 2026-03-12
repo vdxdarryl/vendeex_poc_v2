@@ -137,7 +137,8 @@ const RefinementChat = {
         html += '<span class="refinement-chat__count" id="refinementProductCount">' + productCount + ' product' + (productCount !== 1 ? 's' : '') + '</span>';
         html += '</div>';
         html += '<div class="refinement-chat__header-actions">';
-        html += '<button class="refinement-chat__reset" id="refinementResetBtn" onclick="event.stopPropagation(); RefinementChat._handleReset();">Reset to all</button>';
+        html += '<button class="refinement-chat__reset" id="refinementResetBtn" onclick="event.stopPropagation(); RefinementChat._handleReset();">Reset to all</button>'
+        html += '<button class="refinement-chat__new-search" id="refinementNewSearchBtn" onclick="event.stopPropagation(); RefinementChat._handleNewSearch();" style="display:none;">&#x1F50D; New Search</button>';
         html += '<button class="refinement-chat__toggle" id="refinementToggleBtn">';
         html += '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         html += '</button>';
@@ -297,11 +298,12 @@ const RefinementChat = {
                     self._renderChips(data.suggestedFollowUps);
                 }
 
-                // Show reset button
+                // Show reset button and New Search button
                 self.hasRefined = true;
                 if (self.resetBtn) {
                     self.resetBtn.classList.add('refinement-chat__reset--visible');
                 }
+                self._showNewSearchButton();
             } else {
                 // Show the server's error message (or a friendly fallback)
                 var errMsg = data.error || 'Sorry, I could not process that refinement. Please try again.';
@@ -436,6 +438,38 @@ const RefinementChat = {
      * Handle reset to all products
      * @private
      */
+    /**
+     * Show the New Search button after first refinement
+     * @private
+     */
+    _showNewSearchButton: function() {
+        var btn = document.getElementById('refinementNewSearchBtn');
+        if (btn) btn.style.display = 'inline-flex';
+    },
+
+    /**
+     * New Search: returns the user to the search input to start a fresh search.
+     * Does NOT re-trigger the current query — hands control back to the user.
+     * @private
+     */
+    _handleNewSearch: function() {
+        // Return to search input
+        var requestSection = document.getElementById('requestSection');
+        var resultsSection = document.getElementById('results');
+        var searchInput = document.getElementById('searchQuery');
+        if (resultsSection) resultsSection.classList.remove('active');
+        if (requestSection) {
+            requestSection.style.display = '';
+            requestSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+        }
+        // Clean up refinement panel
+        this.destroy();
+    },
+
     _handleReset: function() {
         if (!this.originalProducts) return;
 
