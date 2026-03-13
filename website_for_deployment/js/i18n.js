@@ -58,7 +58,7 @@
       'index.stat1':         'Products Searchable',
       'index.stat2':         'Vendors Connected',
       'index.stat3':         'Buyer Sovereignty',
-      'index.footerTag':     'Vendee Labs is building the open infrastructure standard for agentic commerce: the trust and governance layer that governs the buyer's AI agent from verified identity through mandate enforcement, multi-vendor market search, and autonomous negotiation, to a completed, auditable transaction on the buyer's terms.',
+      'index.footerTag':     'Vendee Labs is building the open infrastructure standard for agentic commerce: the trust and governance layer that governs the buyer\'s AI agent from verified identity through mandate enforcement, multi-vendor market search, and autonomous negotiation, to a completed, auditable transaction on the buyer\'s terms.',
       'index.pocTag':        'AGENTIC COMMERCE PROOF OF CONCEPT',
 
       // ── pages/demo.html ─────────────────────────────────────────────────────
