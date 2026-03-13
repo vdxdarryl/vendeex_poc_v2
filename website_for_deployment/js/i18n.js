@@ -47,7 +47,7 @@
       'index.happening.p':   'You are about to experience an AI buying agent that works exclusively for you.',
       'index.matters.p':     'Unlike marketplaces, this agent has no seller incentives. It represents your interests only.',
       'index.cando.p':       'Create your Avatar for personalised results, or sign in to continue searching.',
-      'index.powered':       'Powered by Agentic AI + ACP Protocol',
+      'index.powered':       'Powered by Agentic Commerce Trust Infrastructure (ACTIF)',
       'index.createTitle':   'Create Your Avatar',
       'index.createDesc':    'Personalised results, shipping calculations, and buy-local preferences. Takes 30 seconds.',
       'index.createBtn':     'Create Avatar',
@@ -58,7 +58,7 @@
       'index.stat1':         'Products Searchable',
       'index.stat2':         'Vendors Connected',
       'index.stat3':         'Buyer Sovereignty',
-      'index.footerTag':     'VendeeX is the infrastructure layer for agentic commerce. Your AI agent works exclusively for you.',
+      'index.footerTag':     'VendeeX is open infrastructure for trusted agentic commerce — available to any organisation. White-label a buyer-sovereign AI agent on the VendeeX platform. Your agent works exclusively for you.',
       'index.pocTag':        'AGENTIC COMMERCE PROOF OF CONCEPT',
 
       // ── pages/demo.html ─────────────────────────────────────────────────────
@@ -173,7 +173,7 @@
       'index.happening.p':   '您即将体验一个专为您服务的AI购物代理。',
       'index.matters.p':     '与电商平台不同，这个代理没有卖家激励。它只代表您的利益。',
       'index.cando.p':       '创建您的数字分身以获得个性化结果，或登录继续搜索。',
-      'index.powered':       '由代理AI与ACP协议驱动',
+      'index.powered':       '由代理商务信任基础设施（ACTIF）驱动',
       'index.createTitle':   '创建您的数字分身',
       'index.createDesc':    '个性化结果、运费计算和本地优先购物偏好。仅需30秒。',
       'index.createBtn':     '创建数字分身',
@@ -184,7 +184,7 @@
       'index.stat1':         '可搜索产品',
       'index.stat2':         '接入商家',
       'index.stat3':         '买家主权',
-      'index.footerTag':     'VendeeX是代理商务的基础设施层。您的AI代理专为您服务。',
+      'index.footerTag':     'VendeeX是受信任代理商务的开放基础设施，任何组织均可采用。在VendeeX平台上部署以买家为核心的白标AI代理。您的代理专为您服务。',
       'index.pocTag':        '代理商务概念验证',
 
       // ── pages/demo.html ─────────────────────────────────────────────────────
