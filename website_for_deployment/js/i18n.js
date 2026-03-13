@@ -58,7 +58,7 @@
       'index.stat1':         'Products Searchable',
       'index.stat2':         'Vendors Connected',
       'index.stat3':         'Buyer Sovereignty',
-      'index.footerTag':     'VendeeX is open infrastructure for trusted agentic commerce — available to any organisation. White-label a buyer-sovereign AI agent on the VendeeX platform. Your agent works exclusively for you.',
+      'index.footerTag':     'Vendee Labs is building the open infrastructure standard for agentic commerce: the trust and governance layer that governs the buyer's AI agent from verified identity through mandate enforcement, multi-vendor market search, and autonomous negotiation, to a completed, auditable transaction on the buyer's terms.',
       'index.pocTag':        'AGENTIC COMMERCE PROOF OF CONCEPT',
 
       // ── pages/demo.html ─────────────────────────────────────────────────────
@@ -184,7 +184,7 @@
       'index.stat1':         '可搜索产品',
       'index.stat2':         '接入商家',
       'index.stat3':         '买家主权',
-      'index.footerTag':     'VendeeX是受信任代理商务的开放基础设施，任何组织均可采用。在VendeeX平台上部署以买家为核心的白标AI代理。您的代理专为您服务。',
+      'index.footerTag':     'Vendee Labs正在构建代理商务的开放基础设施标准：一个信任与治理层，从身份验证、委托执行、多供应商市场搜索到自主谈判，全程管控买家AI代理，直至完成可审计的交易——完全按买家的条款。',
       'index.pocTag':        '代理商务概念验证',
 
       // ── pages/demo.html ─────────────────────────────────────────────────────
