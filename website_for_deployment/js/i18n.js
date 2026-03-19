@@ -58,7 +58,7 @@
       'index.stat1':         'Products Searchable',
       'index.stat2':         'Vendors Connected',
       'index.stat3':         'Buyer Sovereignty',
-      'index.footerTag':     'Vendee Labs is building the open infrastructure standard for agentic commerce: the trust and governance layer that governs the buyer\'s AI agent from verified identity through mandate enforcement, multi-vendor market search, and autonomous negotiation, to a completed, auditable transaction on the buyer\'s terms.',
+      'index.footerTag':     'The Vendee Avatar is the world\'s first buyer-sovereign digital identity and autonomous commerce agent. It gives buyers a persistent, AI-powered digital twin that shops on their behalf — with full preference control, governance, and privacy — while merchants receive nothing except a verified, mandated buyer ready to transact.',
       'index.pocTag':        'AGENTIC COMMERCE PROOF OF CONCEPT',
 
       // ── pages/demo.html ─────────────────────────────────────────────────────
@@ -184,7 +184,7 @@
       'index.stat1':         '可搜索产品',
       'index.stat2':         '接入商家',
       'index.stat3':         '买家主权',
-      'index.footerTag':     'Vendee Labs正在构建代理商务的开放基础设施标准：一个信任与治理层，从身份验证、委托执行、多供应商市场搜索到自主谈判，全程管控买家AI代理，直至完成可审计的交易——完全按买家的条款。',
+      'index.footerTag':     'Vendee数字分身是全球首个买家主权数字身份和自主商务代理。它为买家提供一个持久的、AI驱动的数字孪生，代表买家进行购物——拥有完整的偏好控制、治理和隐私保护——而商家只会收到一个经过验证、具有明确购买授权的买家，准备进行交易。',
       'index.pocTag':        '代理商务概念验证',
 
       // ── pages/demo.html ─────────────────────────────────────────────────────
